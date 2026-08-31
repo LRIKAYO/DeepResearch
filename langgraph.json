@@ -1,0 +1,6 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "researchflow": "researchflow.agent.runtime:create_runtime"
+  }
+}

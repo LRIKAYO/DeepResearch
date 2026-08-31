@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "researchflow"
+version = "0.1.0"
+description = "ResearchFlow agent contracts"
+requires-python = ">=3.10"
+dependencies = [
+    "langchain-core",
+    "langchain-openai",
+    "langgraph",
+    "typing_extensions",
+    "tavily-python",
+]
+
+[project.optional-dependencies]
+backend = [
+    "fastapi",
+    "uvicorn",
+    "sqlalchemy>=2.0,<3",
+    "alembic>=1.16",
+    "psycopg[binary]",
+    "langgraph-sdk==0.4.3",
+]
+dev = [
+    "langgraph-cli[inmem]; python_version >= '3.11'",
+    "pytest",
+    "httpx",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.alembic]
+script_location = "%(here)s/migrations"
+prepend_sys_path = "%(here)s/src"
