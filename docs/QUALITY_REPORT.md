@@ -1,7 +1,7 @@
 # Quality Report
 
 > Owner: 05-Quality / Quality Evaluation Engineer  
-> Current baseline: `QUALITY-SCAN-002` (Post-P4-001 validation)  
+> Current baseline: `QUALITY-SCAN-003` (Post-P5 validation)
 > Status: **PASS WITH FINDINGS**
 
 This document is the maintained quality baseline for ResearchFlow. It records
@@ -26,13 +26,157 @@ When documents and implementation differ, quality review uses this source order:
 2. `docs/DATA_MODEL.md`
 3. `docs/ARCHITECTURE.md`
 4. `docs/DECISIONS.md`
-5. `docs/PHASE_1_PLAN.md` through `docs/PHASE_4_PLAN.md`
+5. `docs/PHASE_1_PLAN.md` through `docs/PHASE_5_PLAN.md`
 6. `docs/tasks/`
 7. Code and tests
 
-## Current baseline — QUALITY-SCAN-002 (Post-P4-001)
+## Current baseline — QUALITY-SCAN-003 (Post-P5)
 
-This is the current quality baseline. It supersedes `QUALITY-SCAN-001` for
+**Status:** **PASS WITH FINDINGS**
+
+This is the current quality baseline. It supersedes `QUALITY-SCAN-002` for
+Phase 5 browser reachability, Project-scoped session adoption, and the current
+regression results. The Post-P4 record remains below as historical evidence for
+the Backend vertical slice.
+
+| Area | Status | Evidence / note |
+| --- | --- | --- |
+| Overall repository quality | PASS WITH FINDINGS | P5-001 and P5-002 acceptance evidence, including Quality review, is complete. The two remaining findings are non-blocking. |
+| Product navigation authority | **Validated** | Browser selection uses `projectId` and optional `researchSessionId`; a selected Session derives the opaque Agent `thread_id`. |
+| Browser→Backend control plane | **Validated** | Exact-origin CORS, Project/Session create-read flow, and persisted PostgreSQL association were exercised from a real browser. |
+| Frontend→Agent data plane | **Validated (recorded smoke)** | The P5-002 direct-stream smoke reached Agent `runs/stream`, completed successfully, restored history, and made no Product Backend stream request. |
+| Regression boundary | **Validated** | Alembic has no drift; Backend/Agent tests, TypeScript, production build, dependency check, and CORS tests passed. |
+| Evaluation and observability | Deferred / unvalidated | No Retrieval/Agent evaluation suite, LangSmith trace, or runtime latency/token/cost telemetry is claimed by this scan. |
+
+Current open finding counts: **Blocker 0 / High 0 / Medium 0 / Low 1 / Info 1**.
+
+### Current validated evidence
+
+| Validation | Result |
+| --- | --- |
+| `docker compose config --quiet` | Passed. |
+| Alembic check | Development and test databases: no new upgrade operations detected. |
+| `py -3.12 -m pytest tests/backend tests/agent -q` | Passed: **29 passed**. |
+| `py -3.12 -m pip check` | Passed: no broken requirements. |
+| `pnpm exec tsc --noEmit` | Passed. |
+| `pnpm run build` | Passed. |
+| `pnpm run lint` | Passed: **0 errors / 16 existing warnings**; warning cleanup is outside P5 scope. |
+| CORS regression and local preflight | Focused tests cover listed and unlisted origins at `tests/backend/test_cors.py:7-41`; the recorded browser preflight allowed only the configured origin, without credentials (`docs/tasks/P5-002.md:60-62`). |
+| Browser control-plane smoke | A real browser created a Project and Research Session, observed canonical product URL state with no standalone `threadId`, kept the composer disabled before provisioning, and observed no global `threads.search` request (`docs/tasks/P5-002.md:63-71`). The Quality re-review repeated the control-plane portion against real Backend, PostgreSQL, and Agent Server. |
+| Browser data-plane smoke | The recorded P5-002 no-tools prompt made direct Agent history and `runs/stream` calls for the persisted thread; it returned `200`, reached `success`, and restored the expected assistant output without Product Backend message/stream traffic (`docs/tasks/P5-002.md:72-80`). |
+| Current review cost boundary | The Quality re-review did not submit a model prompt or invoke Web Search. The recorded direct-stream smoke is retained as distinct earlier acceptance evidence rather than represented as a new no-cost rerun. |
+
+### Current Contract Consistency Matrix
+
+| Contract | Authoritative source | Observed implementation / evidence | Status |
+| --- | --- | --- | --- |
+| Product navigation uses Project and optional Research Session IDs | `docs/DECISIONS.md:156-178`; `docs/ARCHITECTURE.md:391-414` | Query state is `projectId` / `researchSessionId`; legacy `threadId` is cleared at `frontend/src/providers/ProjectSession.tsx:56-60,108-110`. | Consistent |
+| Session membership is Project-scoped | `docs/API_CONTRACTS.md:205-231`; `docs/DATA_MODEL.md:111-128` | Sessions are requested only through `listResearchSessions(projectId)` and the visible selection is bound to the loaded Project at `frontend/src/providers/ProjectSession.tsx:149-208`. | Consistent |
+| `thread_id` is derived, not navigation state | `docs/DECISIONS.md:156-178`; `docs/ARCHITECTURE.md:391-414` | `useStream` receives `selectedSession?.thread_id` at `frontend/src/providers/Stream.tsx:99-117`; browser smoke found no standalone product URL `threadId`. | Consistent |
+| Product control plane and direct Agent data plane remain separate | `docs/ARCHITECTURE.md:431-444`; `docs/tasks/P5-002.md:72-80` | The recorded direct stream used Agent history and `runs/stream`, with no Product Backend message or stream request. | Consistent |
+| Browser Backend reachability uses exact CORS origins without credentials | `docs/PHASE_5_PLAN.md:47-58`; `docs/API_CONTRACTS.md:7-20` | Backend builds an exact allow-list at `src/researchflow/backend/app.py:13-26`; regression tests assert allowed and unlisted-origin behavior at `tests/backend/test_cors.py:7-41`. | Consistent |
+
+### Current Test Gap Matrix
+
+| Area | Current evidence | Gap / boundary | Required next action |
+| --- | --- | --- | --- |
+| Project persistence across restart | Real PostgreSQL create/read plus manual restart smoke and in-process regression coverage. | No subprocess/restart automation. | Accepted Low gap (QF-001); revisit only after startup cache, process-local state, or complex connection lifecycle is introduced. |
+| Project-scoped browser path | Recorded real-browser control-plane and direct-stream smokes; static and Backend/Agent regression checks pass. | Browser coverage is a recorded smoke, not a committed browser-test harness. | Preserve the recorded smoke as P5 acceptance evidence; introduce a deterministic browser regression only when a dedicated Frontend-quality task scopes its runtime fixture. |
+| CORS allow-list | Focused allowed/unlisted-origin tests plus real preflight result. | No Auth/cookie/deployment-origin scenario is approved. | Keep deferred until Auth and deployment origins are designed. |
+| Retrieval, answer, citation evaluation | Not started. | No fixed evaluation dataset or Recall@K, Precision@K, MRR, NDCG, faithfulness, relevance, or citation-correctness result. | Establish a versioned evaluation dataset before comparing retrieval approaches. |
+| Agent evaluation and observability | Direct-stream acceptance is recorded. | No scenario suite, LangSmith traces, latency, token, cost, error, retry, or rate-limit evidence. | Scope an instrumented evaluation task when runtime instrumentation exists. |
+
+### Current findings
+
+### QF-001 — Persistence restart coverage is manual rather than automated
+
+- Severity: **Low**
+- Status: Accepted test gap; unchanged.
+- Evidence: PostgreSQL Project persistence through a manual application restart
+  is an explicit P3 acceptance result (`docs/tasks/P3-001.md:240-243`). The
+  automated Project API coverage remains in-process (`tests/backend/test_projects.py:9-47`).
+- Current action: none. Revisit only if Backend adds startup cache,
+  process-local state, or a more complex connection lifecycle.
+
+### QF-003 — Frontend lint warnings remain in adopted UI code
+
+- Severity: **Info**
+- Status: Observed; non-blocking and unchanged in intent.
+- Evidence: the Post-P5 lint run completed with 0 errors and 16 warnings.
+  Representative adopted-UI locations include render-time ref access at
+  `frontend/src/components/thread/index.tsx:58-64` and the Fast Refresh warning
+  at `frontend/src/providers/Stream.tsx:356`.
+- Current action: no cleanup in P5; address only in a dedicated
+  Frontend-quality task.
+
+### Current evaluation and observability status
+
+| Capability | Status | Next evidence needed |
+| --- | --- | --- |
+| Retrieval comparison (vector / hybrid / reranker) | Not started | Fixed, versioned evaluation set and Recall@K, Precision@K, MRR, NDCG results. |
+| Answer faithfulness / relevance / citation correctness | Not started | Versioned rubric or dataset and reproducible evaluator output. |
+| Agent completion, tool choice, evidence coverage, loop detection | Not started | Scenario suite with completion, evidence, latency, and cost assertions. |
+| LangSmith tracing | Not validated | Trace identifiers and a credential-safe validation run. |
+| Token usage, cost, latency, and error telemetry | Not validated | Instrumented runtime evidence. |
+| Rate limit, retry, and failure recovery | Not validated | Deterministic controlled-service tests after those behaviors exist. |
+
+### Current Module Handoff
+
+| Receiving module | Handoff | Quality acceptance boundary |
+| --- | --- | --- |
+| 04-Frontend | P5-002 Quality review is passed; no P5 lint cleanup is requested. | Preserve the Project → Session → derived-thread boundary. Any UI/runtime regression work needs its own task and reproducible browser fixture. |
+| 03-Backend | P5-001 CORS boundary is accepted. | Keep Product Backend to control-plane requests; do not proxy Agent messages or streams without an approved Contract change. |
+| 05-Quality | Maintain P5 smoke evidence and current non-blocking findings. | Add evaluation, observability, or reliability evidence only from explicitly scoped, reproducible work. |
+| 00-Architect | No decision is requested by this scan. | Review only a proposed change to identity authority, Product/Agent transport, data model, or module ownership. |
+
+## QUALITY-SCAN-003 Completion Report
+
+Status: DONE
+
+Changed:
+
+- Updated the maintained quality baseline to Post-P5 and recorded the accepted
+  browser/control-plane/data-plane evidence.
+
+Created:
+
+- None; this scan updates the existing maintained report.
+
+Key Decisions:
+
+- The recorded real direct-stream smoke and the independently re-run no-cost
+  control-plane smoke are reported separately.
+- Existing non-blocking lint warnings remain outside P5 scope.
+
+Validation:
+
+- Alembic no-drift checks, 29 Backend/Agent tests, dependency check,
+  TypeScript, production build, lint, CORS evidence, and P5 browser smoke
+  records were reviewed.
+
+What the user should understand:
+
+- Product navigation is authoritative through Project and Research Session IDs;
+  `thread_id` is derived only after Product Backend returns the persisted
+  association.
+- The Product Backend provisions and discovers associations, while direct
+  Frontend ↔ Agent Server stream traffic remains the data plane.
+
+Architecture Impact: None.
+
+Open Questions:
+
+- None for P5 acceptance. Retrieval evaluation, observability, and reliability
+  work remain separate, unstarted tasks.
+
+Recommended Next Step:
+
+- Stop the P5 batch here. Scope the next product or evaluation task before
+  implementing Report persistence, Knowledge/RAG, or additional infrastructure.
+
+## Historical baseline — QUALITY-SCAN-002 (Post-P4-001)
+
+This historical baseline supersedes `QUALITY-SCAN-001` for its original
 statements about P4 implementation, migration head, test counts, and
 Backend↔Agent Server verification. The Pre-P4 scan remains below as a dated
 historical record only.
@@ -47,10 +191,10 @@ historical record only.
 | P4-001 Gate B | **Validated** | The user explicitly explained the create chain, three identities, multi-run cardinality, membership authority, and asymmetric failure/compensation boundary. |
 | Frontend stream integration | Observed / unchanged | P4-001 changed no Frontend file. Project-scoped Frontend adoption remains a later batch. |
 
-Current open finding counts: **Blocker 0 / High 0 / Medium 0 / Low 1 / Info 1**.
+Historical P4 open finding counts: **Blocker 0 / High 0 / Medium 0 / Low 1 / Info 1**.
 QF-002 and QF-004 are closed and are not included in the open count.
 
-## Current validated evidence
+### Historical P4 validated evidence
 
 | Validation | Result |
 | --- | --- |
@@ -74,7 +218,7 @@ thread_id           01a05850-a03f-7eb2-8b80-707da521ae83
 graph_id            researchflow
 ```
 
-## Current findings
+### Historical P4 findings
 
 ### QF-001 — Persistence restart coverage is manual rather than automated
 
@@ -304,6 +448,8 @@ Architecture Impact: None
 
 | Record | Outcome | Durable result |
 | --- | --- | --- |
+| `QUALITY-SCAN-003` | PASS WITH FINDINGS | Established the Post-P5 current baseline; P5-002 Quality review passed with Low 1 / Info 1 remaining. |
+| `P5-002` | DONE | Recorded the Quality-reviewed Project-scoped browser control-plane and direct Agent stream acceptance evidence. |
 | `P4-001-GATE-B` | DONE | Recorded the user's five boundary explanations and closed QF-004. |
 | `QUALITY-SCAN-002` | PASS WITH FINDINGS | Established the Post-P4 current baseline; QF-002 and QF-004 are closed. |
 | `P4-001` | DONE | Verified revision `20260831_0002`, 26 Backend+Agent tests, failure boundaries, real Backend↔Agent Server smoke, and PAIR learning Gate B. |

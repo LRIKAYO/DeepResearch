@@ -5,8 +5,10 @@ import React, {
   useState,
   useEffect,
 } from "react";
+
 import { useStream } from "@langchain/langgraph-sdk/react";
 import { type Message } from "@langchain/langgraph-sdk";
+
 import {
   uiMessageReducer,
   isUIMessage,
@@ -14,7 +16,9 @@ import {
   type UIMessage,
   type RemoveUIMessage,
 } from "@langchain/langgraph-sdk/react-ui";
+
 import { useQueryState } from "nuqs";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LangGraphLogoSVG } from "@/components/icons/langgraph";
@@ -22,11 +26,17 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ArrowRight } from "lucide-react";
 import { PasswordInput } from "@/components/ui/password-input";
+
 import { getApiKey } from "@/lib/api-key";
-import { useThreads } from "./Thread";
+
+import { useProjectSession } from "./ProjectSession";
+
 import { toast } from "sonner";
 
-export type StateType = { messages: Message[]; ui?: UIMessage[] };
+export type StateType = {
+  messages: Message[];
+  ui?: UIMessage[];
+};
 
 const useTypedStream = useStream<
   StateType,
@@ -36,16 +46,14 @@ const useTypedStream = useStream<
       ui?: (UIMessage | RemoveUIMessage)[] | UIMessage | RemoveUIMessage;
       context?: Record<string, unknown>;
     };
+
     CustomEventType: UIMessage | RemoveUIMessage;
   }
 >;
 
 type StreamContextType = ReturnType<typeof useTypedStream>;
-const StreamContext = createContext<StreamContextType | undefined>(undefined);
 
-async function sleep(ms = 4000) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+const StreamContext = createContext<StreamContextType | undefined>(undefined);
 
 async function checkGraphStatus(
   apiUrl: string,
@@ -54,8 +62,14 @@ async function checkGraphStatus(
 ): Promise<boolean> {
   try {
     const headers = new Headers();
-    if (apiKey) headers.set("X-Api-Key", apiKey);
-    if (authScheme) headers.set("X-Auth-Scheme", authScheme);
+
+    if (apiKey) {
+      headers.set("X-Api-Key", apiKey);
+    }
+
+    if (authScheme) {
+      headers.set("X-Auth-Scheme", authScheme);
+    }
 
     const res = await fetch(`${apiUrl}/info`, {
       headers,
@@ -64,6 +78,7 @@ async function checkGraphStatus(
     return res.ok;
   } catch (e) {
     console.error(e);
+
     return false;
   }
 }
@@ -81,33 +96,37 @@ const StreamSession = ({
   assistantId: string;
   authScheme?: string;
 }) => {
-  const [threadId, setThreadId] = useQueryState("threadId");
-  const { getThreads, setThreads } = useThreads();
+  const { selectedSession } = useProjectSession();
+  const threadId = selectedSession?.thread_id ?? null;
+
   const streamValue = useTypedStream({
     apiUrl,
+
     apiKey: apiKey ?? undefined,
+
     assistantId,
+
     ...(authScheme && {
       defaultHeaders: {
         "X-Auth-Scheme": authScheme,
       },
     }),
-    threadId: threadId ?? null,
+
+    threadId,
     fetchStateHistory: true,
     reconnectOnMount: true,
+
     onCustomEvent: (event, options) => {
       if (isUIMessage(event) || isRemoveUIMessage(event)) {
         options.mutate((prev) => {
           const ui = uiMessageReducer(prev.ui ?? [], event);
-          return { ...prev, ui };
+
+          return {
+            ...prev,
+            ui,
+          };
         });
       }
-    },
-    onThreadId: (id) => {
-      setThreadId(id);
-      // Refetch threads list when thread ID changes.
-      // Wait for some seconds before fetching so we're able to get the new thread that was created.
-      sleep().then(() => getThreads().then(setThreads).catch(console.error));
     },
   });
 
@@ -121,8 +140,11 @@ const StreamSession = ({
               your API key is correctly set (if connecting to a deployed graph).
             </p>
           ),
+
           duration: 10000,
+
           richColors: true,
+
           closeButton: true,
         });
       }
@@ -136,53 +158,59 @@ const StreamSession = ({
   );
 };
 
-// Default values for the form
+// Default values
+
 const DEFAULT_API_URL = "http://127.0.0.1:2024";
+
 const DEFAULT_ASSISTANT_ID = "researchflow";
+
 const AGENT_BUILDER_AUTH_SCHEME = "langsmith-api-key";
 
-export const StreamProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
-  // Get environment variables
-  const envApiUrl: string | undefined = process.env.NEXT_PUBLIC_API_URL;
-  const envAssistantId: string | undefined =
-    process.env.NEXT_PUBLIC_ASSISTANT_ID;
-  const envAuthScheme: string | undefined = process.env.NEXT_PUBLIC_AUTH_SCHEME;
+export const StreamProvider: React.FC<{
+  children: ReactNode;
+}> = ({ children }) => {
+  const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  // Use URL params with env var fallbacks
+  const envAssistantId = process.env.NEXT_PUBLIC_ASSISTANT_ID;
+
+  const envAuthScheme = process.env.NEXT_PUBLIC_AUTH_SCHEME;
+
   const [apiUrl, setApiUrl] = useQueryState("apiUrl", {
     defaultValue: envApiUrl || "",
   });
+
   const [assistantId, setAssistantId] = useQueryState("assistantId", {
     defaultValue: envAssistantId || "",
   });
+
   const [authScheme, setAuthScheme] = useQueryState("authScheme", {
     defaultValue: envAuthScheme || "",
   });
+
   const [isAgentBuilder, setIsAgentBuilder] = useState(
     () =>
       (authScheme || envAuthScheme || "").toLowerCase() ===
       AGENT_BUILDER_AUTH_SCHEME,
   );
 
-  // For API key, use localStorage with env var fallback
   const [apiKey, _setApiKey] = useState(() => {
     const storedKey = getApiKey();
+
     return storedKey || "";
   });
 
   const setApiKey = (key: string) => {
     window.localStorage.setItem("lg:chat:apiKey", key);
+
     _setApiKey(key);
   };
 
-  // Determine final values to use, prioritizing URL params then env vars
   const finalApiUrl = apiUrl || envApiUrl;
+
   const finalAssistantId = assistantId || envAssistantId;
+
   const finalAuthScheme = authScheme || envAuthScheme || "";
 
-  // Show the form if we: don't have an API URL, or don't have an assistant ID
   if (!finalApiUrl || !finalAssistantId) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center p-4">
@@ -190,28 +218,38 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
           <div className="mt-14 flex flex-col gap-2 border-b p-6">
             <div className="flex flex-col items-start gap-2">
               <LangGraphLogoSVG className="h-7" />
+
               <h1 className="text-xl font-semibold tracking-tight">
                 ResearchFlow
               </h1>
             </div>
-            <p className="text-muted-foreground">
+
+            <p className="text-muted-foreground text-sm">
               Welcome to ResearchFlow! Before you get started, you need to enter
               the URL of the deployment and the assistant / graph ID.
             </p>
           </div>
+
           <form
             onSubmit={(e) => {
               e.preventDefault();
 
               const form = e.target as HTMLFormElement;
+
               const formData = new FormData(form);
+
               const apiUrl = formData.get("apiUrl") as string;
+
               const assistantId = formData.get("assistantId") as string;
+
               const apiKey = formData.get("apiKey") as string;
 
               setApiUrl(apiUrl);
+
               setApiKey(apiKey);
+
               setAssistantId(assistantId);
+
               setAuthScheme(isAgentBuilder ? AGENT_BUILDER_AUTH_SCHEME : "");
 
               form.reset();
@@ -315,12 +353,13 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
   );
 };
 
-// Create a custom hook to use the context
 export const useStreamContext = (): StreamContextType => {
   const context = useContext(StreamContext);
+
   if (context === undefined) {
     throw new Error("useStreamContext must be used within a StreamProvider");
   }
+
   return context;
 };
 

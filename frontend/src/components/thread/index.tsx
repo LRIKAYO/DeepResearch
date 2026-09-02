@@ -45,7 +45,7 @@ import {
   ArtifactTitle,
   useArtifactContext,
 } from "./artifact";
-
+import { useProjectSession } from "@/providers/ProjectSession";
 function StickyToBottomContent(props: {
   content: ReactNode;
   footer?: ReactNode;
@@ -114,8 +114,15 @@ function OpenGitHubRepo() {
 export function Thread() {
   const [artifactContext, setArtifactContext] = useArtifactContext();
   const [artifactOpen, closeArtifact] = useArtifactOpen();
+  const {
+    canSubmit,
+    createResearchSession,
+    creatingSession,
+    selectResearchSession,
+    selectedProject,
+    selectedSession,
+  } = useProjectSession();
 
-  const [threadId, _setThreadId] = useQueryState("threadId");
   const [chatHistoryOpen, setChatHistoryOpen] = useQueryState(
     "chatHistoryOpen",
     parseAsBoolean.withDefault(false),
@@ -144,13 +151,10 @@ export function Thread() {
 
   const lastError = useRef<string | undefined>(undefined);
 
-  const setThreadId = (id: string | null) => {
-    _setThreadId(id);
-
-    // close artifact and reset artifact context
+  useEffect(() => {
     closeArtifact();
     setArtifactContext({});
-  };
+  }, [closeArtifact, selectedSession?.research_session_id, setArtifactContext]);
 
   useEffect(() => {
     if (!stream.error) {
@@ -196,7 +200,11 @@ export function Thread() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if ((input.trim().length === 0 && contentBlocks.length === 0) || isLoading)
+    if (
+      !canSubmit ||
+      isLoading ||
+      (input.trim().length === 0 && contentBlocks.length === 0)
+    )
       return;
     setFirstTokenReceived(false);
 
@@ -239,6 +247,7 @@ export function Thread() {
   const handleRegenerate = (
     parentCheckpoint: Checkpoint | null | undefined,
   ) => {
+    if (!canSubmit) return;
     // Do this so the loading state is correct
     prevMessageLength.current = prevMessageLength.current - 1;
     setFirstTokenReceived(false);
@@ -250,7 +259,8 @@ export function Thread() {
     });
   };
 
-  const chatStarted = !!threadId || !!messages.length;
+  const chatStarted = !!selectedSession;
+
   const hasNoAIOrToolMessages = !messages.find(
     (m) => m.type === "ai" || m.type === "tool",
   );
@@ -350,7 +360,7 @@ export function Thread() {
                 </div>
                 <motion.button
                   className="flex cursor-pointer items-center gap-2"
-                  onClick={() => setThreadId(null)}
+                  onClick={() => void selectResearchSession(null)}
                   animate={{
                     marginLeft: !chatHistoryOpen ? 48 : 0,
                   }}
@@ -377,9 +387,12 @@ export function Thread() {
                 <TooltipIconButton
                   size="lg"
                   className="p-4"
-                  tooltip="New thread"
+                  tooltip="New research"
                   variant="ghost"
-                  onClick={() => setThreadId(null)}
+                  disabled={!selectedProject || creatingSession}
+                  onClick={() => {
+                    void createResearchSession();
+                  }}
                 >
                   <SquarePen className="size-5" />
                 </TooltipIconButton>
@@ -464,6 +477,7 @@ export function Thread() {
                       />
                       <textarea
                         value={input}
+                        disabled={!canSubmit}
                         onChange={(e) => setInput(e.target.value)}
                         onPaste={handlePaste}
                         onKeyDown={(e) => {
@@ -479,7 +493,11 @@ export function Thread() {
                             form?.requestSubmit();
                           }
                         }}
-                        placeholder="Type your message..."
+                        placeholder={
+                          canSubmit
+                            ? "Type your message..."
+                            : "Select a research session to begin."
+                        }
                         className="field-sizing-content resize-none border-none bg-transparent p-3.5 pb-0 shadow-none ring-0 outline-none focus:ring-0 focus:outline-none"
                       />
 
@@ -511,6 +529,7 @@ export function Thread() {
                         <input
                           id="file-input"
                           type="file"
+                          disabled={!canSubmit}
                           onChange={handleFileUpload}
                           multiple
                           accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
@@ -530,6 +549,7 @@ export function Thread() {
                             type="submit"
                             className="ml-auto shadow-md transition-all"
                             disabled={
+                              !canSubmit ||
                               isLoading ||
                               (!input.trim() && contentBlocks.length === 0)
                             }

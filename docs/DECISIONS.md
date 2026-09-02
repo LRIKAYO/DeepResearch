@@ -156,7 +156,8 @@ real failure evidence requires them.
 ## D-011 — Product navigation selects sessions; `thread_id` is derived
 
 **Decision status:** Accepted in P5-000  
-**Implementation status:** Planned for P5-001 and P5-002
+**Implementation status:** Implemented by P5-001/P5-002 and verified by
+`QUALITY-SCAN-003`
 
 The Frontend's canonical conversation selection uses the product-owned
 `projectId` and optional `researchSessionId`. After reading that session from

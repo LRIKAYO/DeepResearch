@@ -11,7 +11,8 @@ rendering. It does not define ResearchFlow Research Progress or Evidence events.
 
 ## Local Setup
 
-Start the ResearchFlow LangGraph Server at `http://127.0.0.1:2024`, then:
+Start PostgreSQL, the ResearchFlow Product Backend at `http://127.0.0.1:8000`,
+and the ResearchFlow LangGraph Server at `http://127.0.0.1:2024`, then:
 
 Install dependencies:
 
@@ -32,8 +33,14 @@ The local connection Contract is:
 ```text
 NEXT_PUBLIC_API_URL=http://127.0.0.1:2024
 NEXT_PUBLIC_ASSISTANT_ID=researchflow
-threadId=<created and associated by LangGraph SDK/Server>
+NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8000
+?projectId=<Product Project UUID>&researchSessionId=<Product Session UUID>
 ```
+
+`thread_id` is read from the selected Research Session and supplied internally
+to `useStream`. It is not a URL or product-navigation value. The browser calls
+Product Backend directly for Project and Session control-plane requests; Agent
+messages and streams still go directly to LangGraph Agent Server.
 
 ## Basic Integration Smoke
 
@@ -55,14 +62,19 @@ pnpm dev
 Open `http://127.0.0.1:3000` and verify:
 
 1. The setup form is skipped and no LangGraph connection error is shown.
-2. Submit a request that requires `web_search`.
-3. The first submit adds a `threadId` query parameter to the URL.
-4. The standard Tool call/result trace and final Report render in the thread.
-5. While a run is still active, refresh the page with its `threadId` in the
-   URL. Confirm the SDK rejoins the run and renders the final Report.
-6. Refresh again after the run reaches a terminal status. Confirm the same
-   server-backed history returns and the loading indicator does not remain
+2. Create a Project, then select **New research** once.
+3. Confirm the URL contains `projectId` and `researchSessionId`, never a
+   standalone `threadId`, and message submission remains disabled until the
+   Session is created.
+4. Submit a request that requires `web_search`; the standard Tool call/result
+   trace and final Report render in the selected Session.
+5. While a run is active, refresh the page. Confirm the Product Backend first
+   restores the Session mapping, then the SDK rejoins the Agent stream.
+6. Refresh after the run reaches a terminal status. Confirm the same
+   checkpointed conversation returns and the loading indicator does not remain
    active.
+7. Switch to another Project and confirm the incompatible Session clears; the
+   browser must not request LangGraph `threads.search`.
 
 This smoke only validates the existing `messages`/thread/stream Contract. Do not
 add Research Progress or Evidence rendering until P2-003 defines its event,
@@ -92,6 +104,7 @@ You can bypass the initial setup form by setting the following environment varia
 NEXT_PUBLIC_API_URL=http://127.0.0.1:2024
 NEXT_PUBLIC_ASSISTANT_ID=researchflow
 NEXT_PUBLIC_AUTH_SCHEME=
+NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8000
 ```
 
 > [!NOTE]

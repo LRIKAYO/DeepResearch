@@ -1,6 +1,7 @@
 # Phase 5 — Project-scoped Frontend Adoption
 
-**Status:** READY — P5-000 complete; P5-001 is the next executable task.
+**Status:** DONE — P5-000, P5-001, and P5-002 are complete; the Phase exit
+criteria were verified by `QUALITY-SCAN-003`.
 
 > Engineering goal: replace global LangGraph thread discovery with the
 > implemented Project/Research Session control plane while preserving direct
@@ -11,17 +12,17 @@
 
 ## Current Repository Facts
 
-- Phase 4 is DONE and the current Quality baseline is PASS WITH FINDINGS with
-  no Blocker, High, or Medium finding.
+- Phase 5 is implemented and the current `QUALITY-SCAN-003` baseline is PASS
+  WITH FINDINGS with no Blocker, High, or Medium finding.
 - Product Backend implements Project create/read/list and Project-scoped
   Research Session create/read/list.
 - Creating a Research Session provisions one LangGraph thread and persists the
   immutable association in PostgreSQL.
-- The Frontend still discovers up to 100 global LangGraph threads, stores
-  `threadId` directly in the URL, and allows `useStream` to create a thread when
-  none is selected.
-- The browser has no configured Product Backend base URL and Backend has no
-  CORS policy, so a direct local browser call is not yet an approved path.
+- The Frontend discovers Projects and Research Sessions through Product Backend,
+  uses `projectId` / `researchSessionId` navigation, and derives `thread_id`
+  from the selected Session.
+- Direct local browser calls use `NEXT_PUBLIC_BACKEND_URL` and the Backend's
+  exact-origin CORS allow-list.
 - The current UI already renders messages, tool calls, interrupts, completed
   checkpoint state, and resumable streams; those capabilities should remain
   intact.
@@ -138,7 +139,7 @@ No personal code contribution or mastery claim is required.
 
 ## P5-001 — Browser-to-Backend Reachability
 
-**Status:** READY
+**Status:** DONE — see `docs/tasks/P5-001.md`.
 
 **Goal**
 
@@ -206,7 +207,8 @@ where local allowed origins are configured. AI may implement the complete task.
 
 ## P5-002 — Project-scoped Frontend Session Adoption
 
-**Status:** BLOCKED until P5-001 is DONE
+**Status:** DONE — Gate A, Product/session control-plane smoke, direct Agent
+report-stream smoke, and `QUALITY-SCAN-003` review passed.
 
 **Goal**
 
@@ -313,6 +315,6 @@ the user is not required to handwrite it.
 
 ## Batch Stop
 
-Stop after P5-002 and Quality review. Inspect the real browser-to-control-plane
-and browser-to-data-plane behavior before planning Report persistence,
-Knowledge/RAG, or another Backend batch.
+The batch stop was reached after P5-002 and `QUALITY-SCAN-003`. The real
+browser-to-control-plane and browser-to-data-plane behavior has been inspected;
+Phase 6 planning may begin from the resulting repository baseline.

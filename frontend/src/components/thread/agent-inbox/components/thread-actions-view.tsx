@@ -10,6 +10,7 @@ import { useQueryState } from "nuqs";
 import { constructOpenInStudioURL, buildDecisionFromState } from "../utils";
 import { Decision, HITLRequest, DecisionType, ActionRequest } from "../types";
 import { useStreamContext } from "@/providers/Stream";
+import { useProjectSession } from "@/providers/ProjectSession";
 
 interface ThreadActionsViewProps {
   interrupt: Interrupt<HITLRequest>;
@@ -87,7 +88,8 @@ export function ThreadActionsView({
   showState,
 }: ThreadActionsViewProps) {
   const stream = useStreamContext();
-  const [threadId] = useQueryState("threadId");
+  const { selectedSession } = useProjectSession();
+  const threadId = selectedSession?.thread_id;
   const [apiUrl] = useQueryState("apiUrl");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [addressedActions, setAddressedActions] = useState<

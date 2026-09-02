@@ -23,11 +23,16 @@ $env:RESEARCHFLOW_DATABASE_URL = "postgresql+psycopg://researchflow:researchflow
 $env:RESEARCHFLOW_TEST_DATABASE_URL = "postgresql+psycopg://researchflow:researchflow_dev_only@127.0.0.1:5432/researchflow_test"
 $env:RESEARCHFLOW_LANGGRAPH_URL = "http://127.0.0.1:2024"
 $env:RESEARCHFLOW_GRAPH_ID = "researchflow"
+$env:RESEARCHFLOW_CORS_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000"
 ```
 
 These set process-local values and do not create or overwrite a `.env` file.
 The runtime URL targets `researchflow`; tests use `researchflow_test` and refuse
 to truncate any other database.
+
+`RESEARCHFLOW_CORS_ORIGINS` is an optional comma-separated allow-list for
+browser Product Backend requests. Each value must be an exact origin; leaving
+it unset adds no CORS middleware. Credentials are not enabled.
 
 ## Migrate and test
 

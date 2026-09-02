@@ -386,7 +386,8 @@ service mesh, or settings framework is required.
 **Decision:** D-011  
 **Scope:** P5-000  
 **Decision status:** Accepted  
-**Implementation status:** Planned for P5-001 and P5-002
+**Implementation status:** Implemented by P5-001/P5-002 and verified by
+`QUALITY-SCAN-003`
 
 ### Canonical Selection Flow
 
