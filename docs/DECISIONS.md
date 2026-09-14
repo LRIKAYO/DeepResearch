@@ -383,7 +383,7 @@ Research Progress events, or a Product Backend stream proxy.
 **Decision status:** Accepted by 00-Architect on 2026-09-13
 
 **Implementation status:** Implemented and validated by P7-003B and P7-003C on
-2026-09-14; Architect phase-exit review remains required
+2026-09-14; Architect accepted the Phase 7 exit after commit `3ba608b`
 
 ResearchFlow selects P7-003 Option A1. 01-Agent projects the already
 validated, ordered Evidence list into a separate ordered `citations` field in
@@ -420,3 +420,24 @@ a baseline without a pass/fail threshold. MRR, NDCG, Precision@K, citation corre
 LangSmith, and retrieval-algorithm changes require later evidence and separate
 tasks. P7-003B and P7-003C are separated because Agent output ownership and
 Quality ground-truth ownership are independent boundaries.
+
+## D-018 — Phase 7 closes at the local scoped research boundary
+
+**Decision status:** Accepted by 00-Architect on 2026-09-14
+
+**Implementation status:** Phase 7 DONE at commit `3ba608b`
+
+Phase 7 closes with the scoped Knowledge Tool, deterministic Web/Knowledge
+Graph execution, native Frontend Run-context streaming, unified Evidence,
+run-local Citation output, and the first exact-vector Recall@5 baseline. No
+additional Citation UI, parser, Saved Web Source, Report persistence,
+authentication system, observability platform, or retrieval algorithm is a
+Phase 7 exit condition.
+
+The next release target is the local/test-only browser completion slice:
+Markdown Knowledge upload/list and actionable errors, latest-run Sources
+rendering from `citations`, and one browser workflow covering upload through
+Report/Sources plus isolation/reload/failure behavior. This direction creates
+no production security claim and activates no implementation task by itself.
+Comprehensive multi-format, persistence/replay, claim-level citation, deeper
+research orchestration, and public deployment remain separately decided work.

@@ -1,7 +1,7 @@
 # P7 Exit and Product-Completion Decision Brief
 
-**Status:** REVIEW — engineering and architecture checks passed; Phase 7 exit
-is pending the version-control delivery gate below.
+**Status:** DONE — 00-Architect selected P7-EXIT A on 2026-09-14 after commit
+`3ba608b` satisfied the final version-control delivery gate.
 
 ## Why this decision is required
 
@@ -19,36 +19,33 @@ This brief does not activate code work or silently expand module ownership.
 - **P7 implementation:** ACCEPTED. No blocking Citation, Agent/Knowledge,
   streaming, retrieval-evaluation, API, data-model, or module-ownership defect
   was found.
-- **P7-EXIT:** REVIEW, not DONE. The current Git `HEAD` is still the Phase 5
-  commit, while the Phase 6/7 implementation, migration, tests, decisions,
-  Citation code, evaluation fixture, and baseline artifact remain modified or
-  untracked. The P7-003C fixture is therefore not yet source-controlled in the
-  literal version-control sense required by its Contract.
-- **Decision after the gate:** select Option A and close Phase 7. No additional
-  product feature is required as a Phase 7 exit condition.
-- **Next-release direction:** Option A remains recommended as a local/test-only
-  browser completion slice, but this review does not activate its tasks.
+- **P7-EXIT:** Option A accepted; Phase 7 is closed. No additional product
+  feature is a Phase 7 exit condition.
+- **Delivery gate:** satisfied by commit `3ba608b phase6_7_finished`. The
+  intended Phase 6/7 implementation, migration, tests, Contracts, task records,
+  logical fixture, and baseline artifact are tracked; the worktree was clean at
+  inspection.
+- **Next-release direction:** Option A accepted as a local/test-only browser
+  completion slice. This review records the target but does not activate or
+  implement its tasks.
 
-### Required exit action
+### Satisfied exit action
 
-Create a reviewed repository commit (or reviewed commits) containing the
-intended Phase 6/7 code, migration, tests, Contracts, task records, logical
-fixture, and credential-safe baseline artifact. Explicitly exclude the local
-`.langgraph-dev.err.log` and `.langgraph-dev.out.log` files; they are currently
-untracked and not covered by `.gitignore`. After the commit, confirm that:
+Commit `3ba608b` contains the intended Phase 6/7 code, migration, tests,
+Contracts, task records, logical fixture, and credential-safe baseline
+artifact. Final inspection confirmed that:
 
 1. the fixture and baseline artifact are tracked and their recorded SHA-256
    still matches;
 2. no credential, local environment file, provider response, generated UUID,
    vector, build output, or runtime log entered the commit;
-3. `git status` contains no unexplained Phase 6/7 deliverable;
+3. `git status` was clean and contained no unexplained Phase 6/7 deliverable;
 4. the current `146 passed` regression and documentation-only checks still
    describe the committed source.
 
-This is a delivery-integrity gate, not a request to change working production
-behavior. 00-Architect may mark this review DONE immediately after inspecting
-that commit; another feature implementation or full architecture review is not
-required.
+The local `.langgraph-dev.err.log` and `.langgraph-dev.out.log` files did not
+enter the commit, and `/.langgraph-dev*.log` is now ignored. No feature change
+was required to satisfy this delivery-integrity gate.
 
 ### Engineering Exit Criteria
 
@@ -57,8 +54,8 @@ required.
   Project A/B isolation: passed from the recorded real browser matrix.
 - Run-local Citation projection and matching Report/Citation checkpoint
   behavior: passed by inspection and independent regression.
-- Versioned logical retrieval fixture and Recall@5 harness: implementation and
-  artifact semantics passed; repository versioning remains pending the commit.
+- Versioned logical retrieval fixture and Recall@5 harness: implementation,
+  artifact semantics, SHA match, and repository versioning passed.
 - Python regression, dependency check, compilation, development/test migration
   drift, Frontend type check/lint/build: passed in Architect review.
 
@@ -176,14 +173,59 @@ closure as the next bounded batch, then decide Saved Web/multi-format and public
 deployment independently. BM25, RRF, and reranking should remain evidence-led:
 the first baseline does not justify adding them.
 
-## Architect response template
+## Architect Decision
 
 ```text
-P7-EXIT: A / B
-Additional exit condition if B: ...
-
-NEXT-RELEASE: A / B
-Security claim: local/test only / production
-Activated task(s): ...
-Notes: ...
+P7-EXIT: A
+NEXT-RELEASE: A
+Security claim: local/test only
+Activated task(s): none in this review
 ```
+
+## P7 Exit Review Completion Report
+
+**Status:** DONE
+
+**Changed:**
+
+- Accepted P7-EXIT A after the engineering, architecture, and repository
+  delivery gates passed.
+- Accepted the local/test browser-completion direction without activating its
+  implementation tasks.
+
+**Created:**
+
+- None.
+
+**Key Decisions:**
+
+- Phase 7 ends at the implemented scoped research, Citation, and Recall@5
+  boundary; deferred product features are not retroactive exit requirements.
+- Commit `3ba608b` is the reviewed Phase 6/7 implementation baseline.
+
+**Validation:**
+
+- Commit contents, clean worktree, ignore rules, credential/runtime-artifact
+  exclusions, fixture tracking, and fixture/result SHA match passed.
+- The prior Architect run passed 146 Python tests, dependency/compile checks,
+  both Alembic drift checks, and Frontend type/lint/build gates.
+
+**What the user should understand:**
+
+- Phase completion proves this bounded local engineering slice. It does not
+  prove production security, claim-level citation correctness, answer quality,
+  or mastery of the delegated P7-003B/C learning goals.
+
+**Architecture Impact:**
+
+- D-018 records the Phase 7 boundary and next local/test release direction.
+
+**Open Questions:**
+
+- The next batch still needs its own rolling task plan. Comprehensive release
+  capabilities remain separately decided work.
+
+**Recommended Next Step:**
+
+- Commit this documentation-only closure, then plan only the first 2–4 tasks of
+  the local browser-completion batch.

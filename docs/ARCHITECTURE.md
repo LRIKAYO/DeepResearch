@@ -654,7 +654,7 @@ constraining the Frontend to a scalar mode.
 **Decision status:** Accepted
 
 **Implementation status:** Implemented and validated by P7-003B and P7-003C;
-Phase 7 exit remains subject to the D-017 Architect evidence review.
+Phase 7 exit accepted after commit `3ba608b`.
 
 ### Citation Projection
 
