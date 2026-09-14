@@ -6,6 +6,8 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from . import database
+from .documents import router as documents_router
+from .knowledge_search import router as knowledge_router
 from .projects import router as projects_router
 from .research_sessions import router as research_sessions_router
 
@@ -22,11 +24,13 @@ def create_app() -> FastAPI:
             CORSMiddleware,
             allow_origins=cors_origins,
             allow_methods=["GET", "POST"],
-            allow_headers=["Content-Type"],
+            allow_headers=["Content-Type", "X-ResearchFlow-User-Id"],
         )
 
     app.include_router(projects_router)
     app.include_router(research_sessions_router)
+    app.include_router(documents_router)
+    app.include_router(knowledge_router)
 
     @app.get("/health")
     def health() -> dict[str, str]:

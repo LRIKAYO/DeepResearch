@@ -4,6 +4,8 @@ import React, {
   ReactNode,
   useState,
   useEffect,
+  useMemo,
+  useCallback,
 } from "react";
 
 import { useStream } from "@langchain/langgraph-sdk/react";
@@ -28,6 +30,7 @@ import { ArrowRight } from "lucide-react";
 import { PasswordInput } from "@/components/ui/password-input";
 
 import { getApiKey } from "@/lib/api-key";
+import { researchFlowUserId } from "@/lib/backend";
 
 import { useProjectSession } from "./ProjectSession";
 
@@ -36,6 +39,13 @@ import { toast } from "sonner";
 export type StateType = {
   messages: Message[];
   ui?: UIMessage[];
+};
+
+type AgentRunContext = {
+  knowledge_scope: {
+    user_id: string;
+    project_id: string;
+  };
 };
 
 const useTypedStream = useStream<
@@ -48,6 +58,7 @@ const useTypedStream = useStream<
     };
 
     CustomEventType: UIMessage | RemoveUIMessage;
+    ConfigurableType: AgentRunContext;
   }
 >;
 
@@ -96,7 +107,7 @@ const StreamSession = ({
   assistantId: string;
   authScheme?: string;
 }) => {
-  const { selectedSession } = useProjectSession();
+  const { selectedProject, selectedSession } = useProjectSession();
   const threadId = selectedSession?.thread_id ?? null;
 
   const streamValue = useTypedStream({
@@ -130,6 +141,35 @@ const StreamSession = ({
     },
   });
 
+  const submit = useCallback<StreamContextType["submit"]>(
+    (values, options) => {
+      if (!selectedProject) {
+        return Promise.reject(new Error("A selected Project is required."));
+      }
+      return streamValue.submit(values, {
+        ...options,
+        context: {
+          knowledge_scope: {
+            user_id: researchFlowUserId(),
+            project_id: selectedProject.project_id,
+          },
+        },
+      });
+    },
+    [selectedProject, streamValue],
+  );
+
+  const scopedStreamValue = useMemo(
+    () =>
+      Object.create(streamValue, {
+        submit: {
+          value: submit,
+          enumerable: true,
+        },
+      }) as StreamContextType,
+    [streamValue, submit],
+  );
+
   useEffect(() => {
     checkGraphStatus(apiUrl, apiKey, authScheme).then((ok) => {
       if (!ok) {
@@ -152,7 +192,7 @@ const StreamSession = ({
   }, [apiKey, apiUrl, authScheme]);
 
   return (
-    <StreamContext.Provider value={streamValue}>
+    <StreamContext.Provider value={scopedStreamValue}>
       {children}
     </StreamContext.Provider>
   );

@@ -34,6 +34,7 @@ The local connection Contract is:
 NEXT_PUBLIC_API_URL=http://127.0.0.1:2024
 NEXT_PUBLIC_ASSISTANT_ID=researchflow
 NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8000
+NEXT_PUBLIC_RESEARCHFLOW_USER_ID=<local opaque UUID>
 ?projectId=<Product Project UUID>&researchSessionId=<Product Session UUID>
 ```
 
@@ -41,6 +42,28 @@ NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8000
 to `useStream`. It is not a URL or product-navigation value. The browser calls
 Product Backend directly for Project and Session control-plane requests; Agent
 messages and streams still go directly to LangGraph Agent Server.
+
+Every Frontend `submit` is wrapped centrally and sends the following as SDK Run
+context, separate from Graph input and checkpointed State:
+
+```json
+{
+  "knowledge_scope": {
+    "user_id": "<NEXT_PUBLIC_RESEARCHFLOW_USER_ID>",
+    "project_id": "<selected Product Project UUID>"
+  }
+}
+```
+
+This local carrier lets the Agent construct its scoped Knowledge Tool, but it
+is not authorization. Product Backend still applies the user-and-Project
+ownership predicate, and public deployment remains blocked on trusted identity
+injection.
+
+`NEXT_PUBLIC_RESEARCHFLOW_USER_ID` is a local-development transport for the
+trusted identity header. Because it is exposed to the browser, it is not an
+authentication mechanism and must be replaced by a trusted upstream identity
+layer before public deployment.
 
 ## Basic Integration Smoke
 
@@ -75,6 +98,11 @@ Open `http://127.0.0.1:3000` and verify:
    active.
 7. Switch to another Project and confirm the incompatible Session clears; the
    browser must not request LangGraph `threads.search`.
+8. Upload distinct Markdown evidence to two Projects through Product Backend,
+   ask the Agent to use `knowledge_search` in each selected Project, and confirm
+   each report contains only that Project's evidence. In browser network tools,
+   confirm `knowledge_scope` is in the run request's top-level `context`, never
+   inside `input` or thread metadata.
 
 This smoke only validates the existing `messages`/thread/stream Contract. Do not
 add Research Progress or Evidence rendering until P2-003 defines its event,
@@ -105,6 +133,7 @@ NEXT_PUBLIC_API_URL=http://127.0.0.1:2024
 NEXT_PUBLIC_ASSISTANT_ID=researchflow
 NEXT_PUBLIC_AUTH_SCHEME=
 NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8000
+NEXT_PUBLIC_RESEARCHFLOW_USER_ID=<local opaque UUID>
 ```
 
 > [!NOTE]

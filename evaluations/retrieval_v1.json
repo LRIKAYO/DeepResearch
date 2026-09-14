@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "dataset_version": "retrieval-v1",
+  "label_review": "synthetic_ai_reviewed",
+  "label_note": "Synthetic source passages and relevance labels were reviewed by AI and frozen before the first ranking run. They have not been human-reviewed. User delegated the remaining implementation on 2026-09-14.",
+  "projects": [
+    {
+      "project_key": "research-centre",
+      "documents": [
+        {
+          "document_key": "operations",
+          "filename": "operations.md",
+          "content": "# Spectrometer calibration\n\nCalibrate the spectrometer every Monday at 09:00 before collecting samples. Use the dark reference plate for this weekly calibration. The microscope has a separate maintenance schedule.\n\n# Imaging room reservations\n\nAll imaging room reservations use Coordinated Universal Time (UTC), including bookings made by visiting researchers. Convert local appointment times into UTC before entering a reservation.\n\n# Microscope maintenance\n\nClean the microscope lenses on the first Friday of each month using the approved optics cloth. Lens cleaning does not replace spectrometer calibration.\n\n# Building fire drill\n\nA building fire drill takes place once per quarter. Staff assemble in the north courtyard after leaving through a marked emergency exit.\n\n# Visitor access\n\nVisitors collect a temporary badge from reception and return it before leaving. A host must accompany each visitor inside equipment rooms."
+        },
+        {
+          "document_key": "records",
+          "filename": "records.md",
+          "content": "# Local research archive backup\n\nA local copy of the research archive is created every day at 18:00 UTC. This daily backup is stored on the centre's backup server and contains the archive's research files.\n\n# Remote research archive backup\n\nA remote copy of the research archive is created every day at 19:00 UTC. This daily backup is sent to the off-site storage facility and contains the archive's research files.\n\n# Environmental sensor snapshots\n\nRoom temperature sensor readings are captured hourly and kept on the local monitoring server for seven days. These environmental snapshots do not contain research archive files and are not archive backups.\n\n# Equipment returns\n\nBorrowed portable recorders must be returned to the equipment desk by 16:00 on Friday. The desk checks batteries and records damage before accepting a return.\n\n# Meeting note filenames\n\nName meeting notes using the meeting date followed by the project name. Store approved notes in the shared meeting folder and retain the original author field."
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "archive-backup-schedule",
+      "project_key": "research-centre",
+      "query": "How often and at what times are the local and remote copies of the research archive created?",
+      "relevant_passages": [
+        {"document_key": "records", "chunk_index": 0},
+        {"document_key": "records", "chunk_index": 1}
+      ],
+      "rationale": "Both archive backup schedules are required. Environmental sensor snapshots are unrelated to copying the research archive."
+    },
+    {
+      "case_id": "reservation-timezone",
+      "project_key": "research-centre",
+      "query": "Which timezone must researchers use when reserving the imaging room?",
+      "relevant_passages": [
+        {"document_key": "operations", "chunk_index": 1}
+      ],
+      "rationale": "Only the reservations section specifies the timezone for imaging room bookings. Backup times do not establish the booking rule."
+    },
+    {
+      "case_id": "spectrometer-calibration",
+      "project_key": "research-centre",
+      "query": "When should the spectrometer be calibrated, and what reference is used?",
+      "relevant_passages": [
+        {"document_key": "operations", "chunk_index": 0}
+      ],
+      "rationale": "This section gives both the weekly calibration time and the dark reference plate. Microscope lens cleaning is a different procedure."
+    }
+  ]
+}

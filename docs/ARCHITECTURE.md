@@ -14,11 +14,14 @@ implemented system. It is not a target-state inventory.
 - `langgraph.json` registers the Agent graph as `researchflow` on LangGraph
   Agent Server.
 - The current Graph State contains `messages`, internal `research_query` and
-  provisional `evidence`, plus the final `report`. The Writer also appends the
-  Report as the final AI message.
-- The Frontend uses `@langchain/langgraph-sdk` 1.8.10 `useStream`, requests
-  `values`, enables `fetchStateHistory`, and sets `streamResumable: true` when
-  submitting.
+  validated JSON-safe `evidence`, plus the final `report` and run-local
+  `citations`. The Writer appends the Report as the final AI message and updates
+  that message, Report, and Citation list atomically.
+- The Frontend uses `@langchain/langgraph-sdk` 1.8.10 `useStream`, explicitly
+  requests `values`, enables `fetchStateHistory`, and sets
+  `streamResumable: true` when submitting. Consuming `stream.messages` adds
+  `messages-tuple`, while the registered `onCustomEvent` callback adds
+  `custom`; the SDK sends their de-duplicated multi-mode union.
 - `useStream` currently restores thread/checkpoint history, messages, and
   interrupts. Its `isLoading` value represents the current client stream, not
   durable execution status.
@@ -52,7 +55,7 @@ later turn can create another run under the same `thread_id`.
 | Messages and final Report after refresh | Latest checkpointed Thread State; Report is also exposed as the final AI message | Browser component state alone                                                      |
 | Unresolved interrupt                    | Latest checkpoint tasks/interrupts and resumable thread state                    | A historical interrupt event or a previously rendered card                         |
 | Live connection/loading presentation    | Current `useStream` instance                                                     | Server execution status after the browser disconnects                              |
-| Durable Evidence/Sources                | Not decided                                                                      | Current ToolMessage content and transient UI state                                 |
+| Product-persisted Evidence/Sources      | Not decided                                                                      | Current ToolMessage content and transient UI state                                 |
 
 For the installed SDK, Agent Server run statuses are:
 
@@ -79,7 +82,7 @@ reconstruct the latest user-visible result:
 - final `report`;
 - LangGraph interrupt state when interrupts are introduced.
 
-The current provisional `evidence` is internal graph working state. Its
+The current validated `evidence` is internal graph working state. Its
 presence in a checkpoint does not make it an approved Frontend or long-term
 product Contract.
 
@@ -201,6 +204,29 @@ exist.
 - [LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts)
 - [Join and rejoin streams](https://docs.langchain.com/oss/python/langchain/frontend/join-rejoin)
 - [LangGraph SDK `joinStream`](https://reference.langchain.com/javascript/langchain-langgraph-sdk/client/RunsClient/joinStream)
+
+### Streaming Protocol Compatibility
+
+**Decision:** D-016
+
+ResearchFlow preserves the native `useStream` multi-mode boundary rather than
+forking the Frontend SDK into a scalar-only transport. The required current
+mode set is `values`, `messages-tuple`, and `custom`; subgraph and resumable
+flags remain enabled. The accepted measured tuple is:
+
+```text
+@langchain/langgraph-sdk 1.8.10
+        ↕ runs/stream: [values, messages-tuple, custom]
+langgraph-api 0.13.0 / langgraph 1.2.11
+langgraph-cli[inmem] 0.4.31 / Python langgraph-sdk 0.4.3
+```
+
+The live Server OpenAPI accepts this array shape. A valid diagnostic payload
+passed schema validation, while an intentionally invalid mode produced `422`.
+Consequently, a browser `422` alone cannot be classified as a multi-mode
+incompatibility: the exact request and response detail must be retained before
+the version boundary changes. `BUG-P7-STREAM-001` owns that diagnosis and the
+pinning/regression work. Product Backend is not inserted into this stream path.
 
 ## Product Backend First Slice
 
@@ -447,5 +473,234 @@ would have no Product Backend association.
 ### Still Deferred
 
 Research Progress, Evidence/Sources UI, event replay, session title/status,
-session deletion, pagination, Auth, Report persistence, RAG, and any final
-product URL hierarchy remain outside this slice.
+session deletion, pagination, Product-managed password/login/token issuance,
+Report persistence, RAG, and any final product URL hierarchy remain outside
+this slice. D-014 later adds a trusted upstream user identity boundary.
+
+## Permanent Project Knowledge Boundary
+
+**Decision:** D-012
+
+**Scope:** P6-000
+
+**Decision status:** Accepted
+
+**Implementation status:** Implemented and user-validated by P6-002
+
+### Ownership and Meaning
+
+```text
+Upstream Authenticated User ID 1
+  └── 0..N Projects
+             └── 0..N Documents
+                        └── 1..N Chunks after a successful create
+```
+
+- Product Backend obtains `user_id` from the trusted identity dependency and
+  owns `document_id`, Project ownership enforcement, upload/API validation,
+  and the transaction outcome.
+- 02-Knowledge owns Markdown-to-Chunk transformation, embeddings, similarity
+  behavior, and Project-scoped retrieval.
+- PostgreSQL remains Product ownership authority. A Chunk derives Project and
+  User scope through its Document and Project; no session/thread/run identity
+  participates.
+- `KnowledgeHit` is a retrieval result. Agent `Evidence` remains a separate,
+  provisional graph working Contract until a later adapter is approved.
+
+### Atomic Ingestion Boundary
+
+```mermaid
+sequenceDiagram
+    participant C as Caller
+    participant BE as Product Backend
+    participant K as Knowledge
+    participant E as Embedding Provider
+    participant DB as PostgreSQL / pgvector
+
+    C->>BE: trusted user context + POST Project Markdown Document
+    BE->>DB: verify Project owner_user_id + project_id
+    BE->>BE: validate filename, media type, bytes, UTF-8, non-empty text
+    BE->>K: deterministic chunk(text)
+    K->>E: embed all chunks
+    E-->>K: vectors
+    BE->>DB: one transaction: Document + all Chunks/vectors
+    DB-->>BE: commit
+    BE-->>C: 201 Document metadata
+```
+
+The embedding call occurs before opening the write transaction. It creates no
+durable external resource requiring compensation. `201` means the Document is
+fully indexed. Any validation, chunking, embedding, or commit failure creates
+no Document/Chunk row. This is a bounded synchronous MVP, not a distributed
+transaction or asynchronous ingestion design.
+
+### Retrieval Boundary
+
+```mermaid
+sequenceDiagram
+    participant C as Caller
+    participant BE as Product Backend
+    participant K as Knowledge
+    participant E as Embedding Provider
+    participant DB as PostgreSQL / pgvector
+
+    C->>BE: trusted user context + POST /projects/{project_id}/knowledge/search
+    BE->>DB: verify Project owner_user_id + project_id
+    BE->>K: query + bounded limit
+    K->>E: embed query
+    K->>DB: Chunks join Documents join Projects; filter user_id + project_id
+    DB-->>K: ranked rows
+    K-->>BE: typed KnowledgeHit list
+    BE-->>C: ordered hits
+```
+
+User and Project filtering are part of the authoritative retrieval query.
+Frontend selection, path/body user IDs, and LangGraph metadata are not security
+or membership filters.
+
+### Contract Shapes
+
+- Document is a Product entity; its validated source text is stored internally
+  but is not returned by the first metadata APIs.
+- Chunk is an internal indexed record with stable `chunk_id`, `document_id`,
+  zero-based order, content, and one embedding vector.
+- `KnowledgeHit` contains `document_id`, `chunk_id`, filename, chunk content,
+  and a provisional higher-is-better diagnostic score. It is ordered output,
+  not a persisted Product entity or final Citation Schema.
+
+### Approved First Physical Baseline
+
+P6-001 verified `pgvector/pgvector:0.8.6-pg18` locally as PostgreSQL 18.6
+with pgvector 0.8.6. P6-002 may use the versioned image tag and create the
+extension through Alembic. The measured platform digest is retained as Spike
+evidence but is not a portable Compose pin.
+
+The configured `BAAI/bge-m3` path returned fixed 1024-dimensional finite
+vectors. P6-002 therefore uses `vector(1024)`, verifies every provider result
+before persistence/query (including non-zero norm for cosine), and orders exact
+cosine distance with `<=>` ascending. The authoritative SQL shape is:
+
+```text
+Document Chunk
+  JOIN Document ON document_id
+  JOIN Project ON project_id
+  WHERE Document.project_id = requested project_id
+    AND Project.owner_user_id = current user_id
+  ORDER BY Chunk.embedding <=> query_vector ASC, Chunk.chunk_id ASC
+  LIMIT validated_limit
+```
+
+The external diagnostic score is `1 - cosine_distance` and is returned in
+descending score order. No approximate vector index is part of the first
+slice; the P6-001 HNSW check established operator/index compatibility only.
+This keeps Project isolation and exact result ordering independently testable
+before scale or recall creates a reason to tune an ANN index.
+
+The first deterministic chunker is structure-aware and domain-independent.
+Markdown heading hierarchy and paragraph boundaries are preferred over raw
+character windows. Normal blocks are packed up to 2,000 Python characters;
+only an overlong structural block uses 2,000-character windows with
+200-character overlap. Emitted non-empty chunks retain stable source order and
+consecutive zero-based indexes.
+
+### P6-002 Activation — Accepted D-014 Boundary
+
+The user selected both Option A decisions on 2026-09-04. P6-002 implements
+Document create/read/list plus search and adds immutable Project
+`owner_user_id`. Product Backend receives the opaque UUID through the trusted
+`X-ResearchFlow-User-Id` dependency; it does not accept user identity from a
+resource path or body and does not implement passwords, login, or token
+issuance.
+
+Every Project and nested-resource query filters the current owner. Unknown and
+other-user Projects share the same 404 response. The retrieval query independently
+joins Project and applies both `owner_user_id` and `project_id` before ordering
+and limit. Existing Project rows require explicit
+`RESEARCHFLOW_LEGACY_OWNER_USER_ID` migration ownership rather than an invented
+default. These decisions activate P6-002.
+
+### Agent Knowledge Boundary — Accepted D-015
+
+The first integration is local/test only. Trusted LangGraph Run context carries
+immutable `knowledge_scope` (`user_id + project_id`) outside Agent State, Tool
+arguments, and thread metadata. This carrier is not authorization authority and
+does not make the direct browser topology production-safe.
+
+Agent `knowledge_search()` calls Product Backend through a typed HTTP client;
+Backend remains the authoritative owner/Project filter and Knowledge remains
+hidden behind its API. Agent Evidence becomes one discriminated Pydantic union
+for temporary research and user uploads, retaining Document/Chunk provenance.
+Agent owns the explicit Web/Knowledge Tool registry and deterministic execution
+policy. P7-001 implements the adapter and shared Evidence validator; validated
+models are dumped to JSON-safe payloads before checkpointed State. P7-002 binds
+both Tools using a frozen `AgentContext.knowledge_scope`, validates every Tool
+name before side effects, then executes sequentially in model-call order. Any
+failure aborts the node without a partial State update or Writer execution.
+P7-FE-001 supplies the local-only carrier through one Frontend stream-submit
+wrapper. It derives the Project UUID from Product selection and the user UUID
+from the existing public local-development setting, and places both in SDK Run
+context rather than Graph input, checkpoint State, or thread metadata.
+`BUG-P7-STREAM-001` and the final browser matrix are DONE. The fix preserved the
+SDK's native multi-mode stream and proved top-level Project scope, reload,
+in-flight rejoin, edit/regenerate, and Project A/B Knowledge isolation without
+constraining the Frontend to a scalar mode.
+
+## Citation and Retrieval Evaluation Boundary
+
+**Decision:** D-017
+
+**Scope:** P7-003
+
+**Decision status:** Accepted
+
+**Implementation status:** Implemented and validated by P7-003B and P7-003C;
+Phase 7 exit remains subject to the D-017 Architect evidence review.
+
+### Citation Projection
+
+```text
+validated Evidence[]
+  → pure ordered projection
+  → Citation(c1), Citation(c2), ...
+  → Writer State update { report, citations, final AIMessage }
+  → AgentOutputState / latest checkpoint
+```
+
+01-Agent owns the Citation models, mapper, and State/output wiring. The mapper
+preserves Evidence order and duplicates and copies only source label, a
+deterministic bounded excerpt, and approved source-specific provenance. It does
+not parse ToolMessage or Report text, use retrieval score as authority, or
+create Product identities. Report and Citation list are updated together so a
+later failed/in-flight run does not pair a new Report with old Citations or the
+reverse.
+
+Run-local `c1...` values identify entries only within one successful output.
+They do not identify a LangGraph Run, thread, Research Session, persisted
+Evidence, or Product Citation. Without inline Report markers, the list means
+“sources available to this Writer run,” not “each Report claim is correctly
+attributed.” Frontend rendering, Report persistence, claim mapping, and event
+replay are separate future Contracts.
+
+### Retrieval Evaluation
+
+```text
+versioned logical JSON fixture
+  → isolated Backend Document ingestion
+  → runtime UUID resolution in test setup only
+  → scoped POST knowledge/search (limit=5)
+  → logical returned passages
+  → per-case + macro Recall@5 baseline
+```
+
+05-Quality owns the fixture, metric implementation, and reported baseline.
+02-Knowledge reviews deterministic chunk identity and retrieval semantics;
+03-Backend reviews that the harness exercises the existing scoped API and test
+database. Checked-in relevance uses `project_key + document_key + chunk_index`,
+never generated UUIDs. No production Chunk API or evaluation table is created.
+
+The first run used the current `BAAI/bge-m3` exact-vector path and recorded
+macro Recall@5 = 1.0 across three synthetic AI-reviewed cases, without a
+pass/fail threshold. A poor future score is evidence, not a reason
+to relabel the fixture or change the retriever inside the evaluation task. MRR,
+NDCG, Precision@K, citation correctness, LangSmith, and retrieval optimization
+remain unapproved until this baseline is reviewed.

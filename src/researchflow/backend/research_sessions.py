@@ -8,8 +8,10 @@ from sqlalchemy import DateTime, ForeignKey, Text, Uuid, func, select
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from .agent_server import AgentServerClient, get_agent_server
+from .current_user import CurrentUserId
 from .database import get_session
-from .projects import Base, Project
+from .models import Base
+from .projects import Project
 
 
 logger = logging.getLogger(__name__)
@@ -47,8 +49,14 @@ class ResearchSessionResponse(BaseModel):
         return value.astimezone(timezone.utc)
 
 
-def require_project(db: Session, project_id: UUID) -> None:
-    if db.get(Project, project_id) is None:
+def require_project(db: Session, project_id: UUID, owner_user_id: UUID) -> None:
+    project = db.scalar(
+        select(Project).where(
+            Project.project_id == project_id,
+            Project.owner_user_id == owner_user_id,
+        )
+    )
+    if project is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found",
@@ -60,8 +68,9 @@ def create_research_session(
     db: Session,
     agent_server: AgentServerClient,
     project_id: UUID,
+    owner_user_id: UUID,
 ) -> ResearchSession:
-    require_project(db, project_id)
+    require_project(db, project_id, owner_user_id)
     db.rollback()
 
     research_session_id = uuid4()
@@ -114,6 +123,7 @@ router = APIRouter(
 )
 def create_research_session_route(
     project_id: UUID,
+    owner_user_id: CurrentUserId,
     db: Session = Depends(get_session),
     agent_server: AgentServerClient = Depends(get_agent_server),
 ) -> ResearchSession:
@@ -121,15 +131,17 @@ def create_research_session_route(
         db=db,
         agent_server=agent_server,
         project_id=project_id,
+        owner_user_id=owner_user_id,
     )
 
 
 @router.get("", response_model=list[ResearchSessionResponse])
 def list_research_sessions(
     project_id: UUID,
+    owner_user_id: CurrentUserId,
     db: Session = Depends(get_session),
 ) -> list[ResearchSession]:
-    require_project(db, project_id)
+    require_project(db, project_id, owner_user_id)
     statement = (
         select(ResearchSession)
         .where(ResearchSession.project_id == project_id)
@@ -148,9 +160,10 @@ def list_research_sessions(
 def read_research_session(
     project_id: UUID,
     research_session_id: UUID,
+    owner_user_id: CurrentUserId,
     db: Session = Depends(get_session),
 ) -> ResearchSession:
-    require_project(db, project_id)
+    require_project(db, project_id, owner_user_id)
     statement = select(ResearchSession).where(
         ResearchSession.project_id == project_id,
         ResearchSession.research_session_id == research_session_id,

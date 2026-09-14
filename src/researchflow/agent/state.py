@@ -1,17 +1,19 @@
 """Minimal state contracts for the ResearchFlow agent graph."""
 
-from typing import TypedDict
-
 from langgraph.graph import MessagesState
-from typing_extensions import NotRequired
+from pydantic import BaseModel, ConfigDict
+
+from .citations import CitationPayload
+from .evidence import EvidencePayload
+from .knowledge_search import KnowledgeScope
 
 
-class Evidence(TypedDict):
-    """A provisional research item produced by a tool."""
+class AgentContext(BaseModel):
+    """Immutable, run-scoped dependencies that never enter Graph State."""
 
-    source: str
-    content: str
-    relevance_note: NotRequired[str]
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    knowledge_scope: KnowledgeScope
 
 
 class AgentInputState(MessagesState):
@@ -22,11 +24,13 @@ class AgentState(AgentInputState, total=False):
     """Internal state shared by the Researcher, Tool, and Writer."""
 
     research_query: str
-    evidence: list[Evidence]
+    evidence: list[EvidencePayload]
     report: str
+    citations: list[CitationPayload]
 
 
 class AgentOutputState(AgentInputState):
     """Stable graph output for programmatic and chat consumers."""
 
     report: str
+    citations: list[CitationPayload]

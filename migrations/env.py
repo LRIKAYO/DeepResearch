@@ -3,8 +3,8 @@ import os
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from researchflow.backend.projects import Base
-from researchflow.backend import research_sessions  # noqa: F401
+from researchflow.backend.models import Base
+from researchflow.backend import projects, research_sessions  # noqa: F401
 
 
 config = context.config

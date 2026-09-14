@@ -1,4 +1,8 @@
 from researchflow.agent.web_search import build_web_search_tool
+from researchflow.agent.evidence import (
+    TemporaryResearchEvidence,
+    TemporaryWebProvenance,
+)
 
 
 class FakeTavilyClient:
@@ -58,14 +62,16 @@ def test_web_search_tool_returns_evidence_from_fake_tavily():
 
     # 2. 输出只包含 Evidence 字段
     assert result == [
-        {
-            "source": "https://a.com",
-            "content": "first result",
-        },
-        {
-            "source": "https://b.com",
-            "content": "second result",
-        },
+        TemporaryResearchEvidence(
+            source_label="https://a.com",
+            content="first result",
+            provenance=TemporaryWebProvenance(url="https://a.com"),
+        ),
+        TemporaryResearchEvidence(
+            source_label="https://b.com",
+            content="second result",
+            provenance=TemporaryWebProvenance(url="https://b.com"),
+        ),
     ]
 
 

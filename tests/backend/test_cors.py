@@ -39,3 +39,21 @@ def test_unlisted_origin_receives_no_cors_permission(monkeypatch):
     )
 
     assert "access-control-allow-origin" not in response.headers
+
+
+def test_configured_origin_allows_trusted_user_header(monkeypatch):
+    monkeypatch.setenv("RESEARCHFLOW_CORS_ORIGINS", "http://localhost:3000")
+
+    response = TestClient(create_app()).options(
+        "/projects",
+        headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "x-researchflow-user-id",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "x-researchflow-user-id" in response.headers[
+        "access-control-allow-headers"
+    ].lower()

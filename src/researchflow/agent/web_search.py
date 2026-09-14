@@ -3,7 +3,7 @@ from typing import Any
 from langchain_core.tools import tool
 from tavily import TavilyClient
 
-from .state import Evidence
+from .evidence import Evidence, TemporaryResearchEvidence, TemporaryWebProvenance
 
 
 def build_web_search_tool(
@@ -35,7 +35,7 @@ def build_web_search_tool(
                 Search query.
 
         Returns:
-            list of Evidence dictionaries.
+            list of validated temporary-research Evidence.
         """
 
         if not isinstance(query, str):
@@ -76,10 +76,11 @@ def build_web_search_tool(
 
 
             evidence.append(
-                {
-                    "source": url,
-                    "content": content,
-                }
+                TemporaryResearchEvidence(
+                    source_label=url,
+                    content=content,
+                    provenance=TemporaryWebProvenance(url=url),
+                )
             )
 
 

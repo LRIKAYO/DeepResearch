@@ -1,7 +1,7 @@
 # Quality Report
 
 > Owner: 05-Quality / Quality Evaluation Engineer  
-> Current baseline: `QUALITY-SCAN-003` (Post-P5 validation)
+> Current baseline: `P7-003B/C` (Citation and retrieval-baseline validation)
 > Status: **PASS WITH FINDINGS**
 
 This document is the maintained quality baseline for ResearchFlow. It records
@@ -30,11 +30,214 @@ When documents and implementation differ, quality review uses this source order:
 6. `docs/tasks/`
 7. Code and tests
 
-## Current baseline — QUALITY-SCAN-003 (Post-P5)
+## P7 stream regression — BUG-P7-STREAM-001
+
+**Status:** validated for the pinned D-016 tuple and all executable
+current-graph browser paths.
+
+The pinned D-016 tuple was reproduced in a real browser. The `422` was caused
+by the Frontend wrapper's object spread evaluating SDK getters and adding the
+unsupported `tools` mode, not by Server rejection of multi-mode arrays. The
+minimal wrapper fix preserves only lazy SDK getters and overrides `submit`.
+
+Validated evidence: actual browser Run context carries `knowledge_scope` at
+top level and not Graph input; effective modes are `values`,
+`messages-tuple`, and `custom`; `runs/stream` returns `200`; the Run reaches
+`success`; checkpoint state includes a Report; and the UI finishes without an
+error. A fresh browser Project → Session run waited for its Report, retained
+the selected URL and user message across hard reload, then regenerated on the
+same thread; the regenerate request also returned `200` with the approved
+three modes, top-level scope, and a final Report. The pinned Python/Frontend
+dependencies, 92 Python tests, Frontend typecheck, lint (0 errors; 16 existing
+warnings), and production build passed.
+
+Fresh browser evidence now covers in-flight rejoin, edit branch checkpointing,
+and A/B Knowledge provenance. The latter used real indexed Markdown Documents:
+each selected Project's Agent state contained only its own distinct token and
+Report. The current graph has no `interrupt()` producer, so interrupt/resume
+needs a separately scoped Agent scenario if that capability is introduced. No
+scope authority, Agent/Backend contract, or dependency version was changed.
+
+## Current baseline — P7-003B/C
+
+**Status:** **PASS WITH FINDINGS — ARCHITECT REVIEW REQUIRED FOR PHASE EXIT**
+
+| Area | Status | Evidence / note |
+| --- | --- | --- |
+| Run-local Citation output | **Validated** | Strict two-source projection preserves order, duplicates, bounded excerpts, and JSON-safe provenance. Report, final message, and Citations update atomically. |
+| Graph repeat/failure behavior | **Validated** | Fresh checkpoint tests retain the last matching successful Report/Citation pair through mapping and Writer failures; successful no-Tool runs publish `citations: []`. |
+| Retrieval fixture | **Validated with limitation** | Frozen `retrieval-v1`, SHA-256 `9b42eaf6ee6c0b7f7de03c50b9520dc1ea1400c2e6ed98bb1ad13f9e2f8d7f29`; synthetic AI-reviewed, not human-reviewed. |
+| Real Recall@5 baseline | **Measured** | Real `BAAI/bge-m3` ingestion and scoped pgvector API search: 3/3 cases at 1.0; macro Recall@5 = 1.0 over ten candidate chunks. No pass threshold is claimed. |
+| Regression | **Validated** | Agent/Backend/Knowledge/Quality warnings-as-errors: 146 passed. Dependency check, Python compilation, both migration drift checks, Frontend type check, lint (0 errors; 16 pre-existing warnings), and production build passed. |
+| Product completion | **Not claimed** | D-017 requires 00-Architect to inspect this evidence before Phase 7 exit or activation of another product batch. |
+
+The real evaluator used Product Project creation, Markdown ingestion, and
+`POST /projects/{project_id}/knowledge/search` with `limit=5`. It used no
+ranking override, committed no runtime IDs, and cleaned exactly its one Project,
+two Documents, and ten chunks from `researchflow_test`. The credential-safe
+artifact is `docs/evaluations/retrieval-v1-baseline-2026-09-14.json`.
+
+Open findings remain **Blocker 0 / High 0 / Medium 0 / Low 1 / Info 2**:
+automated restart coverage, adopted Frontend lint warnings, and the trusted
+identity deployment precondition are unchanged. Citation correctness,
+answer quality, multilingual retrieval, observability, retries, and release
+thresholds remain unvalidated rather than implicitly passed.
+
+## Historical baseline — QUALITY-SCAN-004 (Post-P6)
 
 **Status:** **PASS WITH FINDINGS**
 
-This is the current quality baseline. It supersedes `QUALITY-SCAN-002` for
+This baseline superseded `QUALITY-SCAN-003` for the
+P6 permanent-Knowledge vertical slice, user-and-Project isolation, pgvector
+schema, and Gate B/C learning evidence. The Post-P5 scan remains below as a
+historical record.
+
+| Area | Status | Evidence / note |
+| --- | --- | --- |
+| P6-002 acceptance | **Validated** | Gate A engineering evidence, Gate B user trace, and Gate C zero-norm atomicity exercise are complete. |
+| Atomic Markdown ingestion | **Validated** | Invalid vectors, provider/chunk/commit failures return sanitized errors and leave no Document/Chunk rows. |
+| Scoped exact retrieval | **Validated** | Retrieval joins Chunk→Document→Project, filters owner and Project before exact cosine order/limit, and excludes closer out-of-scope rows. |
+| Physical vector baseline | **Validated** | pgvector 0.8.6, `vector(1024)`, `BAAI/bge-m3`, exact cosine `<=>`, and no approximate index are recorded and tested. |
+| Retrieval evaluation | Deferred / unvalidated | The deterministic retrieval fixture is not a Recall@K, MRR, NDCG, faithfulness, or citation-correctness evaluation dataset. |
+| Observability and reliability | Deferred / unvalidated | No LangSmith trace, token/cost telemetry, rate-limit, retry, or recovery evaluation is claimed. |
+
+Open finding counts at that scan: **Blocker 0 / High 0 / Medium 0 / Low 1 / Info 2**.
+
+### Current validated evidence
+
+| Validation | Result |
+| --- | --- |
+| PostgreSQL / pgvector | The local service accepted connections; the documented P6 smoke verified pgvector 0.8.6, 1024 finite/non-zero `BAAI/bge-m3` values, and exact self cosine distance 0 (`docs/tasks/P6-002.md:34-48`). |
+| Alembic check | Development and test databases both report `No new upgrade operations detected.` |
+| Backend + Knowledge + Agent regression | Passed: **71 passed in 2.74s**. |
+| `py -3.12 -m pip check` | Passed: no broken requirements. |
+| Gate B | Passed: the user explained the atomic upload and authoritative scoped retrieval flows, trusted-header limitation, and KnowledgeHit/Evidence boundary. |
+| Gate C | Passed: `tests/backend/test_documents.py:224-242` supplies a 1024-dimensional zero vector and asserts sanitized `503` plus zero Document/Chunk rows; focused regression passed **16 tests**. |
+| Prior P6 runtime gates | Recorded real Uvicorn upload/restart/search and real configured embedding/pgvector smokes passed (`docs/tasks/P6-002.md:44-48`). |
+| Frontend gates | Recorded P6 TypeScript, lint, and production build passed with no errors; the 16 lint warnings remain pre-existing and outside P6 scope (`docs/tasks/P6-002.md:49-52`). |
+
+### Current Contract Consistency Matrix
+
+| Contract | Authoritative source | Observed implementation / evidence | Status |
+| --- | --- | --- | --- |
+| Trusted identity is required and owner scope is anti-enumerating | `docs/API_CONTRACTS.md:21-45`; `docs/DATA_MODEL.md:37-73` | `get_current_user_id` validates the header at `src/researchflow/backend/current_user.py:7-20`; Project lookup applies owner scope at `src/researchflow/backend/research_sessions.py:52-63`. | Consistent |
+| Successful upload is atomic | `docs/API_CONTRACTS.md:303-339`; `docs/DATA_MODEL.md:269-276` | Upload validates/chunks/embeds before `Document` and `DocumentChunk` are committed together; errors roll back at `src/researchflow/backend/documents.py:43-111`. | Consistent |
+| Vectors must be finite, dimension 1024, and non-zero | `docs/PHASE_6_PLAN.md:364-367`; `docs/DATA_MODEL.md:233-249` | Shared validation rejects count, type, dimension, non-finite, and zero-norm failures at `src/researchflow/knowledge/embeddings.py:24-52`. | Consistent |
+| Exact retrieval is user-and-Project-scoped before limit | `docs/API_CONTRACTS.md:420-425`; `docs/ARCHITECTURE.md:511-533` | Query joins Chunk→Document→Project, filters both identities, then orders exact cosine distance and `chunk_id` before limiting at `src/researchflow/knowledge/retrieval.py:26-56`. | Consistent |
+| Knowledge remains outside Agent Contract | `docs/DECISIONS.md:264-294`; `docs/PHASE_6_PLAN.md:395-403` | P6 code returns `KnowledgeHit`; no Agent State, Tool, Evidence, or LangGraph code is part of this slice. | Consistent |
+
+### Current Test Gap Matrix
+
+| Area | Current evidence | Gap / boundary | Required next action |
+| --- | --- | --- | --- |
+| Ingestion atomicity and vector validation | Focused PostgreSQL API tests include provider, chunking, commit, wrong-vector, and zero-norm rollback paths. | No retry/reconciliation behavior is approved. | Keep deferred until a future ingestion reliability task defines it. |
+| Exact retrieval isolation | Deterministic two-user/two-Project fixture proves filtering before order/limit. | No retrieval-quality benchmark is claimed. | Freeze a versioned evaluation dataset before vector/hybrid/reranker comparisons. |
+| Trusted identity boundary | Missing/invalid identity and other-user resource behavior are tested. | A trusted upstream must strip/inject the header before public deployment; this Backend does not authenticate browsers. | Treat QF-005 as a deployment precondition, not a reason to add Auth ad hoc. |
+| Observability | Real provider and local runtime smokes are recorded. | No trace, latency, token, cost, or error telemetry. | Scope instrumentation separately once an approved runtime destination exists. |
+
+### Current findings
+
+### QF-001 — Persistence restart coverage is manual rather than automated
+
+- Severity: **Low**
+- Status: Accepted test gap; unchanged.
+- Evidence: manual application-restart persistence evidence is at
+  `docs/tasks/P3-001.md:240-243`; the P6 real Uvicorn restart smoke is recorded
+  at `docs/tasks/P6-002.md:46-48`. Automated coverage remains in-process at
+  `tests/backend/test_projects.py:9-47` and `tests/backend/test_documents.py:35-242`.
+- Current action: none. Revisit only after startup cache, process-local state,
+  or a more complex connection lifecycle is introduced.
+
+### QF-003 — Frontend lint warnings remain in adopted UI code
+
+- Severity: **Info**
+- Status: Observed; non-blocking and unchanged.
+- Evidence: P6 lint completed with 0 errors and 16 warnings; representative
+  locations are `frontend/src/components/thread/index.tsx:58-64` and
+  `frontend/src/providers/Stream.tsx:356`.
+- Current action: keep outside P6; address only in a dedicated Frontend-quality
+  task.
+
+### QF-005 — Trusted identity header requires an upstream deployment boundary
+
+- Severity: **Info**
+- Status: Explicit deployment precondition, not an implementation defect.
+- Evidence: the Backend consumes `X-ResearchFlow-User-Id` at
+  `src/researchflow/backend/current_user.py:7-20`; the API Contract forbids
+  trusting an arbitrary public browser header at `docs/API_CONTRACTS.md:25-45`.
+- Current action: before public multi-user deployment, provide an upstream that
+  strips untrusted identity headers and injects a verified user UUID. Do not add
+  login/token/User CRUD to P6 merely to silence this finding.
+
+### Current evaluation and observability status
+
+| Capability | Status | Next evidence needed |
+| --- | --- | --- |
+| Vector-only retrieval | Functional exact-search baseline only | Versioned set with Recall@K, Precision@K, MRR, NDCG. |
+| Hybrid retrieval / reranker comparison | Not started | The same fixed dataset and an approved comparison protocol. |
+| Faithfulness, answer relevance, citation correctness | Not started | A later Agent-integrated evaluation fixture and rubric. |
+| Agent completion, tool choice, evidence coverage, loop detection | Not started | A scoped Agent scenario suite after an approved Knowledge Tool boundary. |
+| LangSmith, latency, token, cost, error telemetry | Not validated | Credential-safe instrumentation and trace evidence. |
+
+### Current Module Handoff
+
+| Receiving module | Handoff | Quality acceptance boundary |
+| --- | --- | --- |
+| 02-Knowledge | P6 exact vector baseline and deterministic fixture are accepted. | Do not claim retrieval quality or add hybrid/reranker behavior without a fixed evaluation dataset and a new task. |
+| 03-Backend | Atomic Product Document APIs and scoped retrieval are accepted. | Keep the upstream identity boundary explicit; no Auth expansion or Agent stream proxy is approved. |
+| 05-Quality | Maintain QF-001/QF-003/QF-005 and the P6 deterministic fixture. | Establish versioned retrieval and Agent evaluation only when explicitly scoped. |
+| 00-Architect | Phase 6 is complete. | An Agent `knowledge_search` handoff or KnowledgeHit→Evidence conversion is an architecture decision, not a P6 follow-up edit. |
+
+## QUALITY-SCAN-004 Completion Report
+
+Status: DONE
+
+Changed:
+
+- Updated the maintained quality baseline to Post-P6 and recorded Gate B/C,
+  atomicity, isolation, and regression evidence.
+
+Created:
+
+- None; this scan updates the maintained report.
+
+Key Decisions:
+
+- The P6 deterministic fixture proves functional exact retrieval boundaries;
+  it is not presented as a retrieval-quality evaluation.
+- The trusted identity header remains an explicit external deployment boundary.
+
+Validation:
+
+- Alembic no-drift checks, 71 Backend/Knowledge/Agent tests, dependency check,
+  recorded P6 runtime smokes, Gate B, and Gate C were reviewed.
+
+What the user should understand:
+
+- Product-scoped Knowledge needs both atomic ingestion and an authoritative
+  owner/Project retrieval predicate; Frontend filtering or thread metadata is
+  not a substitute.
+- A correctly sized zero vector is still invalid because cosine similarity needs
+  a non-zero norm; the regression proves this failure leaves no durable rows.
+
+Architecture Impact: None beyond accepted D-014.
+
+Open Questions:
+
+- Public deployment needs a verified upstream identity injector. Retrieval
+  evaluation, observability, reliability, and Agent integration remain separate
+  tasks.
+
+Recommended Next Step:
+
+- Stop Phase 6 here. Require an architecture decision before Agent Knowledge
+  integration, and a versioned evaluation dataset before retrieval comparisons.
+
+## Historical baseline — QUALITY-SCAN-003 (Post-P5)
+
+**Status:** **PASS WITH FINDINGS**
+
+This historical baseline supersedes `QUALITY-SCAN-002` for its original
 Phase 5 browser reachability, Project-scoped session adoption, and the current
 regression results. The Post-P4 record remains below as historical evidence for
 the Backend vertical slice.
@@ -212,9 +415,9 @@ The durable smoke evidence is recorded in `docs/tasks/P4-001.md`. The verified
 identity tuple was:
 
 ```text
-project_id          8ac084f2-a516-497e-811b-7a670679dc07
-research_session_id 5746a588-38cd-4df2-9fb6-27221935d8b1
-thread_id           01a05850-a03f-7eb2-8b80-707da521ae83
+project_id          <runtime project UUID redacted>
+research_session_id <runtime research-session UUID redacted>
+thread_id           <runtime Agent-thread UUID redacted>
 graph_id            researchflow
 ```
 
@@ -448,6 +651,10 @@ Architecture Impact: None
 
 | Record | Outcome | Durable result |
 | --- | --- | --- |
+| `P7-003B/C` | PASS WITH FINDINGS | Validated run-local Citation output and established the frozen real Recall@5 baseline; Architect phase-exit review is pending. |
+| `QUALITY-SCAN-004` | PASS WITH FINDINGS | Established the Post-P6 current baseline; P6-002 Gate B/C passed with Low 1 / Info 2 remaining. |
+| `P6-002` | DONE | Recorded the accepted atomic Markdown-to-search slice, user trace, and zero-norm atomicity regression. |
+| `BUG-P7-STREAM-001` | REVIEW | Reproduced and fixed the getter-enumeration `tools` mode 422; targeted browser Report E2E passed, extended browser matrix remains. |
 | `QUALITY-SCAN-003` | PASS WITH FINDINGS | Established the Post-P5 current baseline; P5-002 Quality review passed with Low 1 / Info 1 remaining. |
 | `P5-002` | DONE | Recorded the Quality-reviewed Project-scoped browser control-plane and direct Agent stream acceptance evidence. |
 | `P4-001-GATE-B` | DONE | Recorded the user's five boundary explanations and closed QF-004. |

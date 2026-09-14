@@ -3,8 +3,36 @@ from typing import Any, Literal
 
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langgraph.graph import END, START, StateGraph
+from langgraph.runtime import Runtime
 
-from .state import AgentInputState, AgentOutputState, AgentState
+from .citations import map_evidence_to_citations
+from .evidence import validate_evidence_list
+from .knowledge_search import KnowledgeClient, build_knowledge_search_tool
+from .state import AgentContext, AgentInputState, AgentOutputState, AgentState
+
+
+def build_tool_registry(
+    *,
+    context: AgentContext | None,
+    web_tool: Any,
+    knowledge_client: KnowledgeClient,
+) -> dict[str, Any]:
+    """Build the fixed two-Tool registry for one scoped graph run."""
+
+    if context is None:
+        raise ValueError("knowledge_scope runtime context is required")
+    context = AgentContext.model_validate(context)
+    if web_tool.name != "web_search":
+        raise ValueError("web Tool must be named 'web_search'")
+
+    knowledge_tool = build_knowledge_search_tool(
+        scope=context.knowledge_scope,
+        client=knowledge_client,
+    )
+    return {
+        web_tool.name: web_tool,
+        knowledge_tool.name: knowledge_tool,
+    }
 
 
 def normalize_research_query(
@@ -65,7 +93,9 @@ def normalize_research_query(
 def researcher(
     state: AgentState,
     researcher_model: Any,
-    tool: Any,
+    web_tool: Any,
+    knowledge_client: KnowledgeClient,
+    runtime: Runtime[AgentContext],
 ) -> dict:
     """
     Researcher node.
@@ -93,8 +123,13 @@ def researcher(
         )
     
     # 此处不会真正执行 Tool。
+    tool_registry = build_tool_registry(
+        context=runtime.context,
+        web_tool=web_tool,
+        knowledge_client=knowledge_client,
+    )
     model_with_tools = researcher_model.bind_tools(
-        [tool],
+        list(tool_registry.values()),
         parallel_tool_calls=False,
     )
 
@@ -129,10 +164,12 @@ def route_after_researcher(
 
 def execute_tool(
     state: AgentState,
-    tool: Any,
+    web_tool: Any,
+    knowledge_client: KnowledgeClient,
+    runtime: Runtime[AgentContext],
 ) -> dict:
     """
-    Execute one or more calls to the single Tool bound to this graph.
+    Execute one or more calls through the fixed Web/Knowledge Tool registry.
 
     Tool result is treated as structured Evidence.
     ToolMessage is only execution trace metadata.
@@ -154,48 +191,23 @@ def execute_tool(
              "execute_tool requires at least one tool call, but none were found"
         )
 
+    tool_registry = build_tool_registry(
+        context=runtime.context,
+        web_tool=web_tool,
+        knowledge_client=knowledge_client,
+    )
+
     # 3. 先校验所有名称，避免未知 Tool 导致部分外部搜索已发生。
     for tool_call in tool_calls:
-        if tool_call["name"] != tool.name:
+        if tool_call["name"] not in tool_registry:
             raise ValueError(f"Unknown tool: {tool_call['name']}")
 
     evidence_results = []
     tool_messages = []
-    allowed_evidence_fields = {"source", "content", "relevance_note"}
     for tool_call in tool_calls:
+        tool = tool_registry[tool_call["name"]]
         tool_result = tool.invoke(tool_call["args"])
-
-        if not isinstance(tool_result, list):
-            raise ValueError("tool must return an Evidence-compatible list")
-
-        for index, evidence in enumerate(tool_result):
-            if not isinstance(evidence, dict):
-                raise ValueError(
-                    f"tool Evidence at index {index} must be a dictionary"
-                )
-
-            unexpected_fields = set(evidence) - allowed_evidence_fields
-            if unexpected_fields:
-                raise ValueError(
-                    "tool returned unsupported Evidence fields: "
-                    + ", ".join(sorted(map(str, unexpected_fields)))
-                )
-
-            for required_field in ("source", "content"):
-                if not isinstance(evidence.get(required_field), str):
-                    raise ValueError(
-                        f"tool Evidence field '{required_field}' must be a string"
-                    )
-
-            if (
-                "relevance_note" in evidence
-                and not isinstance(evidence["relevance_note"], str)
-            ):
-                raise ValueError(
-                    "tool Evidence field 'relevance_note' must be a string when provided"
-                )
-
-        evidence_results.extend(tool_result)
+        evidence_results.extend(validate_evidence_list(tool_result))
         tool_messages.append(
             ToolMessage(
                 content="Research evidence collected successfully.",
@@ -219,7 +231,6 @@ def writer(
     """
     Generate the final answer from research state.
 
-    
     Writer input boundary:
     - research_query
     - evidence
@@ -236,11 +247,12 @@ def writer(
             "writer requires 'research_query' in state"
         )
 
-    #no-tool path is valid:
-    #evidence is treated as an empty list.
+    # The no-Tool path is valid; Evidence is an empty list.
     if evidence is None:
         evidence = []
-    
+
+    citations = map_evidence_to_citations(evidence)
+
     report = writer_impl.invoke(
         {
             "research_query": research_query,
@@ -255,18 +267,19 @@ def writer(
 
     return {
         "report": report,
+        "citations": citations,
         "messages": [AIMessage(content=report)],
     }
 
 
-
 def build_graph(
     researcher_model: Any,
-    tool: Any,
+    web_tool: Any,
+    knowledge_client: KnowledgeClient,
     writer_impl: Any,
 ):
     """
-    Build the P1-002 research workflow.
+    Build the scoped multi-tool research workflow.
 
     Flow:
 
@@ -289,6 +302,7 @@ def build_graph(
 
     builder = StateGraph(
         AgentState,
+        context_schema=AgentContext,
         input_schema=AgentInputState,
         output_schema=AgentOutputState,
     )
@@ -302,7 +316,8 @@ def build_graph(
         partial(
             researcher,
             researcher_model=researcher_model,
-            tool=tool,
+            web_tool=web_tool,
+            knowledge_client=knowledge_client,
         ),
     )
 
@@ -310,7 +325,8 @@ def build_graph(
         "execute_tool",
         partial(
             execute_tool,
-            tool=tool,
+            web_tool=web_tool,
+            knowledge_client=knowledge_client,
         ),
     )
 

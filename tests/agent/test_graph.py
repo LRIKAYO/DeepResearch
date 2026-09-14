@@ -1,8 +1,44 @@
 import pytest
 
 from langchain_core.messages import AIMessage, HumanMessage
+from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.runtime import Runtime
+from pydantic import ValidationError
 
+from researchflow.agent.evidence import (
+    TemporaryResearchEvidence,
+    TemporaryWebProvenance,
+    validate_evidence_list,
+)
 from researchflow.agent.graph import build_graph, researcher
+import researchflow.agent.graph as graph_module
+from researchflow.agent.knowledge_search import (
+    KnowledgeHit,
+    KnowledgeScope,
+    KnowledgeSearchError,
+)
+from researchflow.agent.state import AgentContext
+
+
+TEST_CONTEXT = AgentContext(
+    knowledge_scope=KnowledgeScope(
+        user_id="11111111-1111-1111-1111-111111111111",
+        project_id="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    )
+)
+
+
+def temporary_evidence(
+    source: str = "https://example.com",
+    content: str = "result",
+    relevance_note: str | None = None,
+) -> TemporaryResearchEvidence:
+    return TemporaryResearchEvidence(
+        source_label=source,
+        content=content,
+        relevance_note=relevance_note,
+        provenance=TemporaryWebProvenance(url=source),
+    )
 
 
 class FakeResearcherModel:
@@ -24,7 +60,7 @@ class FakeResearcherModel:
 
 
 class FakeTool:
-    def __init__(self, result: object, events: list[str], name: str="fake_search"):
+    def __init__(self, result: object, events: list[str], name: str="web_search"):
         self.result = result
         self.events = events
         self.name = name
@@ -38,15 +74,47 @@ class FakeTool:
         return self.result
 
 
+class FakeKnowledgeClient:
+    def __init__(self, result=None, events=None, error=None):
+        self.result = result or []
+        self.events = events
+        self.error = error
+        self.calls = []
+
+    def search(self, *, scope, query, limit):
+        if self.events is not None:
+            self.events.append("knowledge_search")
+        self.calls.append((scope, query, limit))
+        if self.error is not None:
+            raise self.error
+        return self.result
+
+
+def build_test_graph(researcher_model, web_tool, writer_impl, knowledge_client=None):
+    return build_graph(
+        researcher_model=researcher_model,
+        web_tool=web_tool,
+        knowledge_client=knowledge_client or FakeKnowledgeClient(),
+        writer_impl=writer_impl,
+    )
+
+
+def invoke_graph(graph, state):
+    return graph.invoke(state, context=TEST_CONTEXT)
+
+
 class FakeWriter:
-    def __init__(self, report: str, events: list[str]):
+    def __init__(self, report: str, events: list[str], error=None):
         self.report = report
         self.events = events
         self.received_payloads = []
+        self.error = error
 
     def invoke(self, payload):
         self.events.append("writer")
         self.received_payloads.append(payload)
+        if self.error is not None:
+            raise self.error
         return self.report
 
 
@@ -63,7 +131,7 @@ def test_graph_executes_tool_and_passes_evidence_to_writer():
         content="",
         tool_calls=[
             {
-                "name": "fake_search",
+                "name": "web_search",
                 "args": tool_args,
                 "id": "call-1",
                 "type": "tool_call",
@@ -72,23 +140,20 @@ def test_graph_executes_tool_and_passes_evidence_to_writer():
     )
 
     expected_evidence = [
-        {
-            "source": "langgraph-docs",
-            "content": "State stores graph execution data.",
-            "relevance_note": (
-                "Explains the role of State."
-            ),
-        },
-        {
-            "source": "langchain-docs",
-            "content": "Messages can be reduced automatically.",
-            "relevance_note": (
-                "Explains message reducer behavior."
-            ),
-        },
+        temporary_evidence(
+            "https://langgraph.example/docs",
+            "State stores graph execution data.",
+            "Explains the role of State.",
+        ),
+        temporary_evidence(
+            "https://langchain.example/docs",
+            "Messages can be reduced automatically.",
+            "Explains message reducer behavior.",
+        ),
     ]
 
     expected_report = "这是最终研究报告。"
+    expected_payloads = validate_evidence_list(expected_evidence)
 
     researcher_model = FakeResearcherModel(
         response=researcher_response,
@@ -105,13 +170,16 @@ def test_graph_executes_tool_and_passes_evidence_to_writer():
         events=events,
     )
 
-    graph = build_graph(
-        researcher_model=researcher_model,
-        tool=tool,
-        writer_impl=writer,
+    knowledge_client = FakeKnowledgeClient()
+    graph = build_test_graph(
+        researcher_model,
+        tool,
+        writer,
+        knowledge_client,
     )
 
-    result = graph.invoke(
+    result = invoke_graph(
+        graph,
         {
             "messages": [
                 HumanMessage(content=research_query)
@@ -130,13 +198,18 @@ def test_graph_executes_tool_and_passes_evidence_to_writer():
     assert researcher_model.bound_tool_options == {
         "parallel_tool_calls": False,
     }
+    assert [tool.name for tool in researcher_model.bound_tools] == [
+        "web_search",
+        "knowledge_search",
+    ]
+    assert knowledge_client.calls == []
 
     assert len(writer.received_payloads) == 1
 
     writer_payload = writer.received_payloads[0]
 
     assert writer_payload["research_query"] == research_query
-    assert writer_payload["evidence"] == expected_evidence
+    assert writer_payload["evidence"] == expected_payloads
     assert len(
         writer_payload["evidence"]
     ) == 2
@@ -185,13 +258,10 @@ def test_graph_skips_tool_and_writer_receives_empty_evidence():
         events=events,
     )
 
-    graph = build_graph(
-        researcher_model=researcher_model,
-        tool=tool,
-        writer_impl=writer,
-    )
+    graph = build_test_graph(researcher_model, tool, writer)
 
-    result = graph.invoke(
+    result = invoke_graph(
+        graph,
         {
             "messages": [
                 HumanMessage(content=research_query)
@@ -217,6 +287,7 @@ def test_graph_skips_tool_and_writer_receives_empty_evidence():
     }
 
     assert result["report"] == expected_report
+    assert result["citations"] == []
 
     final_messages = result["messages"]
     final_message = final_messages[-1]
@@ -232,7 +303,7 @@ def test_invalid_evidence_item_does_not_reach_writer():
         content="",
         tool_calls=[
             {
-                "name": "fake_search",
+                "name": "web_search",
                 "args": {"query": research_query},
                 "id": "call-invalid",
                 "type": "tool_call",
@@ -240,12 +311,22 @@ def test_invalid_evidence_item_does_not_reach_writer():
         ],
     )
     researcher_model = FakeResearcherModel(researcher_response, events)
-    tool = FakeTool([{"source": "fake-source", "content": 42}], events)
+    tool = FakeTool(
+        [
+            {
+                "source_type": "temporary_research",
+                "source_label": "fake-source",
+                "content": 42,
+                "provenance": {"url": "https://example.com"},
+            }
+        ],
+        events,
+    )
     writer = FakeWriter("This report must not be written.", events)
-    graph = build_graph(researcher_model, tool, writer)
+    graph = build_test_graph(researcher_model, tool, writer)
 
     with pytest.raises(ValueError, match="content"):
-        graph.invoke({"messages": [HumanMessage(content=research_query)]})
+        invoke_graph(graph, {"messages": [HumanMessage(content=research_query)]})
 
     assert events == ["researcher", "execute_tool"]
     assert writer.received_payloads == []
@@ -254,7 +335,9 @@ def test_invalid_evidence_item_does_not_reach_writer():
 def test_researcher_clears_evidence_from_previous_run():
     events = []
     research_query = "新的研究问题"
-    old_evidence = {"source": "old-source", "content": "stale evidence"}
+    old_evidence = validate_evidence_list(
+        [temporary_evidence(content="stale evidence")]
+    )[0]
     researcher_model = FakeResearcherModel(
         AIMessage(content="No tool call is required."),
         events,
@@ -268,6 +351,8 @@ def test_researcher_clears_evidence_from_previous_run():
         },
         researcher_model,
         tool,
+        FakeKnowledgeClient(),
+        Runtime(context=TEST_CONTEXT),
     )
 
     assert update["evidence"] == []
@@ -294,13 +379,10 @@ def test_researcher_normalizes_text_blocks_and_ignores_invalid_blocks():
         events=events,
     )
 
-    graph = build_graph(
-        researcher_model=researcher_model,
-        tool=tool,
-        writer_impl=writer,
-    )
+    graph = build_test_graph(researcher_model, tool, writer)
 
-    graph.invoke(
+    invoke_graph(
+        graph,
         {
             "messages": [
                 HumanMessage(
@@ -360,17 +442,14 @@ def test_researcher_rejects_empty_text_blocks_before_model_call():
         events=events,
     )
 
-    graph = build_graph(
-        researcher_model=researcher_model,
-        tool=tool,
-        writer_impl=writer,
-    )
+    graph = build_test_graph(researcher_model, tool, writer)
 
     with pytest.raises(
         ValueError,
         match="research query contains no valid text blocks",
     ):
-        graph.invoke(
+        invoke_graph(
+            graph,
             {
                 "messages": [
                     HumanMessage(
@@ -413,7 +492,7 @@ def test_graph_executes_tool_with_empty_evidence_list():
         content="",
         tool_calls=[
             {
-                "name": "fake_search",
+                "name": "web_search",
                 "args": {
                     "query": research_query,
                 },
@@ -442,14 +521,11 @@ def test_graph_executes_tool_with_empty_evidence_list():
     )
 
 
-    graph = build_graph(
-        researcher_model=researcher_model,
-        tool=tool,
-        writer_impl=writer,
-    )
+    graph = build_test_graph(researcher_model, tool, writer)
 
 
-    result = graph.invoke(
+    result = invoke_graph(
+        graph,
         {
             "messages": [
                 HumanMessage(
@@ -492,6 +568,12 @@ def test_unknown_tool_call_is_rejected_before_execution():
         content="",
         tool_calls=[
             {
+                "name": "web_search",
+                "args": {"query": "must not run"},
+                "id": "call-valid-before-unknown",
+                "type": "tool_call",
+            },
+            {
                 "name": "unknown_tool",
                 "args": {
                     "query": research_query,
@@ -515,7 +597,7 @@ def test_unknown_tool_call_is_rejected_before_execution():
             }
         ],
         events=events,
-        name="fake_search",
+        name="web_search",
     )
 
     writer = FakeWriter(
@@ -523,17 +605,14 @@ def test_unknown_tool_call_is_rejected_before_execution():
         events=events,
     )
 
-    graph = build_graph(
-        researcher_model=researcher_model,
-        tool=tool,
-        writer_impl=writer,
-    )
+    graph = build_test_graph(researcher_model, tool, writer)
 
     with pytest.raises(
         ValueError,
         match="Unknown tool",
     ):
-        graph.invoke(
+        invoke_graph(
+            graph,
             {
                 "messages": [
                     HumanMessage(
@@ -557,26 +636,27 @@ def test_graph_merges_evidence_from_multiple_calls_to_the_same_tool():
         content="",
         tool_calls=[
             {
-                "name": "fake_search",
+                "name": "web_search",
                 "args": {"query": "first query"},
                 "id": "call-1",
                 "type": "tool_call",
             },
             {
-                "name": "fake_search",
+                "name": "web_search",
                 "args": {"query": "second query"},
                 "id": "call-2",
                 "type": "tool_call",
             },
         ],
     )
-    evidence = [{"source": "fake", "content": "result"}]
+    evidence = [temporary_evidence()]
     researcher_model = FakeResearcherModel(researcher_response, events)
     tool = FakeTool(evidence, events)
     writer = FakeWriter("report", events)
-    graph = build_graph(researcher_model, tool, writer)
+    graph = build_test_graph(researcher_model, tool, writer)
 
-    graph.invoke(
+    invoke_graph(
+        graph,
         {"messages": [HumanMessage(content="research query")]}
     )
 
@@ -585,5 +665,257 @@ def test_graph_merges_evidence_from_multiple_calls_to_the_same_tool():
         {"query": "second query"},
     ]
     assert writer.received_payloads == [
-        {"research_query": "research query", "evidence": evidence * 2}
+        {
+            "research_query": "research query",
+            "evidence": validate_evidence_list(evidence) * 2,
+        }
     ]
+
+
+def test_graph_executes_web_and_knowledge_calls_in_model_order():
+    events = []
+    hit = KnowledgeHit(
+        document_id="bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+        chunk_id="cccccccc-cccc-cccc-cccc-cccccccccccc",
+        filename="project.md",
+        content="Permanent Project evidence.",
+        score=0.91,
+    )
+    knowledge_client = FakeKnowledgeClient([hit], events=events)
+    web_tool = FakeTool([temporary_evidence()], events)
+    researcher_model = FakeResearcherModel(
+        AIMessage(
+            content="",
+            tool_calls=[
+                {
+                    "name": "web_search",
+                    "args": {"query": "web first"},
+                    "id": "call-web-1",
+                    "type": "tool_call",
+                },
+                {
+                    "name": "knowledge_search",
+                    "args": {"query": "project", "limit": 2},
+                    "id": "call-knowledge",
+                    "type": "tool_call",
+                },
+                {
+                    "name": "web_search",
+                    "args": {"query": "web again"},
+                    "id": "call-web-2",
+                    "type": "tool_call",
+                },
+            ],
+        ),
+        events,
+    )
+    writer = FakeWriter("report", events)
+    graph = build_test_graph(
+        researcher_model,
+        web_tool,
+        writer,
+        knowledge_client,
+    )
+
+    result = invoke_graph(graph, {"messages": [HumanMessage(content="research")]})
+
+    assert events == [
+        "researcher",
+        "execute_tool",
+        "knowledge_search",
+        "execute_tool",
+        "writer",
+    ]
+    assert knowledge_client.calls == [
+        (TEST_CONTEXT.knowledge_scope, "project", 2),
+    ]
+    assert web_tool.received_args == [
+        {"query": "web first"},
+        {"query": "web again"},
+    ]
+    assert [
+        item["source_type"] for item in writer.received_payloads[0]["evidence"]
+    ] == ["temporary_research", "user_upload", "temporary_research"]
+    assert [item["citation_id"] for item in result["citations"]] == [
+        "c1", "c2", "c3"
+    ]
+    assert [item["source_type"] for item in result["citations"]] == [
+        "temporary_research", "user_upload", "temporary_research"
+    ]
+    assert result["citations"][1]["provenance"]["chunk_id"] == str(hit.chunk_id)
+    assert result["citations"][2] == {
+        **result["citations"][0], "citation_id": "c3"
+    }
+
+
+def test_tool_failure_prevents_writer_and_partial_evidence_state():
+    events = []
+    web_tool = FakeTool([temporary_evidence()], events)
+    knowledge_client = FakeKnowledgeClient(
+        events=events,
+        error=KnowledgeSearchError("Knowledge search unavailable"),
+    )
+    researcher_model = FakeResearcherModel(
+        AIMessage(
+            content="",
+            tool_calls=[
+                {
+                    "name": "web_search",
+                    "args": {"query": "web runs first"},
+                    "id": "call-web",
+                    "type": "tool_call",
+                },
+                {
+                    "name": "knowledge_search",
+                    "args": {"query": "fails second"},
+                    "id": "call-knowledge",
+                    "type": "tool_call",
+                },
+            ],
+        ),
+        events,
+    )
+    writer = FakeWriter("must not run", events)
+    graph = build_test_graph(
+        researcher_model,
+        web_tool,
+        writer,
+        knowledge_client,
+    )
+
+    with pytest.raises(KnowledgeSearchError, match="unavailable"):
+        invoke_graph(graph, {"messages": [HumanMessage(content="research")]})
+
+    assert events == ["researcher", "execute_tool", "knowledge_search"]
+    assert writer.received_payloads == []
+
+
+def test_graph_requires_knowledge_scope_run_context_before_model_call():
+    events = []
+    researcher_model = FakeResearcherModel(
+        AIMessage(content="No tool call."),
+        events,
+    )
+    graph = build_test_graph(
+        researcher_model,
+        FakeTool([], events),
+        FakeWriter("must not run", events),
+    )
+
+    with pytest.raises(ValueError, match="knowledge_scope"):
+        graph.invoke({"messages": [HumanMessage(content="research")]})
+
+    assert events == []
+
+
+def test_agent_context_is_frozen_and_rejects_unknown_fields():
+    with pytest.raises(ValidationError, match="frozen"):
+        TEST_CONTEXT.knowledge_scope = KnowledgeScope(
+            user_id="22222222-2222-2222-2222-222222222222",
+            project_id="dddddddd-dddd-dddd-dddd-dddddddddddd",
+        )
+
+    with pytest.raises(ValidationError, match="extra_forbidden"):
+        AgentContext.model_validate(
+            {
+                "knowledge_scope": TEST_CONTEXT.knowledge_scope,
+                "thread_id": "not-authority",
+            }
+        )
+
+
+@pytest.mark.parametrize("failure", ["mapping", "writer", "report_type"])
+def test_checkpoint_retains_matching_final_output_until_next_success(
+    monkeypatch, failure
+):
+    events = []
+    researcher_model = FakeResearcherModel(
+        AIMessage(
+            content="",
+            tool_calls=[{
+                "name": "web_search",
+                "args": {"query": "research"},
+                "id": "call-first",
+                "type": "tool_call",
+            }],
+        ),
+        events,
+    )
+    tool = FakeTool([temporary_evidence(content="First evidence")], events)
+    writer = FakeWriter("First successful report", events)
+    graph = build_test_graph(researcher_model, tool, writer).builder.compile(
+        checkpointer=InMemorySaver()
+    )
+    config = {"configurable": {"thread_id": "fresh-citation-regression"}}
+
+    first = graph.invoke(
+        {"messages": [HumanMessage(content="First query")]},
+        config,
+        context=TEST_CONTEXT,
+    )
+
+    assert set(first) == {"messages", "report", "citations"}
+    assert first["report"] == "First successful report"
+    assert first["messages"][-1].content == first["report"]
+    assert first["citations"] == [{
+        "citation_id": "c1",
+        "source_type": "temporary_research",
+        "source_label": "https://example.com",
+        "excerpt": "First evidence",
+        "provenance": {"url": "https://example.com/"},
+    }]
+
+    tool.result = [temporary_evidence(content="Evidence for failed run")]
+    writer.report = "Must not become a final report"
+    with monkeypatch.context() as patcher:
+        if failure == "mapping":
+            def fail_mapping(evidence):
+                raise ValueError("test mapping failure")
+
+            patcher.setattr(graph_module, "map_evidence_to_citations", fail_mapping)
+            error_type, error_message = ValueError, "test mapping failure"
+        elif failure == "writer":
+            patcher.setattr(writer, "error", RuntimeError("test Writer failure"))
+            error_type, error_message = RuntimeError, "test Writer failure"
+        else:
+            patcher.setattr(writer, "report", {"invalid": "structured report"})
+            error_type, error_message = ValueError, "string report"
+
+        snapshots = []
+        with pytest.raises(error_type, match=error_message):
+            for state in graph.stream(
+                {"messages": [HumanMessage(content="Failing query")]},
+                config,
+                context=TEST_CONTEXT,
+                stream_mode="values",
+            ):
+                snapshots.append(state)
+
+    assert len(snapshots) >= 2
+    for state in [*snapshots, graph.get_state(config).values]:
+        assert state["report"] == first["report"]
+        assert state["citations"] == first["citations"]
+        assert all(
+            message.content != "Must not become a final report"
+            for message in state["messages"]
+        )
+    assert len(writer.received_payloads) == (1 if failure == "mapping" else 2)
+
+    researcher_model.response = AIMessage(content="No tool needed this time.")
+    writer.report = "Latest successful report without evidence"
+    latest = graph.invoke(
+        {"messages": [HumanMessage(content="New no-Tool query")]},
+        config,
+        context=TEST_CONTEXT,
+    )
+
+    assert set(latest) == {"messages", "report", "citations"}
+    assert latest["report"] == writer.report
+    assert latest["messages"][-1].content == latest["report"]
+    assert latest["citations"] == []
+    checkpoint = graph.get_state(config).values
+    assert checkpoint["report"] == latest["report"]
+    assert checkpoint["citations"] == []
+    assert writer.received_payloads[-1] == {
+        "research_query": "New no-Tool query", "evidence": []
+    }

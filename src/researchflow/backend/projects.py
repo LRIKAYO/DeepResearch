@@ -5,13 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict, StrictStr, field_validator
 from sqlalchemy import CheckConstraint, DateTime, String, Uuid, func, select
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
+from sqlalchemy.orm import Mapped, Session, mapped_column
 
+from .current_user import CurrentUserId
 from .database import get_session
-
-
-class Base(DeclarativeBase):
-    pass
+from .models import Base
 
 
 class Project(Base):
@@ -21,6 +19,7 @@ class Project(Base):
     )
 
     project_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    owner_user_id: Mapped[UUID] = mapped_column(Uuid, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.current_timestamp()
@@ -58,19 +57,32 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 
 
 @router.get("", response_model=list[ProjectResponse])
-def list_projects(session: Session = Depends(get_session)) -> list[Project]:
-    statement = select(Project).order_by(
-        Project.created_at.desc(),
-        Project.project_id.desc(),
+def list_projects(
+    owner_user_id: CurrentUserId,
+    session: Session = Depends(get_session),
+) -> list[Project]:
+    statement = (
+        select(Project)
+        .where(Project.owner_user_id == owner_user_id)
+        .order_by(
+            Project.created_at.desc(),
+            Project.project_id.desc(),
+        )
     )
     return list(session.scalars(statement))
 
 
 @router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
 def create_project(
-    payload: ProjectCreate, session: Session = Depends(get_session)
+    payload: ProjectCreate,
+    owner_user_id: CurrentUserId,
+    session: Session = Depends(get_session),
 ) -> Project:
-    project = Project(project_id=uuid4(), name=payload.name)
+    project = Project(
+        project_id=uuid4(),
+        owner_user_id=owner_user_id,
+        name=payload.name,
+    )
     session.add(project)
     try:
         session.commit()
@@ -82,8 +94,17 @@ def create_project(
 
 
 @router.get("/{project_id}", response_model=ProjectResponse)
-def read_project(project_id: UUID, session: Session = Depends(get_session)) -> Project:
-    project = session.get(Project, project_id)
+def read_project(
+    project_id: UUID,
+    owner_user_id: CurrentUserId,
+    session: Session = Depends(get_session),
+) -> Project:
+    project = session.scalar(
+        select(Project).where(
+            Project.project_id == project_id,
+            Project.owner_user_id == owner_user_id,
+        )
+    )
     if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
     return project

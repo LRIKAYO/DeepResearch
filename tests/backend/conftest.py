@@ -27,4 +27,6 @@ def clean_backend_tables():
     from researchflow.backend.database import engine
 
     with engine.begin() as connection:
-        connection.execute(text("TRUNCATE research_sessions, projects"))
+        connection.execute(
+            text("TRUNCATE document_chunks, documents, research_sessions, projects")
+        )

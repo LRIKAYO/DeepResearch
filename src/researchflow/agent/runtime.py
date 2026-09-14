@@ -7,6 +7,7 @@ from langchain_core.runnables.config import RunnableConfig
 from langchain_openai import ChatOpenAI
 
 from .graph import build_graph
+from .knowledge_search import KnowledgeClient
 from .web_search import build_web_search_tool
 
 
@@ -28,6 +29,10 @@ def create_model() -> ChatOpenAI:
 
 def create_web_search():
     return build_web_search_tool(api_key=require_env("TAVILY_API_KEY"))
+
+
+def create_knowledge_client() -> KnowledgeClient:
+    return KnowledgeClient(require_env("RESEARCHFLOW_BACKEND_URL"))
 
 
 def create_writer(model: Runnable) -> Runnable:
@@ -60,6 +65,7 @@ def create_runtime(config: RunnableConfig | None = None):
     model = create_model()
     return build_graph(
         researcher_model=model,
-        tool=create_web_search(),
+        web_tool=create_web_search(),
+        knowledge_client=create_knowledge_client(),
         writer_impl=create_writer(model),
     )
