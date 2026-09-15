@@ -441,3 +441,47 @@ Report/Sources plus isolation/reload/failure behavior. This direction creates
 no production security claim and activates no implementation task by itself.
 Comprehensive multi-format, persistence/replay, claim-level citation, deeper
 research orchestration, and public deployment remain separately decided work.
+
+## D-019 — Phase 8 projects existing Knowledge and Citation Contracts into the browser
+
+**Decision status:** Accepted by 00-Architect in P8-000 on 2026-09-14
+
+**Implementation status:** DONE through P8-FE-001, P8-FE-002, and P8-QA-001;
+local/test browser boundary accepted on 2026-09-15
+
+The first Phase 8 batch completes the current local/test browser path without
+adding Backend or Agent contracts. Permanent Markdown management calls the
+existing Product Backend Document list/create endpoints under the selected
+`project_id`. It is independent of Research Session and keeps Document server
+state inside the sidebar feature boundary because there is currently only one
+product surface consuming it. The existing
+composer PDF/image attachment path remains transient message input and is not
+reused for permanent Knowledge.
+
+The Frontend renders a session-level **Latest completed research sources**
+inventory only from typed Agent `citations` restored by `useStream`. It does
+not parse ToolMessage text or Report prose and does not attach the current
+run-local list to historical messages without a stable association. Supplied
+order and duplicates are preserved. Web provenance may be linked to its
+validated URL; user-upload provenance has no invented download/content link.
+Absent Citation State means no completed Citation output is available, while a
+present empty list is a valid no-Sources result.
+
+A later in-flight or failed run does not erase or replace the previous
+successful Report/Citation pair. The UI labels Sources as the latest completed
+result and continues to rely on LangGraph checkpoint recovery; it introduces
+no Frontend event log, local persistence, `run_id` history, or replay model.
+Backend ingestion errors are presented through status-specific safe messages
+and approved sanitized detail only, never raw provider/database errors.
+
+The batch ends with a recorded real-local-stack browser acceptance matrix. A
+generalized mocked LangGraph protocol, CI E2E orchestration, and production
+release/security claims remain deferred until a deterministic runtime fixture
+and deployment boundary are separately approved.
+
+P8-QA-001 accepted the real browser completion path and recorded QF-006: a
+browser reload can recover checkpoint State retained by the current local
+runtime, while restarting the in-memory Agent Server is not a durable history
+guarantee. PostgreSQL Research Session rows and Agent checkpoint retention must
+receive an explicit persistence/reconciliation design before a durable-history
+or production claim. This finding does not reopen the local/test Phase 8 gate.

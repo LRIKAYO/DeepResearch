@@ -12,6 +12,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useProjectSession } from "@/providers/ProjectSession";
+import { ProjectKnowledge } from "./knowledge";
 
 function sessionLabel(createdAt: string, sessionId: string): string {
   const date = new Date(createdAt);
@@ -124,7 +125,9 @@ function ProductSelection() {
         )}
       </section>
 
-      <section className="flex min-h-0 flex-col gap-2">
+      <ProjectKnowledge projectId={selectedProject?.project_id} />
+
+      <section className="flex shrink-0 flex-col gap-2">
         <div className="flex items-center justify-between px-1">
           <h2 className="text-muted-foreground text-sm font-medium">
             Research sessions
@@ -202,7 +205,7 @@ export default function ThreadHistory() {
           </Button>
           <h1 className="text-xl font-semibold tracking-tight">Research</h1>
         </div>
-        <ProductSelection />
+        {isLargeScreen && <ProductSelection />}
       </div>
       <div className="lg:hidden">
         <Sheet

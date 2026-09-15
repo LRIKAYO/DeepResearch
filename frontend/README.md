@@ -104,9 +104,85 @@ Open `http://127.0.0.1:3000` and verify:
    confirm `knowledge_scope` is in the run request's top-level `context`, never
    inside `input` or thread metadata.
 
-This smoke only validates the existing `messages`/thread/stream Contract. Do not
-add Research Progress or Evidence rendering until P2-003 defines its event,
-persistence, and replay semantics.
+This smoke validates the existing messages/thread/stream Contract. The Phase 8
+Sources panel below consumes the implemented checkpoint `citations` Contract;
+it does not introduce Research Progress events or Evidence replay.
+
+## Project Knowledge and Latest Sources (Phase 8)
+
+Permanent Knowledge is managed in **Project Knowledge** in the existing desktop
+sidebar or mobile Research sheet. Select a Project; no Research Session is
+required. Use **Markdown document** and **Upload Markdown** to upload one
+non-empty UTF-8 `.md` file of at most 1,048,576 bytes. This is separate from the
+composer's transient PDF/image attachments.
+
+The browser sends exactly one multipart `file` part, preserving the file bytes
+and normalizing its part type to `text/markdown`. Backend `201` means indexing
+has completed. The UI then fetches the authoritative Document list, preserving
+server order. There is no preview, delete, background job, or progress-percent
+feature. Keep the panel open during upload. If the connection or panel closes,
+the Backend may still commit the upload: reopen/refresh the list before retrying
+to avoid creating a duplicate Document.
+
+The panel maps Document errors to safe, actionable copy. Fix local identity for
+`401`, select an accessible Project for `404`, check the file for
+`413`/`415`/`422`, and retry indexing later for the documented `503`. Only exact
+allowlisted validation details are displayed, never raw response text. A
+successful upload followed by a failed list refresh remains a successful upload;
+use **Retry Document list**, not a second upload.
+
+After successful research, **Latest completed research sources** appears once
+below the conversation. It reads `stream.values.citations`, not Tool text or
+Report prose. Web links open their HTTP(S) provenance URL in a new tab; uploaded
+Documents show filename and available section/page metadata without a download
+link. Order and duplicates are preserved. `c1...` labels are run-local ordinals,
+not Product IDs or claim-to-source attribution.
+
+Absent `citations` means no Sources panel; `[]` explicitly means the latest
+completed research used no sources. A later running/failed request retains the
+last successful inventory as provided by Agent State. No local Sources cache is
+added. Reload uses the existing selected Session → `thread_id` → SDK checkpoint
+history path. A checkpoint-thread guard prevents another Session's old Sources
+from flashing during selection changes.
+
+### Focused module checks
+
+From `frontend`, using the already installed dependencies:
+
+```powershell
+pnpm exec esbuild scripts/check-p8.tsx --bundle --platform=node --outfile=.next/p8-check.cjs --jsx=automatic
+node .next/p8-check.cjs
+pnpm exec tsc --noEmit
+pnpm lint
+pnpm build
+```
+
+The small assertion check covers multipart bytes/MIME/boundary, Document order
+and sanitized errors, and Sources rendering/security/lifecycle copy. It does not
+replace real-stack browser acceptance. No new E2E fixture framework is added.
+
+### Real-local-stack review checklist
+
+With PostgreSQL/pgvector, Backend, Agent Server, and Frontend running:
+
+1. Select Project A without a Session, upload a valid Markdown file, and check
+   that its indexed metadata appears. Switch rapidly between A and B; the list
+   must follow the selected Project, including on mobile. With a long sidebar,
+   scroll down and click an existing Session while the "Create or select"
+   hint is present: the hint must not overlap or intercept the Session button.
+2. Check an invalid upload and a failed request: safe error, no phantom entry.
+   Retry the list separately from uploading; do not retry an ambiguous upload
+   until checking whether it was saved.
+3. Create/select a Session and run scoped research using the uploaded content.
+   Confirm one Sources panel, correct ordered provenance, and a Report.
+4. Reload the same Product URL. Confirm the selected thread's Report and Sources
+   recover through SDK history, with no Frontend persistence or source parsing.
+5. Start a later run and exercise a controlled Agent failure. The prior Sources
+   must remain labelled latest completed; switch Sessions and confirm isolation.
+
+P8-QA-001 owns the full two-Project upload → retrieval → Report/Sources browser
+matrix and controlled Agent failure. Module reports must not claim this gate
+passed from component checks alone.
 
 ## Upstream Feature Reference
 

@@ -31,6 +31,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 
 import { getApiKey } from "@/lib/api-key";
 import { researchFlowUserId } from "@/lib/backend";
+import type { Citation } from "@/lib/citations";
 
 import { useProjectSession } from "./ProjectSession";
 
@@ -39,6 +40,7 @@ import { toast } from "sonner";
 export type StateType = {
   messages: Message[];
   ui?: UIMessage[];
+  citations?: Citation[];
 };
 
 type AgentRunContext = {

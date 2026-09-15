@@ -1,7 +1,7 @@
 # Quality Report
 
 > Owner: 05-Quality / Quality Evaluation Engineer  
-> Current baseline: `P7-003B/C` (Citation and retrieval-baseline validation)
+> Current baseline: `P8-QA-001` (local browser-completion acceptance)
 > Status: **PASS WITH FINDINGS**
 
 This document is the maintained quality baseline for ResearchFlow. It records
@@ -26,9 +26,43 @@ When documents and implementation differ, quality review uses this source order:
 2. `docs/DATA_MODEL.md`
 3. `docs/ARCHITECTURE.md`
 4. `docs/DECISIONS.md`
-5. `docs/PHASE_1_PLAN.md` through `docs/PHASE_5_PLAN.md`
+5. `docs/PHASE_1_PLAN.md` through the current Phase plan
 6. `docs/tasks/`
 7. Code and tests
+
+## Current baseline — P8-QA-001
+
+**Status:** **PASS WITH FINDINGS — LOCAL/TEST MVP ACCEPTED**
+
+| Area | Status | Evidence / note |
+| --- | --- | --- |
+| Project Knowledge UI | **Validated** | Native Markdown upload/list consumes the existing Project-scoped Backend API, preserves bytes, refreshes authoritative order, rejects stale Project responses, and presents sanitized actionable errors. |
+| Latest Sources UI | **Validated** | Reads only typed checkpoint `citations`, preserves order/duplicates, separates Web links from uploaded provenance, and distinguishes absent from valid empty State. |
+| Browser success path | **Validated** | Real configured-provider A/B browser runs proved upload → scoped Knowledge → Report/Sources, Project isolation, selected-session reload, and in-flight rejoin. |
+| Browser failure path | **Validated** | Invalid upload created no Document. A real browser-resumed `execute_tool` Knowledge failure reached Agent error and retained the prior matching Report/Citation pair. |
+| Regression | **Validated** | 146 Python tests with warnings as errors, dependency/compile checks, both migration drift checks, Frontend P8 assertions/type/lint/build, and documentation diff checks passed. |
+| Release boundary | **Accepted with limitation** | Local/test MVP only. Production identity, durable Agent restart recovery, claim-level Citation, and comprehensive product features are not claimed. |
+
+P8-QA-001 cleaned only its enumerated review rows/threads and left no matching
+test Project. Full evidence and commands are recorded in
+`docs/tasks/P8-QA-001.md`.
+
+Current Phase 8 findings are **Blocker 0 / High 0 / Medium 0 / Low 1 / Info 2**:
+local Agent-server restart retention (QF-006), inherited Frontend lint warnings,
+and the trusted identity deployment precondition. The reused development
+database also emitted a non-blocking local collation-version warning; it is
+maintenance evidence, not a repository-code failure.
+
+### QF-006 — Agent-server restart retention is not durable
+
+- Severity: **Low for local/test; blocker for a durability claim**.
+- Status: accepted release limitation.
+- Evidence: browser hard reload restored current runtime checkpoints, but after
+  the in-memory Agent Server process exited, PostgreSQL Session/thread rows
+  remained while a fresh Server did not contain their completed State.
+- Current action: keep the limitation explicit. Before promising durable
+  history, define checkpoint persistence and stale-session reconciliation at
+  the Agent Server/Product Backend boundary; do not infer it in Frontend.
 
 ## P7 stream regression — BUG-P7-STREAM-001
 

@@ -7,6 +7,7 @@ import { useState, FormEvent } from "react";
 import { Button } from "../ui/button";
 import { Checkpoint, Message } from "@langchain/langgraph-sdk";
 import { AssistantMessage, AssistantMessageLoading } from "./messages/ai";
+import { LatestResearchSources } from "./sources";
 import { HumanMessage } from "./messages/human";
 import {
   DO_NOT_RENDER_ID_PREFIX,
@@ -442,6 +443,20 @@ export function Thread() {
                   )}
                   {isLoading && !firstTokenReceived && (
                     <AssistantMessageLoading />
+                  )}
+                  {selectedSession && (
+                    <LatestResearchSources
+                      citations={
+                        // SDK history clears in an effect; reject another thread's
+                        // snapshot even during the first selection-change render.
+                        stream.history[0]?.checkpoint.thread_id ===
+                        selectedSession.thread_id
+                          ? stream.values.citations
+                          : undefined
+                      }
+                      isLoading={isLoading}
+                      hasError={!!stream.error}
+                    />
                   )}
                 </>
               }

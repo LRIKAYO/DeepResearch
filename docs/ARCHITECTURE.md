@@ -704,3 +704,40 @@ pass/fail threshold. A poor future score is evidence, not a reason
 to relabel the fixture or change the retriever inside the evaluation task. MRR,
 NDCG, Precision@K, citation correctness, LangSmith, and retrieval optimization
 remain unapproved until this baseline is reviewed.
+
+## Phase 8 Local Browser Projection Boundary
+
+**Decision:** D-019
+
+**Implementation status:** DONE through P8-FE-001, P8-FE-002, and P8-QA-001;
+local/test Phase 8 accepted on 2026-09-15.
+
+The first Phase 8 batch consumes the existing Product Backend Document and
+Agent Citation contracts:
+
+```text
+selected Project
+  ├─ Frontend Knowledge panel → Product Backend Document list/create
+  └─ selected Research Session → useStream/checkpoint
+       → messages + latest successful citations
+       → Report rendering + session-level latest Sources inventory
+```
+
+The Knowledge panel is Project-scoped, not Session/thread/run-scoped, and does
+not reuse transient composer attachments. The Sources panel is a projection of
+typed checkpoint State, not a ToolMessage parser, event log, or historical
+Report association. A later in-flight or failed run leaves the previous
+successful pair visible under explicit **latest completed** wording.
+
+No Backend/Agent API change, Product persistence, inline Citation, `run_id`
+history, event replay, multi-format ingestion, or production trust claim is
+part of this boundary. P8-QA-001 validates the two existing browser planes
+together on the real local/test stack before a Phase exit is considered.
+
+P8-QA-001 passed that browser gate. Browser refresh restores checkpoint State
+held by the current local Agent runtime, but an Agent-server process restart is
+not a durability guarantee: PostgreSQL may retain a Research Session/thread
+association after the in-memory Server has lost its checkpoint. QF-006 requires
+a future checkpoint-persistence and stale-session reconciliation decision
+before ResearchFlow claims durable conversation history. Frontend must not
+guess or reconstruct that missing State.
