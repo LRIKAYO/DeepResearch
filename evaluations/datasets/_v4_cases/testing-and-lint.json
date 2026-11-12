@@ -1,0 +1,169 @@
+[
+  {
+    "case_id": "lint-axe-core-ie11",
+    "project_key": "testing-and-lint",
+    "query": "Which Microsoft browser does axe-core still list as supported even though that version is flagged deprecated?",
+    "relevant_passages": [
+      {
+        "document_key": "testing-and-lint-volume-1",
+        "chunk_index": 44,
+        "anchor": "- Internet Explorer v11 (DEPRECATED)"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "testing-and-lint-volume-1",
+        "chunk_index": 48,
+        "anchor": "Axe-core supports the following locales."
+      }
+    ],
+    "rationale": "The Supported Browsers section names Internet Explorer v11 as deprecated but still listed, while the locales chunk only enumerates translation languages and says nothing about browsers.",
+    "difficulty": "easy"
+  },
+  {
+    "case_id": "lint-glob-parent-non-glob",
+    "project_key": "testing-and-lint",
+    "query": "If I hand glob-parent a path that contains no wildcard characters at all, what does it hand back?",
+    "relevant_passages": [
+      {
+        "document_key": "testing-and-lint-volume-6",
+        "chunk_index": 81,
+        "anchor": "// if provided a non-glob path, returns the nearest dir"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "testing-and-lint-volume-6",
+        "chunk_index": 84,
+        "anchor": "// Disables the automatic conversion of slashes for Windows"
+      }
+    ],
+    "rationale": "The usage examples show a non-glob path returning the nearest directory, whereas the options chunk only documents the flipBackslashes switch.",
+    "difficulty": "easy"
+  },
+  {
+    "case_id": "lint-humanfs-node-emfile-budget",
+    "project_key": "testing-and-lint",
+    "query": "When the Node filesystem adapter for humanfs keeps running out of file handles, how long will it keep retrying before giving up for good?",
+    "relevant_passages": [
+      {
+        "document_key": "testing-and-lint-volume-4",
+        "chunk_index": 27,
+        "anchor": "* `ENFILE` and `EMFILE` - calls that result in these errors are retried for up to 60 seconds before giving up for good."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "testing-and-lint-volume-4",
+        "chunk_index": 36,
+        "anchor": "After importing, create a new instance of `Retrier` and specify the function to run on the error. This function should return `true` if you want the call retried and `false` if not."
+      }
+    ],
+    "rationale": "@humanfs/node states the 60-second retry budget for ENFILE/EMFILE, while the Retrier chunk only shows how to decide whether an error is retryable and never gives a time limit.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "lint-minimatch-platform-default",
+    "project_key": "testing-and-lint",
+    "query": "Which minimatch option turns on the Windows-specific path handling, and what value does it fall back to when you leave it out?",
+    "relevant_passages": [
+      {
+        "document_key": "testing-and-lint-volume-2",
+        "chunk_index": 147,
+        "anchor": "Defaults to the value of `process.platform`."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "testing-and-lint-volume-2",
+        "chunk_index": 143,
+        "anchor": "This is the default when the platform is `win32` and"
+      }
+    ],
+    "rationale": "The platform option chunk says the setting defaults to process.platform and toggles Windows path behaviour, while the windowsNoMagicRoot chunk describes a different win32+nocase default and never names the platform option's own fallback.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "lint-braces-range-limit",
+    "project_key": "testing-and-lint",
+    "query": "Why does brace expansion of a very large numeric range come back as a single parenthesised expression instead of a long list of values?",
+    "relevant_passages": [
+      {
+        "document_key": "testing-and-lint-volume-1",
+        "chunk_index": 72,
+        "anchor": "To prevent malicious patterns from being passed by users, an error is thrown when `braces.expand()` is used or `options.expand` is true and the generated range will exceed the `rangeLimit`."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "testing-and-lint-volume-1",
+        "chunk_index": 88,
+        "anchor": "Braces is more accurate, without sacrificing performance."
+      }
+    ],
+    "rationale": "The rangeLimit chunk explains that an oversized generated range is replaced by an optimized expression and names the default threshold, whereas the benchmark chunk only compares operations per second against minimatch.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "lint-ignore-allow-relative-paths",
+    "project_key": "testing-and-lint",
+    "query": "ignore 的 allowRelativePaths 选项是从哪个版本开始提供的？它用来兼容哪个旧主版本的路径处理行为？",
+    "relevant_passages": [
+      {
+        "document_key": "testing-and-lint-volume-6",
+        "chunk_index": 117,
+        "anchor": "This option brings backward compatibility with projects which based on `ignore@4.x`."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "testing-and-lint-volume-6",
+        "chunk_index": 120,
+        "anchor": "Since `4.0.0`, `ignore` will no longer support node < 6, to use `ignore` in node < 6:"
+      }
+    ],
+    "rationale": "The allowRelativePaths section is headed 'since 5.2.0' and says it restores ignore@4.x behaviour for relative paths, while the upgrade section only drops Node < 6 support and mentions no option.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "lint-basename-match-minimatch-vs-fastglob",
+    "project_key": "testing-and-lint",
+    "query": "I want the single pattern `*.md` to also match `one/file.md`. Which minimatch option does that, and what is the default for fast-glob's equivalent option?",
+    "relevant_passages": [
+      {
+        "document_key": "testing-and-lint-volume-2",
+        "chunk_index": 137,
+        "anchor": "If set, then patterns without slashes will be matched"
+      },
+      {
+        "document_key": "testing-and-lint-volume-5",
+        "chunk_index": 95,
+        "anchor": "fg.sync('*.md', { baseNameMatch: false }); // []"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "testing-and-lint-volume-2",
+        "chunk_index": 117,
+        "anchor": "On Windows, UNC paths like `//?/c:/...` or"
+      }
+    ],
+    "rationale": "minimatch's matchBase option supplies the slash-free basename matching while fast-glob's baseNameMatch section supplies its false default; the UNC-paths chunk is about Windows separators and names neither option nor its default.",
+    "difficulty": "hard"
+  },
+  {
+    "case_id": "lint-paid-support-sla",
+    "project_key": "testing-and-lint",
+    "query": "What does the paid commercial support subscription for these linting tools cost per year, and what response-time SLA does it guarantee?",
+    "relevant_passages": [],
+    "distractor_passages": [
+      {
+        "document_key": "testing-and-lint-volume-1",
+        "chunk_index": 49,
+        "anchor": "- See [release and support](doc/release-and-support.md) for details on the frequency of releases, long-term support and recommendations on upgrading axe-core."
+      }
+    ],
+    "rationale": "The chunk discusses release cadence, long-term support and security-update windows but never mentions a subscription, a price or a response-time SLA, so the corpus cannot answer the question.",
+    "difficulty": "hard"
+  }
+]

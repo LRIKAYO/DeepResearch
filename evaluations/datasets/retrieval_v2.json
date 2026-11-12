@@ -1,0 +1,1109 @@
+{
+  "schema_version": 2,
+  "dataset_version": "retrieval-v2",
+  "label_review": "synthetic_ai_reviewed",
+  "label_note": "Hand-authored corpus and relevance labels for six domains, written for this evaluation and mechanically checked against researchflow.knowledge.chunking. Every passage anchor must appear in the referenced chunk. Labels were AI-reviewed but have not been human-reviewed, so no release threshold is claimed.",
+  "projects": [
+    {
+      "project_key": "lab-operations",
+      "name": "Lab Operations",
+      "documents": [
+        {
+          "document_key": "lab-handbook",
+          "filename": "lab-handbook.md",
+          "content": "# Lab Operations Handbook\n\nVersion 2.3. This handbook covers routine bench work in the BSL-2 research laboratory. Hazardous materials follow the separate safety and waste guide.\n\n## Spectrometer calibration\n\nCalibrate the spectrometer every Monday at 09:00 before collecting samples. Place the dark reference plate in the sample holder and run the automatic calibration routine. Record the calibration result in the instrument log. The microscope follows a different maintenance schedule.\n\n## Microscope maintenance\n\nClean the microscope lenses on the first Friday of each month with the approved optics cloth. Do not use ethanol on the objective lenses. Lens cleaning does not replace spectrometer calibration and is logged separately.\n\n## Centrifuge operation\n\nBalance tubes by mass before every run and never exceed 14,000 rpm. Pre-cool the rotor to 4 °C for RNA work. Stop the run immediately if the rotor makes an unusual noise and report the event to the lab manager.\n\n## Sample storage\n\nStore long-term samples in the -80 °C freezer and label every tube with the date, project code, and owner initials. Keep the -20 °C freezer for working aliquots only. Do not store hazardous waste in sample freezers.\n\n## Incident reporting\n\nReport any laboratory incident to the safety officer within two hours of discovery. Complete the incident form with the people involved, the substances handled, and the immediate corrective action. Near misses follow a separate reporting route.\n"
+        },
+        {
+          "document_key": "safety-and-waste",
+          "filename": "safety-and-waste.md",
+          "content": "# Safety and Waste Disposal\n\nThis guide applies to every person working in the laboratory, including visiting researchers and contractors.\n\n## Chemical waste\n\nSeparate halogenated solvents from non-halogenated solvents. Collect chemical waste in amber containers with a completed hazardous waste label. Never pour chemical waste into the sink, even when the substance is water soluble.\n\n## Biohazard waste\n\nPlace biohazard waste in red bags and sterilize it in the autoclave at 121 °C for 30 minutes before disposal. Autoclave indicator tape must change colour on every load. Sharps are never placed in biohazard bags.\n\n## Sharps disposal\n\nDispose of needles, blades, and broken glass in puncture-resistant sharps containers. Seal a container when it is three-quarters full and submit it to the waste contractor. Do not place sharps in regular waste or recycling.\n\n## Chemical spill response\n\nFor a small chemical spill, alert people nearby, ventilate the area, and use the spill kit appropriate to the substance. For a mercury spill, evacuate the room and call the safety officer. Never use a standard mop on a mercury spill.\n\n## Near-miss reporting\n\nSubmit a near-miss report through the anonymous safety form within five working days. Near misses are reviewed monthly by the safety committee. Reporting a near miss is separate from reporting an injury incident.\n"
+        },
+        {
+          "document_key": "instrument-log",
+          "filename": "instrument-log.md",
+          "content": "# Instrument Log and Reservations\n\nAll shared instruments are booked through the laboratory calendar. Log every run, including failed runs, in the instrument log.\n\n## Imaging room reservations\n\nAll imaging room reservations use Coordinated Universal Time (UTC), including bookings made by visiting researchers. Convert local appointment times to UTC before entering a reservation. The room is released after 15 minutes if the booking holder does not arrive.\n\n## Booking cancellation\n\nCancel an instrument booking at least 24 hours before the start time. Late cancellations are recorded against the research group. Repeated late cancellations require approval from the lab manager.\n\n## Spectrometer booking\n\nBook the spectrometer for a maximum of two hours per session. Enter the run identifier and the sample batch in the log. Spectrometer booking does not include the weekly calibration, which is performed by the instrument team.\n\n## Freezer alarm response\n\nIf a freezer alarm sounds, call facilities immediately and move samples to the backup freezer. Record the alarm time and the destination freezer in the instrument log. Do not open the freezer door repeatedly while waiting for facilities.\n"
+        },
+        {
+          "document_key": "training-matrix",
+          "filename": "training-matrix.md",
+          "content": "# Training and Access Matrix\n\nAccess to laboratories and instruments is granted only after the required training is recorded in the training matrix.\n\n## New researcher onboarding\n\nEvery new researcher completes a safety induction and two supervised bench sessions before working alone. Collect a photo badge on the first day and return it on the last day. The induction covers waste handling, spill response, and incident reporting.\n\n## BSL-2 access\n\nBSL-2 laboratory access requires biosafety training and an annual refresher. Researchers who work with human samples also complete bloodborne pathogen training. Training records are retained by the safety office for seven years.\n\n## Equipment certification\n\n| Instrument | Certification | Validity |\n| --- | --- | --- |\n| Spectrometer | Instrument team sign-off | 12 months |\n| Centrifuge | Practical assessment | 24 months |\n| Microscope | Supervisor sign-off | 24 months |\n\nOnly certified staff may operate an instrument independently.\n\n## Visitor access\n\nVisitors collect a temporary badge from reception and are accompanied by their host at all times. Visitors may not enter equipment rooms without prior approval from the lab manager. Return the temporary badge before leaving the building.\n"
+        }
+      ]
+    },
+    {
+      "project_key": "api-documentation",
+      "name": "API Documentation",
+      "documents": [
+        {
+          "document_key": "authentication",
+          "filename": "authentication.md",
+          "content": "# Authentication\n\nAll requests to the ResearchFlow API require an API key or an OAuth access token. Keys are scoped to a single organization.\n\n## API keys\n\nCreate API keys in the developer console. Production keys use the prefix rf_live_ and test keys use rf_test_. Rotate every key every 90 days and revoke a key immediately if it is exposed. The API rejects a revoked key with HTTP 401.\n\n## OAuth scopes\n\nOAuth tokens carry explicit scopes. The read:projects scope allows listing projects and reading project metadata. The write:documents scope allows uploading and deleting documents. Request only the scopes an integration needs.\n\n## Rate limits\n\nThe API allows 600 requests per minute per API key. A client that exceeds the limit receives HTTP 429 with a Retry-After header giving the number of seconds to wait. Rate limits are enforced per key, not per organization.\n\n## Error codes\n\n| Status | Meaning | Action |\n| --- | --- | --- |\n| 401 | Missing or invalid credentials | Check the API key |\n| 403 | Scope does not allow the operation | Request the correct scope |\n| 429 | Rate limit exceeded | Wait for Retry-After |\n| 503 | Indexing service unavailable | Retry with backoff |\n"
+        },
+        {
+          "document_key": "endpoints-projects",
+          "filename": "endpoints-projects.md",
+          "content": "# Project Endpoints\n\nProjects group documents and knowledge search scope. Every project belongs to exactly one organization and one owner.\n\n## Create project\n\nSend POST /v1/projects with a JSON body containing a name between 1 and 120 characters. The response contains the new project_id. Project names are not required to be unique.\n\n## List projects\n\nSend GET /v1/projects to list projects owned by the caller. Results use cursor pagination with a default page size of 50 and a maximum page size of 200. Pass the next_cursor value from the response to fetch the next page.\n\n## Delete project\n\nSend DELETE /v1/projects/{project_id}. Deletion is soft: the project and its documents remain recoverable for 30 days. Restore a deleted project within that window with POST /v1/projects/{project_id}/restore. After 30 days the data is purged.\n\n## Project quotas\n\nAn organization may own at most 200 active projects. Archived projects do not count toward the quota. Request a quota increase through the support portal; increases are reviewed within five business days.\n"
+        },
+        {
+          "document_key": "endpoints-documents",
+          "filename": "endpoints-documents.md",
+          "content": "# Document and Search Endpoints\n\nDocuments are uploaded as UTF-8 Markdown and indexed for project-scoped knowledge search.\n\n## Upload document\n\nSend POST /v1/projects/{project_id}/documents as multipart/form-data with a single part named file. The part must use content-type text/markdown. The maximum document size is 1 MiB. The response contains the document_id and the number of indexed chunks.\n\n## Chunking behavior\n\nThe indexer splits Markdown on headings and keeps each section as a chunk. A section longer than 2000 characters is split into overlapping chunks with 200 characters of overlap. Chunk indexes start at zero and are stable for a given document.\n\n## Search knowledge\n\nSend POST /v1/projects/{project_id}/knowledge/search with a query string and a limit between 1 and 20. The response is an array of hits sorted by descending score. Each hit contains document_id, chunk_id, filename, content, and score, where score is one minus the cosine distance.\n\n## Embedding model\n\nDocuments and queries are embedded with BAAI/bge-m3, which produces 1024-dimensional vectors. The model accepts inputs up to 8192 tokens. Embeddings are generated during upload, so search never calls an external model at query time.\n"
+        },
+        {
+          "document_key": "webhooks",
+          "filename": "webhooks.md",
+          "content": "# Webhooks\n\nWebhooks notify an integration when a document finishes indexing or a project is deleted. Configure endpoints in the developer console.\n\n## Webhook signatures\n\nEvery delivery includes the X-RF-Signature header. The value is an HMAC-SHA256 of the raw request body using the endpoint signing secret. Reject a delivery whose timestamp differs from the current time by more than five minutes to prevent replay attacks.\n\n## Retry policy\n\nA failed delivery is retried up to five times using exponential backoff. The retry schedule starts after 30 seconds and can extend to 24 hours. A delivery is considered successful when the endpoint returns any 2xx status.\n\n## Event types\n\n| Event | When it is sent |\n| --- | --- |\n| document.indexed | A document finishes indexing |\n| document.failed | Indexing fails permanently |\n| project.deleted | A project is soft deleted |\n\nEvent payloads include an event_id that is unique per delivery attempt group.\n\n## Idempotency\n\nConsumers must deduplicate deliveries using event_id for at least 24 hours. Replayed events keep the same event_id but may have a different delivery timestamp. Ignore unknown event types instead of failing the delivery.\n"
+        }
+      ]
+    },
+    {
+      "project_key": "hr-policy",
+      "name": "HR Policy",
+      "documents": [
+        {
+          "document_key": "leave-and-absence",
+          "filename": "leave-and-absence.md",
+          "content": "# Leave and Absence Policy\n\nThis policy applies to all permanent employees. Contractors follow the terms in their statement of work.\n\n## Annual leave\n\nEmployees receive 25 days of paid annual leave per calendar year, accrued monthly. Up to five unused days may be carried over to the next year and must be used by 31 March. Leave requests are approved by the line manager.\n\n## Sick leave\n\nEmployees receive 10 days of paid sick leave per year. A medical certificate is required for any absence longer than three consecutive days. Report sickness to the line manager before 10:00 on the first day of absence.\n\n## Parental leave\n\nParental leave is 26 weeks for the primary carer and 12 weeks for the secondary carer. The primary carer receives 100% pay for the first six weeks and statutory pay for the remainder. Notify HR at least eight weeks before the expected start date.\n\n## Remote work\n\nEmployees may work remotely for up to two days per week with manager approval. Core collaboration hours are 10:00 to 15:00 local time on remote days. Fully remote arrangements require approval from the head of department.\n"
+        },
+        {
+          "document_key": "compensation",
+          "filename": "compensation.md",
+          "content": "# Compensation and Expenses\n\nCompensation is reviewed annually and expenses are reimbursed against the published limits.\n\n## Salary review\n\nSalaries are reviewed once a year in April, and changes take effect on 1 May. Eligibility requires at least six months of continuous service by 1 April. Employees on a performance improvement plan are reviewed separately.\n\n## Bonus\n\nThe target annual bonus is 10% of base salary. Payment is made in March for the previous calendar year and is prorated for part-year service. A bonus is not guaranteed and depends on company and individual performance.\n\n| Component | Target |\n| --- | --- |\n| Annual bonus | 10% of base salary |\n| Referral bonus | $2,000 per hire |\n\n## Expense reimbursement\n\nSubmit expense claims with itemized receipts within 30 days of the expense date. The meal limit is $75 per day for domestic travel. Claims submitted later than 60 days are rejected unless the finance director approves an exception.\n\n## Overtime\n\nExempt employees are not paid overtime and receive time off in lieu for pre-approved weekend work. Non-exempt employees are paid 1.5 times their hourly rate for hours above 40 in a week. Overtime must be approved in advance.\n"
+        },
+        {
+          "document_key": "conduct",
+          "filename": "conduct.md",
+          "content": "# Code of Conduct\n\nThe code of conduct applies to employees, contractors, and anyone acting on behalf of the company.\n\n## Behaviour standards\n\nTreat colleagues and partners with respect. Harassment, discrimination, and retaliation are prohibited. Report a concern to compliance@example.com or through the ethics hotline.\n\n## Conflict of interest\n\nDisclose any actual or potential conflict of interest to compliance within 10 business days of becoming aware of it. Recuse yourself from decisions affected by the conflict. Annual disclosure is also required in January.\n\n## Gifts and hospitality\n\nAccept gifts only when the value is $50 or less and the gift is not cash. Declare any gift above $50 to compliance and decline it politely. Hospitality must be modest and connected to a business purpose.\n\n## Data privacy\n\nHandle personal data in line with the privacy standard. Retain employee records for seven years after the end of employment. Report a suspected data breach to the privacy team within 24 hours.\n"
+        },
+        {
+          "document_key": "onboarding",
+          "filename": "onboarding.md",
+          "content": "# Onboarding and Development\n\nOnboarding is owned by the line manager, with support from People Operations.\n\n## First day checklist\n\nOn the first day, collect a badge and laptop from reception and complete the security induction. Meet the line manager and the assigned buddy. The IT team enables account access within one business day.\n\n## Probation\n\nNew employees serve a three-month probation period. The line manager holds a probation review at six weeks and a final review before the period ends. Probation may be extended by up to three months.\n\n## Equipment\n\nChoose a standard laptop or the approved alternative during the first week. Laptops are refreshed every four years or earlier if the device fails. Report lost equipment to IT within 24 hours.\n\n## Learning budget\n\nEach employee receives a learning budget of $1,500 per calendar year. Request approval before booking a course or conference. Unused budget does not carry over to the next year.\n"
+        }
+      ]
+    },
+    {
+      "project_key": "clinical-protocol",
+      "name": "Clinical Protocol",
+      "documents": [
+        {
+          "document_key": "study-overview",
+          "filename": "study-overview.md",
+          "content": "# Study Overview\n\nProtocol RF-204 is a phase 2 study of compound RFX-204 in adults with type 2 diabetes. The protocol version is 3.1.\n\n## Study design\n\nThis is a randomized, double-blind, placebo-controlled study with 120 participants allocated 2:1 to active treatment or placebo. The study runs for 24 weeks with a safety follow-up at week 28. Randomization is stratified by site and baseline HbA1c.\n\n## Eligibility criteria\n\nParticipants must be between 18 and 75 years old and have an eGFR of at least 30 mL/min/1.73 m². They must have a documented diagnosis of type 2 diabetes for at least 12 months. Stable background therapy is permitted.\n\n## Exclusion criteria\n\nExclude participants with pregnancy, breastfeeding, or a prior myocardial infarction within six months of screening. Exclude active malignancy and severe hepatic impairment. Prior treatment with an investigational agent within 30 days is also exclusionary.\n\n## Primary endpoint\n\nThe primary endpoint is the change in HbA1c from baseline at 24 weeks. Secondary endpoints include body weight change and the proportion of participants reaching HbA1c below 7%. The primary analysis uses the intention-to-treat population.\n"
+        },
+        {
+          "document_key": "dosing",
+          "filename": "dosing.md",
+          "content": "# Dosing and Administration\n\nStudy drug is supplied as oral tablets in 5 mg and 10 mg strengths. Dosing is supervised by the site investigator.\n\n## Dose escalation\n\nStart treatment at 5 mg once daily for the first four weeks. Increase to 10 mg once daily at week 4 if tolerated and eGFR is above 45. Do not escalate a participant who reported a grade 2 or higher gastrointestinal event.\n\n## Missed dose\n\nIf a dose is missed, take it within 12 hours of the scheduled time. If more than 12 hours have passed, skip the missed dose and resume the normal schedule. Never double a dose to make up for a missed one.\n\n## Renal adjustment\n\nFor participants with an eGFR between 30 and 45, the maximum dose is 5 mg once daily. Recheck eGFR before every escalation. If eGFR falls below 30, withhold study drug and notify the medical monitor.\n\n## Overdose\n\nIn case of suspected overdose, contact the site investigator immediately and monitor the participant for 24 hours. Record vital signs and any adverse events. There is no specific antidote; treatment is supportive.\n"
+        },
+        {
+          "document_key": "safety-reporting",
+          "filename": "safety-reporting.md",
+          "content": "# Safety Reporting\n\nSafety events are recorded in the electronic data capture system and reported to the sponsor according to the timelines below.\n\n## Adverse events\n\nRecord every adverse event in the EDC within 24 hours of learning about it. Grade severity using CTCAE version 5.0. Follow an ongoing adverse event until resolution or study completion.\n\n## Serious adverse events\n\nReport a serious adverse event to the sponsor within 24 hours of awareness. Submit the initial SAE form and supporting documentation. Notify the institutional review board within five calendar days.\n\n## Unblinding\n\nOnly the medical monitor may authorize unblinding, and only when knowledge of treatment is required for urgent clinical care. Document the reason and the time of unblinding. Do not unblind for routine safety reporting.\n\n## Pregnancy reporting\n\nReport any pregnancy occurring during the study within 24 hours. Follow the pregnancy until six months after delivery. A participant who becomes pregnant discontinues study drug immediately.\n"
+        },
+        {
+          "document_key": "assessments",
+          "filename": "assessments.md",
+          "content": "# Assessment Schedule\n\nAll participants follow the same assessment schedule unless the protocol specifies an unscheduled visit.\n\n## Visit schedule\n\n| Visit | Week | Key assessments |\n| --- | --- | --- |\n| Screening | -2 | Eligibility, ECG, labs |\n| Baseline | 0 | Randomization, HbA1c, eGFR |\n| Week 12 | 12 | HbA1c, ECG, safety labs |\n| Week 24 | 24 | Primary endpoint, safety labs |\n\n## Laboratory assessments\n\nCollect fasting glucose, HbA1c, and eGFR at every scheduled visit. Urine albumin is measured at baseline and week 24. Samples are processed at the central laboratory within 24 hours.\n\n## ECG assessments\n\nPerform a 12-lead ECG at screening and at week 12. Record the machine interpretation and the investigator override. Repeat an abnormal ECG within 24 hours.\n\n## Informed consent\n\nObtain written informed consent before any study procedure. Re-consent participants if a protocol amendment changes the risk profile. Provide a copy of the signed consent to the participant.\n"
+        }
+      ]
+    },
+    {
+      "project_key": "finance-policy",
+      "name": "Finance Policy",
+      "documents": [
+        {
+          "document_key": "procurement",
+          "filename": "procurement.md",
+          "content": "# Procurement Policy\n\nProcurement follows the approval thresholds below. All purchases must have a documented business need.\n\n## Purchase approval thresholds\n\n| Purchase value | Approver |\n| --- | --- |\n| Below $5,000 | Line manager |\n| $5,000 to $25,000 | Department director |\n| Above $25,000 | Chief financial officer |\n\nSplit purchases to avoid a threshold are prohibited. Attach the approved quote to every purchase request.\n\n## Vendor onboarding\n\nBefore the first payment, collect a completed W-9 or local equivalent and run sanctions screening. Vendor onboarding takes up to 10 business days. Do not share bank details over email.\n\n## Competitive bids\n\nObtain at least three written quotes for purchases above $10,000. Sole-source purchases require written justification approved by the CFO. Record the bids in the procurement file.\n\n## Emergency purchases\n\nAn emergency purchase may proceed with verbal CFO approval when a delay would create a safety or contractual risk. Document the approval within 24 hours and submit receipts within five business days. Emergency purchases are reviewed in the monthly control report.\n"
+        },
+        {
+          "document_key": "expenses",
+          "filename": "expenses.md",
+          "content": "# Travel and Expense Policy\n\nTravel must be booked through the corporate travel portal. Reimbursement follows the limits in this policy.\n\n## Travel booking\n\nBook economy class for flights under six hours and business class for flights of six hours or more. Book hotels at or below the negotiated rate for the destination. Premium economy is treated as economy for reimbursement.\n\n## Per diem\n\nThe daily meal per diem is $75 for domestic travel and $110 for international travel. The per diem covers meals and incidentals. Alcohol is not reimbursable.\n\n## Receipts\n\nSubmit itemized receipts within 30 days of the expense date. Credit card statements are not accepted as receipts. Missing receipts require a written explanation approved by the finance manager.\n\n## Corporate card\n\nThe corporate card is for business expenses only. Personal use is prohibited and may lead to card suspension. The default monthly limit is $10,000; request a temporary increase for major travel.\n"
+        },
+        {
+          "document_key": "budgeting",
+          "filename": "budgeting.md",
+          "content": "# Budgeting and Planning\n\nThe annual budget is prepared by Finance and approved by the board. Departments manage their budgets within the approved envelope.\n\n## Fiscal year\n\nThe fiscal year runs from 1 February to 31 January. Budgets are loaded into the planning system before the fiscal year starts. The first quarter begins on 1 February.\n\n## Budget submission\n\nDepartments submit their budget request by 15 November each year. Finance consolidates requests and returns a draft envelope by 15 December. Late submissions are not guaranteed funding.\n\n## Variance review\n\nReview actual spending against budget every month. Explain any variance greater than 10% in the monthly finance pack. Persistent overspend requires a corrective plan approved by the CFO.\n\n## Capitalization\n\nCapitalize purchases of $2,500 or more that have a useful life longer than one year. Items below the threshold are expensed immediately. Capitalized assets are tracked in the fixed asset register and depreciated.\n"
+        },
+        {
+          "document_key": "audit-and-controls",
+          "filename": "audit-and-controls.md",
+          "content": "# Audit and Internal Controls\n\nInternal controls protect company assets and the integrity of financial reporting.\n\n## Segregation of duties\n\nThe person who requests a purchase cannot approve it, and the person who approves a payment cannot post it. Where staffing is limited, compensating controls must be documented. Finance reviews role assignments every quarter.\n\n## Audit evidence retention\n\nRetain audit evidence for seven years. Evidence includes approvals, quotes, invoices, and reconciliation sign-offs. Store evidence in the audit management system, not in personal folders.\n\n## Fraud reporting\n\nReport suspected fraud through the ethics hotline, which accepts anonymous reports. Do not investigate suspected fraud yourself. The audit committee reviews every fraud report.\n\n## Records retention\n\n| Record | Retention period |\n| --- | --- |\n| Invoices | 7 years |\n| Contracts | 10 years |\n| Payroll records | 7 years |\n\nDestroy records only after the retention period and with legal approval.\n"
+        }
+      ]
+    },
+    {
+      "project_key": "product-spec",
+      "name": "Product Specification",
+      "documents": [
+        {
+          "document_key": "product-requirements",
+          "filename": "product-requirements.md",
+          "content": "# Product Requirements\n\nResearchFlow helps research teams find answers inside their own project documents. This document records the product goals for the current release.\n\n## Problem statement\n\nResearch teams accumulate protocols, reports, and policies across many files. People lose time searching manually and often miss the passage that answers their question. The product must return grounded passages rather than generated summaries.\n\n## Goals\n\nReturn the passage that answers a question, keep every answer attributable to a document, and support project-scoped access. The agent should cite the chunks it used so a reviewer can verify the answer.\n\n## Non-goals\n\nThe product does not train or fine-tune foundation models. It does not provide cross-project search. It does not replace the source-of-truth document system. Unanswerable questions should be declined rather than guessed.\n\n## Success metrics\n\nMeasure retrieval with Recall@5 of at least 0.8 on the frozen evaluation set. Measure grounding with a citation support rate of at least 0.95. Track hard-negative hit rate as a guardrail. A release that misses either target does not ship.\n"
+        },
+        {
+          "document_key": "architecture",
+          "filename": "architecture.md",
+          "content": "# Architecture\n\nThe system has a FastAPI backend, a PostgreSQL database with pgvector, and a LangGraph agent runtime. The browser client calls the backend only.\n\n## Components\n\nThe Product Backend owns projects, documents, chunking, embeddings, and retrieval. The agent runtime calls the backend's knowledge search endpoint through a scoped tool. PostgreSQL 16 stores documents, chunks, and vectors in the same database.\n\n## Embeddings\n\nUse BAAI/bge-m3 for both documents and queries. The model produces 1024-dimensional vectors and accepts up to 8192 tokens. Embeddings are computed at ingestion time and stored in a pgvector column.\n\n## Chunking\n\nChunk Markdown on headings with a maximum section size of 2000 characters. Overlong sections are split with 200 characters of overlap. Store the chunk index so citations can point to the exact passage.\n\n## Deployment\n\nDeploy the backend in a single region with no cross-region replication. Run PostgreSQL 16 with the pgvector extension. Horizontal scaling uses stateless backend replicas behind a load balancer. The deployment uses managed cloud services.\n"
+        },
+        {
+          "document_key": "api-contract",
+          "filename": "api-contract.md",
+          "content": "# API Contract\n\nThe public API is versioned in the path. All request and response bodies are JSON unless noted.\n\n## Search request\n\nSend POST /projects/{project_id}/knowledge/search with the header X-ResearchFlow-User-Id. The body contains a query string and a limit between 1 and 20. The project must belong to the requesting user.\n\n## Search response\n\nThe response is an array sorted by descending score. Each hit contains document_id, chunk_id, filename, content, and score. Score equals one minus the cosine distance. The response does not include generated answers.\n\n## Errors\n\nA missing or foreign project returns 404. An indexing or embedding failure returns 503 with a generic message. Invalid request bodies return 422. Error responses never include credentials or internal identifiers.\n\n## Versioning\n\nThe path version is /v1. Breaking changes require 90 days of notice and a new path version. Additive fields are allowed without a version change. Deprecations are announced in the changelog and by email to project owners.\n"
+        },
+        {
+          "document_key": "release-plan",
+          "filename": "release-plan.md",
+          "content": "# Release Plan\n\nThe release moves from alpha to beta to general availability. Each gate requires the evidence listed below.\n\n## Milestones\n\n| Milestone | Audience | Exit criteria |\n| --- | --- | --- |\n| Alpha | Design partners | Core search works end to end |\n| Beta | 100 projects | Retrieval target from product requirements |\n| GA | All customers | Citation support target met |\n\n## Beta criteria\n\nBeta requires at least 100 active projects and the retrieval target defined in the product requirements. The hard-negative hit rate must not regress from the alpha baseline. Support must be staffed for business hours.\n\n## Rollback\n\nEvery release ships behind a feature flag. Disable the flag to roll back within 15 minutes. Rollback does not require a database migration. Record the rollback reason in the incident log.\n\n## Support\n\nSupport is available during business hours in the primary region. The P1 first-response target is one hour. P2 issues are answered within one business day. Security incidents follow the separate security response plan.\n"
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "lab-spectrometer-calibration",
+      "project_key": "lab-operations",
+      "query": "When is the spectrometer calibrated, and which reference plate is used?",
+      "relevant_passages": [
+        {
+          "document_key": "lab-handbook",
+          "chunk_index": 1,
+          "anchor": "dark reference plate"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "instrument-log",
+          "chunk_index": 3,
+          "anchor": "two hours per session"
+        }
+      ],
+      "rationale": "The calibration section states the Monday 09:00 schedule and the dark reference plate. The booking section mentions the spectrometer but only limits session length, so it does not answer the question.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "lab-imaging-timezone",
+      "project_key": "lab-operations",
+      "query": "Which timezone applies to imaging room reservations?",
+      "relevant_passages": [
+        {
+          "document_key": "instrument-log",
+          "chunk_index": 1,
+          "anchor": "Coordinated Universal Time (UTC)"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The reservations section states that all imaging room bookings use UTC; no other document defines the booking timezone.",
+      "difficulty": "easy"
+    },
+    {
+      "case_id": "lab-biohazard-autoclave",
+      "project_key": "lab-operations",
+      "query": "At what temperature and for how long is biohazard waste autoclaved?",
+      "relevant_passages": [
+        {
+          "document_key": "safety-and-waste",
+          "chunk_index": 2,
+          "anchor": "121 °C for 30 minutes"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "safety-and-waste",
+          "chunk_index": 3,
+          "anchor": "puncture-resistant sharps containers"
+        }
+      ],
+      "rationale": "The biohazard section gives both the temperature and duration. The sharps section covers a different waste stream and does not give autoclave settings.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "lab-freezer-storage",
+      "project_key": "lab-operations",
+      "query": "At what temperature are long-term samples stored, and how are the tubes labelled?",
+      "relevant_passages": [
+        {
+          "document_key": "lab-handbook",
+          "chunk_index": 4,
+          "anchor": "label every tube with the date, project code, and owner initials"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "instrument-log",
+          "chunk_index": 4,
+          "anchor": "move samples to the backup freezer"
+        }
+      ],
+      "rationale": "The sample storage section gives the -80 °C freezer and the labelling rule. The freezer alarm section only describes emergency sample movement.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "lab-incident-near-miss",
+      "project_key": "lab-operations",
+      "query": "How quickly must a laboratory incident be reported, and what is the separate deadline for a near miss?",
+      "relevant_passages": [
+        {
+          "document_key": "lab-handbook",
+          "chunk_index": 5,
+          "anchor": "within two hours of discovery"
+        },
+        {
+          "document_key": "safety-and-waste",
+          "chunk_index": 5,
+          "anchor": "within five working days"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The incident deadline and the near-miss deadline live in two different documents; both are needed to answer the comparison.",
+      "difficulty": "hard"
+    },
+    {
+      "case_id": "lab-visitor-access",
+      "project_key": "lab-operations",
+      "query": "What are the badge and escort rules for visitors?",
+      "relevant_passages": [
+        {
+          "document_key": "training-matrix",
+          "chunk_index": 4,
+          "anchor": "accompanied by their host at all times"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The visitor section is the only place that defines the temporary badge and continuous host escort.",
+      "difficulty": "easy"
+    },
+    {
+      "case_id": "lab-cross-lingual-biohazard",
+      "project_key": "lab-operations",
+      "query": "生物危害废弃物在处置前需要怎样灭菌？",
+      "relevant_passages": [
+        {
+          "document_key": "safety-and-waste",
+          "chunk_index": 2,
+          "anchor": "autoclave at 121 °C"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The Chinese query asks for the biohazard sterilization method; the English biohazard section contains the autoclave settings.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "lab-unanswerable-radioactive",
+      "project_key": "lab-operations",
+      "query": "What is the approved procedure for disposing of radioactive isotopes in the laboratory?",
+      "relevant_passages": [],
+      "distractor_passages": [
+        {
+          "document_key": "safety-and-waste",
+          "chunk_index": 1,
+          "anchor": "amber containers"
+        },
+        {
+          "document_key": "safety-and-waste",
+          "chunk_index": 2,
+          "anchor": "red bags"
+        }
+      ],
+      "rationale": "The corpus covers chemical, biohazard, sharps, spill, and near-miss procedures but never mentions radioactive isotopes, so the system should abstain.",
+      "difficulty": "hard"
+    },
+    {
+      "case_id": "api-upload-limits",
+      "project_key": "api-documentation",
+      "query": "What is the maximum Markdown file size accepted by the document upload endpoint?",
+      "relevant_passages": [
+        {
+          "document_key": "endpoints-documents",
+          "chunk_index": 1,
+          "anchor": "maximum document size is 1 MiB"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "endpoints-documents",
+          "chunk_index": 2,
+          "anchor": "2000 characters"
+        }
+      ],
+      "rationale": "The upload section states the 1 MiB limit. The chunking section's 2000-character limit applies to sections, not uploads.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "api-key-rotation",
+      "project_key": "api-documentation",
+      "query": "How often must production API keys be rotated?",
+      "relevant_passages": [
+        {
+          "document_key": "authentication",
+          "chunk_index": 1,
+          "anchor": "every 90 days"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The API key section states a 90-day rotation interval; no other document discusses key lifetime.",
+      "difficulty": "easy"
+    },
+    {
+      "case_id": "api-rate-limit",
+      "project_key": "api-documentation",
+      "query": "What is the request rate limit per API key, and which status code signals that it was exceeded?",
+      "relevant_passages": [
+        {
+          "document_key": "authentication",
+          "chunk_index": 3,
+          "anchor": "600 requests per minute"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "endpoints-projects",
+          "chunk_index": 4,
+          "anchor": "200 active projects"
+        }
+      ],
+      "rationale": "The rate-limit section gives 600 requests per minute and HTTP 429. The quota section is about project counts, not request rates.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "api-soft-delete",
+      "project_key": "api-documentation",
+      "query": "After a project is deleted, for how long is it recoverable and how is it restored?",
+      "relevant_passages": [
+        {
+          "document_key": "endpoints-projects",
+          "chunk_index": 3,
+          "anchor": "remain recoverable for 30 days"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "endpoints-projects",
+          "chunk_index": 4,
+          "anchor": "200 active projects"
+        }
+      ],
+      "rationale": "The delete section gives the 30-day recovery window and the restore endpoint. The quota section does not describe deletion.",
+      "difficulty": "hard"
+    },
+    {
+      "case_id": "api-webhook-signature",
+      "project_key": "api-documentation",
+      "query": "Which header and algorithm protect webhook deliveries from forgery?",
+      "relevant_passages": [
+        {
+          "document_key": "webhooks",
+          "chunk_index": 1,
+          "anchor": "HMAC-SHA256"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "webhooks",
+          "chunk_index": 4,
+          "anchor": "event_id"
+        }
+      ],
+      "rationale": "The signature section names X-RF-Signature and HMAC-SHA256. The idempotency section discusses delivery de-duplication, not authenticity.",
+      "difficulty": "hard"
+    },
+    {
+      "case_id": "api-cross-lingual-upload",
+      "project_key": "api-documentation",
+      "query": "上传 Markdown 文档时，单个文件的最大体积是多少？",
+      "relevant_passages": [
+        {
+          "document_key": "endpoints-documents",
+          "chunk_index": 1,
+          "anchor": "1 MiB"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The Chinese query asks for the upload size limit; the English upload section states 1 MiB.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "api-multi-hop-key-event",
+      "project_key": "api-documentation",
+      "query": "Which prefix identifies a production API key, and which webhook event confirms that a document finished indexing?",
+      "relevant_passages": [
+        {
+          "document_key": "authentication",
+          "chunk_index": 1,
+          "anchor": "rf_live_"
+        },
+        {
+          "document_key": "webhooks",
+          "chunk_index": 3,
+          "anchor": "document.indexed"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The production prefix and the indexing event are defined in different documents, so both passages are required.",
+      "difficulty": "hard"
+    },
+    {
+      "case_id": "api-unanswerable-graphql",
+      "project_key": "api-documentation",
+      "query": "Does the API expose a GraphQL endpoint for querying projects?",
+      "relevant_passages": [],
+      "distractor_passages": [
+        {
+          "document_key": "endpoints-projects",
+          "chunk_index": 1,
+          "anchor": "POST /v1/projects"
+        },
+        {
+          "document_key": "endpoints-documents",
+          "chunk_index": 3,
+          "anchor": "knowledge/search"
+        }
+      ],
+      "rationale": "All documented endpoints are REST-style JSON endpoints; no document mentions GraphQL, so the correct behaviour is to abstain.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "hr-annual-leave-carryover",
+      "project_key": "hr-policy",
+      "query": "How many unused annual leave days can be carried over, and by when must they be used?",
+      "relevant_passages": [
+        {
+          "document_key": "leave-and-absence",
+          "chunk_index": 1,
+          "anchor": "must be used by 31 March"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "leave-and-absence",
+          "chunk_index": 2,
+          "anchor": "longer than three consecutive days"
+        }
+      ],
+      "rationale": "The annual-leave section states five days and 31 March. The sick-leave section is a different absence type.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "hr-sick-certificate",
+      "project_key": "hr-policy",
+      "query": "When is a medical certificate required for sick leave?",
+      "relevant_passages": [
+        {
+          "document_key": "leave-and-absence",
+          "chunk_index": 2,
+          "anchor": "longer than three consecutive days"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The sick-leave section states the certificate threshold; no other policy repeats it.",
+      "difficulty": "easy"
+    },
+    {
+      "case_id": "hr-parental-leave",
+      "project_key": "hr-policy",
+      "query": "How long is parental leave for the primary carer, and what pay applies for the first six weeks?",
+      "relevant_passages": [
+        {
+          "document_key": "leave-and-absence",
+          "chunk_index": 3,
+          "anchor": "26 weeks for the primary carer"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The parental-leave section gives 26 weeks and 100% pay for the first six weeks in the same passage.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "hr-bonus-timing",
+      "project_key": "hr-policy",
+      "query": "When is the annual bonus paid, and what is the target percentage?",
+      "relevant_passages": [
+        {
+          "document_key": "compensation",
+          "chunk_index": 2,
+          "anchor": "made in March"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The bonus section states payment in March and a 10% target; the salary-review section covers a different cycle.",
+      "difficulty": "easy"
+    },
+    {
+      "case_id": "hr-gift-limit",
+      "project_key": "hr-policy",
+      "query": "What is the maximum gift value an employee may accept without declaring it?",
+      "relevant_passages": [
+        {
+          "document_key": "conduct",
+          "chunk_index": 3,
+          "anchor": "$50 or less"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "conduct",
+          "chunk_index": 2,
+          "anchor": "within 10 business days"
+        }
+      ],
+      "rationale": "The gifts section sets the $50 threshold. The conflict-of-interest section has a disclosure deadline but no gift value.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "hr-multi-hop-probation-salary",
+      "project_key": "hr-policy",
+      "query": "What happens at six weeks of employment, and what service requirement determines eligibility for the annual salary review?",
+      "relevant_passages": [
+        {
+          "document_key": "onboarding",
+          "chunk_index": 2,
+          "anchor": "probation review at six weeks"
+        },
+        {
+          "document_key": "compensation",
+          "chunk_index": 1,
+          "anchor": "six months of continuous service"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The onboarding document defines the six-week probation review while compensation defines the six-month eligibility rule; neither document answers both parts.",
+      "difficulty": "hard"
+    },
+    {
+      "case_id": "hr-cross-lingual-parental",
+      "project_key": "hr-policy",
+      "query": "主要照护者的育儿假有多少周，且前六周的薪资比例是多少？",
+      "relevant_passages": [
+        {
+          "document_key": "leave-and-absence",
+          "chunk_index": 3,
+          "anchor": "26 weeks for the primary carer"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The Chinese query asks about primary-carer leave; the English parental-leave section contains both the duration and pay.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "hr-conflict-disclosure",
+      "project_key": "hr-policy",
+      "query": "Within what time must an employee disclose a conflict of interest?",
+      "relevant_passages": [
+        {
+          "document_key": "conduct",
+          "chunk_index": 2,
+          "anchor": "within 10 business days"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "conduct",
+          "chunk_index": 3,
+          "anchor": "$50 or less"
+        }
+      ],
+      "rationale": "The conflict-of-interest section states the 10-business-day disclosure window; the gifts section is unrelated.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "clin-primary-endpoint",
+      "project_key": "clinical-protocol",
+      "query": "What is the primary endpoint and when is it measured?",
+      "relevant_passages": [
+        {
+          "document_key": "study-overview",
+          "chunk_index": 4,
+          "anchor": "change in HbA1c from baseline at 24 weeks"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The primary-endpoint section states both the measure and the 24-week timepoint.",
+      "difficulty": "easy"
+    },
+    {
+      "case_id": "clin-eligibility-egfr",
+      "project_key": "clinical-protocol",
+      "query": "What is the minimum kidney function required for study eligibility?",
+      "relevant_passages": [
+        {
+          "document_key": "study-overview",
+          "chunk_index": 2,
+          "anchor": "eGFR of at least 30"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "dosing",
+          "chunk_index": 3,
+          "anchor": "maximum dose is 5 mg once daily"
+        }
+      ],
+      "rationale": "The eligibility section gives the eGFR floor. The renal-dosing section discusses dose adjustment, not eligibility.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "clin-dose-escalation",
+      "project_key": "clinical-protocol",
+      "query": "When is the dose increased to 10 mg?",
+      "relevant_passages": [
+        {
+          "document_key": "dosing",
+          "chunk_index": 1,
+          "anchor": "at week 4"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "dosing",
+          "chunk_index": 3,
+          "anchor": "between 30 and 45"
+        }
+      ],
+      "rationale": "The escalation section states escalation at week 4. The renal section limits the dose for reduced kidney function but does not give the escalation schedule.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "clin-missed-dose",
+      "project_key": "clinical-protocol",
+      "query": "What should a participant do if more than 12 hours have passed since a missed dose?",
+      "relevant_passages": [
+        {
+          "document_key": "dosing",
+          "chunk_index": 2,
+          "anchor": "skip the missed dose"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "dosing",
+          "chunk_index": 4,
+          "anchor": "monitor the participant for 24 hours"
+        }
+      ],
+      "rationale": "The missed-dose section instructs the participant to skip the dose after 12 hours. The overdose section is a different scenario.",
+      "difficulty": "easy"
+    },
+    {
+      "case_id": "clin-renal-adjustment",
+      "project_key": "clinical-protocol",
+      "query": "What is the maximum dose for an eGFR between 30 and 45, and what happens if eGFR falls below 30?",
+      "relevant_passages": [
+        {
+          "document_key": "dosing",
+          "chunk_index": 3,
+          "anchor": "between 30 and 45"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "study-overview",
+          "chunk_index": 2,
+          "anchor": "eGFR of at least 30"
+        }
+      ],
+      "rationale": "The renal-adjustment section gives the 5 mg maximum and the instruction to withhold the drug below 30. The eligibility section only defines the study entry threshold.",
+      "difficulty": "hard"
+    },
+    {
+      "case_id": "clin-sae-timeline",
+      "project_key": "clinical-protocol",
+      "query": "Within what time must a serious adverse event be reported to the sponsor and to the IRB?",
+      "relevant_passages": [
+        {
+          "document_key": "safety-reporting",
+          "chunk_index": 2,
+          "anchor": "within 24 hours of awareness"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "safety-reporting",
+          "chunk_index": 1,
+          "anchor": "within 24 hours of learning about it"
+        }
+      ],
+      "rationale": "The serious-adverse-event section gives both the 24-hour sponsor deadline and the five-calendar-day IRB deadline. The general adverse-event section does not define SAE reporting.",
+      "difficulty": "hard"
+    },
+    {
+      "case_id": "clin-multi-hop-egfr-monitoring",
+      "project_key": "clinical-protocol",
+      "query": "What is the maximum dose for reduced kidney function, and how often is eGFR measured during the study?",
+      "relevant_passages": [
+        {
+          "document_key": "dosing",
+          "chunk_index": 3,
+          "anchor": "maximum dose is 5 mg once daily"
+        },
+        {
+          "document_key": "assessments",
+          "chunk_index": 2,
+          "anchor": "at every scheduled visit"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The dosing document defines the reduced-function maximum while the assessment schedule defines eGFR measurement frequency; both are required.",
+      "difficulty": "hard"
+    },
+    {
+      "case_id": "clin-cross-lingual-sae",
+      "project_key": "clinical-protocol",
+      "query": "严重不良事件必须在多长时间内报告给申办方？",
+      "relevant_passages": [
+        {
+          "document_key": "safety-reporting",
+          "chunk_index": 2,
+          "anchor": "within 24 hours of awareness"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The Chinese query asks for the sponsor reporting deadline; the English SAE section states 24 hours from awareness.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "clin-unanswerable-stopping",
+      "project_key": "clinical-protocol",
+      "query": "What are the futility stopping boundaries for the interim analysis?",
+      "relevant_passages": [],
+      "distractor_passages": [
+        {
+          "document_key": "study-overview",
+          "chunk_index": 4,
+          "anchor": "intention-to-treat population"
+        },
+        {
+          "document_key": "safety-reporting",
+          "chunk_index": 2,
+          "anchor": "initial SAE form"
+        }
+      ],
+      "rationale": "The protocol documents describe endpoints and safety reporting but contain no interim analysis or futility stopping rule, so abstaining is correct.",
+      "difficulty": "hard"
+    },
+    {
+      "case_id": "fin-purchase-threshold",
+      "project_key": "finance-policy",
+      "query": "Who must approve a purchase valued above $25,000?",
+      "relevant_passages": [
+        {
+          "document_key": "procurement",
+          "chunk_index": 1,
+          "anchor": "Chief financial officer"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "procurement",
+          "chunk_index": 3,
+          "anchor": "three written quotes"
+        }
+      ],
+      "rationale": "The approval table assigns purchases above $25,000 to the CFO. The competitive-bid section governs quotes, not approval authority.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "fin-vendor-screening",
+      "project_key": "finance-policy",
+      "query": "What checks are required before a new vendor can be paid?",
+      "relevant_passages": [
+        {
+          "document_key": "procurement",
+          "chunk_index": 2,
+          "anchor": "sanctions screening"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The vendor-onboarding section requires a W-9 and sanctions screening before the first payment.",
+      "difficulty": "easy"
+    },
+    {
+      "case_id": "fin-travel-class",
+      "project_key": "finance-policy",
+      "query": "When may an employee book business class for a flight?",
+      "relevant_passages": [
+        {
+          "document_key": "expenses",
+          "chunk_index": 1,
+          "anchor": "six hours or more"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The travel-booking section permits business class for flights of six hours or more.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "fin-capitalization",
+      "project_key": "finance-policy",
+      "query": "At what value is a purchase capitalized rather than expensed?",
+      "relevant_passages": [
+        {
+          "document_key": "budgeting",
+          "chunk_index": 4,
+          "anchor": "$2,500 or more"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "audit-and-controls",
+          "chunk_index": 4,
+          "anchor": "7 years"
+        }
+      ],
+      "rationale": "The capitalization section sets the $2,500 threshold. The records-retention table lists storage periods and does not define capitalization.",
+      "difficulty": "hard"
+    },
+    {
+      "case_id": "fin-multi-hop-purchase-control",
+      "project_key": "finance-policy",
+      "query": "For a $30,000 purchase, who approves it and why must the requester not approve it?",
+      "relevant_passages": [
+        {
+          "document_key": "procurement",
+          "chunk_index": 1,
+          "anchor": "Chief financial officer"
+        },
+        {
+          "document_key": "audit-and-controls",
+          "chunk_index": 1,
+          "anchor": "cannot approve it"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The procurement table gives the CFO approver and the controls document explains the segregation-of-duties rule; both documents are needed.",
+      "difficulty": "hard"
+    },
+    {
+      "case_id": "fin-cross-lingual-receipts",
+      "project_key": "finance-policy",
+      "query": "报销时必须提交什么，以及提交期限是多少天？",
+      "relevant_passages": [
+        {
+          "document_key": "expenses",
+          "chunk_index": 3,
+          "anchor": "within 30 days"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The Chinese query asks for receipt requirements and the deadline; the English receipts section states itemized receipts within 30 days.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "fin-emergency-purchase",
+      "project_key": "finance-policy",
+      "query": "What approval is needed for an emergency purchase, and how quickly must it be documented?",
+      "relevant_passages": [
+        {
+          "document_key": "procurement",
+          "chunk_index": 4,
+          "anchor": "within 24 hours"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "procurement",
+          "chunk_index": 1,
+          "anchor": "Below $5,000"
+        }
+      ],
+      "rationale": "The emergency-purchase section allows verbal CFO approval and requires documentation within 24 hours. The threshold table does not describe emergencies.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "fin-unanswerable-crypto",
+      "project_key": "finance-policy",
+      "query": "What is the policy for paying vendors in cryptocurrency?",
+      "relevant_passages": [],
+      "distractor_passages": [
+        {
+          "document_key": "procurement",
+          "chunk_index": 2,
+          "anchor": "W-9"
+        },
+        {
+          "document_key": "expenses",
+          "chunk_index": 4,
+          "anchor": "corporate card"
+        }
+      ],
+      "rationale": "The finance documents cover bank-detail hygiene and corporate cards but never mention cryptocurrency, so the system should abstain.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "prod-embedding-dims",
+      "project_key": "product-spec",
+      "query": "How many dimensions does the embedding model produce?",
+      "relevant_passages": [
+        {
+          "document_key": "architecture",
+          "chunk_index": 2,
+          "anchor": "1024-dimensional vectors"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The embeddings section states 1024 dimensions for BAAI/bge-m3.",
+      "difficulty": "easy"
+    },
+    {
+      "case_id": "prod-success-metric",
+      "project_key": "product-spec",
+      "query": "What Recall@5 target defines retrieval success?",
+      "relevant_passages": [
+        {
+          "document_key": "product-requirements",
+          "chunk_index": 4,
+          "anchor": "Recall@5 of at least 0.8"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "release-plan",
+          "chunk_index": 2,
+          "anchor": "at least 100 active projects"
+        }
+      ],
+      "rationale": "The success-metrics section sets the 0.8 recall target. The beta section gives a project count, not the recall threshold.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "prod-search-response",
+      "project_key": "product-spec",
+      "query": "Which fields does a knowledge search hit contain?",
+      "relevant_passages": [
+        {
+          "document_key": "api-contract",
+          "chunk_index": 2,
+          "anchor": "document_id, chunk_id, filename, content, and score"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "api-contract",
+          "chunk_index": 1,
+          "anchor": "limit between 1 and 20"
+        }
+      ],
+      "rationale": "The search-response section lists the five hit fields. The request section describes the input limit.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "prod-chunk-cap",
+      "project_key": "product-spec",
+      "query": "What is the maximum section size before the chunker splits a section?",
+      "relevant_passages": [
+        {
+          "document_key": "architecture",
+          "chunk_index": 3,
+          "anchor": "2000 characters"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "architecture",
+          "chunk_index": 2,
+          "anchor": "8192 tokens"
+        }
+      ],
+      "rationale": "The chunking section sets the 2000-character section limit. The token limit belongs to the embedding model.",
+      "difficulty": "hard"
+    },
+    {
+      "case_id": "prod-no-model-training",
+      "project_key": "product-spec",
+      "query": "Does the product train or fine-tune foundation models?",
+      "relevant_passages": [
+        {
+          "document_key": "product-requirements",
+          "chunk_index": 3,
+          "anchor": "does not train or fine-tune"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "architecture",
+          "chunk_index": 2,
+          "anchor": "BAAI/bge-m3"
+        }
+      ],
+      "rationale": "The non-goals section explicitly excludes model training. The embeddings section names a pretrained model but says nothing about training.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "prod-multi-hop-beta",
+      "project_key": "product-spec",
+      "query": "How many active projects and what Recall@5 are required to exit beta?",
+      "relevant_passages": [
+        {
+          "document_key": "release-plan",
+          "chunk_index": 2,
+          "anchor": "at least 100 active projects"
+        },
+        {
+          "document_key": "product-requirements",
+          "chunk_index": 4,
+          "anchor": "Recall@5 of at least 0.8"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The beta criteria document gives the project count and points to the product requirements for the retrieval target; both passages are needed.",
+      "difficulty": "hard"
+    },
+    {
+      "case_id": "prod-cross-lingual-versioning",
+      "project_key": "product-spec",
+      "query": "破坏性 API 变更需要提前多少天通知？",
+      "relevant_passages": [
+        {
+          "document_key": "api-contract",
+          "chunk_index": 4,
+          "anchor": "90 days"
+        }
+      ],
+      "distractor_passages": [],
+      "rationale": "The Chinese query asks for the breaking-change notice period; the English versioning section states 90 days.",
+      "difficulty": "medium"
+    },
+    {
+      "case_id": "prod-rollback",
+      "project_key": "product-spec",
+      "query": "How quickly can a release be rolled back?",
+      "relevant_passages": [
+        {
+          "document_key": "release-plan",
+          "chunk_index": 3,
+          "anchor": "within 15 minutes"
+        }
+      ],
+      "distractor_passages": [
+        {
+          "document_key": "release-plan",
+          "chunk_index": 4,
+          "anchor": "one hour"
+        }
+      ],
+      "rationale": "The rollback section gives the 15-minute feature-flag rollback. The support section's one-hour target is a response time, not a rollback time.",
+      "difficulty": "easy"
+    },
+    {
+      "case_id": "prod-unanswerable-onprem",
+      "project_key": "product-spec",
+      "query": "Does ResearchFlow offer an on-premises deployment that runs offline?",
+      "relevant_passages": [],
+      "distractor_passages": [
+        {
+          "document_key": "architecture",
+          "chunk_index": 4,
+          "anchor": "single region"
+        },
+        {
+          "document_key": "architecture",
+          "chunk_index": 2,
+          "anchor": "8192 tokens"
+        }
+      ],
+      "rationale": "The architecture document describes a managed single-region cloud deployment but never mentions an on-premises or offline distribution, so abstaining is correct.",
+      "difficulty": "hard"
+    }
+  ]
+}

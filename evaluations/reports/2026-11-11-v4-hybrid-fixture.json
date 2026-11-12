@@ -1,0 +1,1509 @@
+{
+  "schema_version": 1,
+  "dataset_version": "retrieval-v4",
+  "dataset_sha256": "f57b923b39a57809378a653c4bde652dc22337471ef544979dd493a07c659e9d",
+  "k": 5,
+  "note": "Re-scored from a saved run: the stored ranking and cosine scores, re-evaluated under the current abstain policy. No new retrieval happened.",
+  "cases": [
+    {
+      "case_id": "build-detect-libc-off-linux",
+      "ranked_passages": [
+        {
+          "document_key": "build-and-tooling-volume-1",
+          "chunk_index": 21,
+          "score": 0.6420678687711918
+        },
+        {
+          "document_key": "build-and-tooling-volume-1",
+          "chunk_index": 14,
+          "score": 0.6533968448638916
+        },
+        {
+          "document_key": "build-and-tooling-volume-1",
+          "chunk_index": 23,
+          "score": 0.6034386517666978
+        },
+        {
+          "document_key": "build-and-tooling-volume-1",
+          "chunk_index": 19,
+          "score": 0.5861614593171214
+        },
+        {
+          "document_key": "build-and-tooling-volume-1",
+          "chunk_index": 24,
+          "score": 0.5121212005615234
+        }
+      ]
+    },
+    {
+      "case_id": "build-espree-default-ecma-version",
+      "ranked_passages": [
+        {
+          "document_key": "build-and-tooling-volume-2",
+          "chunk_index": 9,
+          "score": 0.76419426416193
+        },
+        {
+          "document_key": "build-and-tooling-volume-2",
+          "chunk_index": 16,
+          "score": 0.6368562389357044
+        },
+        {
+          "document_key": "build-and-tooling-volume-4",
+          "chunk_index": 29,
+          "score": 0.577317407450985
+        },
+        {
+          "document_key": "build-and-tooling-volume-2",
+          "chunk_index": 5,
+          "score": 0.570062186118235
+        },
+        {
+          "document_key": "build-and-tooling-volume-2",
+          "chunk_index": 24,
+          "score": 0.6357227184937776
+        }
+      ]
+    },
+    {
+      "case_id": "build-enhanced-resolve-lower-level-factory",
+      "ranked_passages": [
+        {
+          "document_key": "build-and-tooling-volume-1",
+          "chunk_index": 65,
+          "score": 0.6112143629065546
+        },
+        {
+          "document_key": "build-and-tooling-volume-1",
+          "chunk_index": 62,
+          "score": 0.6020968434695192
+        },
+        {
+          "document_key": "build-and-tooling-volume-1",
+          "chunk_index": 39,
+          "score": 0.5786166787147563
+        },
+        {
+          "document_key": "build-and-tooling-volume-1",
+          "chunk_index": 53,
+          "score": 0.5772361411311553
+        },
+        {
+          "document_key": "build-and-tooling-volume-1",
+          "chunk_index": 54,
+          "score": 0.5943171977996868
+        }
+      ]
+    },
+    {
+      "case_id": "build-tapable-withoptions-tap-order",
+      "ranked_passages": [
+        {
+          "document_key": "build-and-tooling-volume-3",
+          "chunk_index": 104,
+          "score": 0.6110149025917053
+        },
+        {
+          "document_key": "build-and-tooling-volume-3",
+          "chunk_index": 106,
+          "score": 0.597399115562439
+        },
+        {
+          "document_key": "build-and-tooling-volume-3",
+          "chunk_index": 126,
+          "score": 0.6004416525495547
+        },
+        {
+          "document_key": "build-and-tooling-volume-3",
+          "chunk_index": 132,
+          "score": 0.5385559797286987
+        },
+        {
+          "document_key": "build-and-tooling-volume-3",
+          "chunk_index": 112,
+          "score": 0.5563607744740556
+        }
+      ]
+    },
+    {
+      "case_id": "build-cssesc-global-default-options",
+      "ranked_passages": [
+        {
+          "document_key": "build-and-tooling-volume-3",
+          "chunk_index": 19,
+          "score": 0.7133310691512956
+        },
+        {
+          "document_key": "build-and-tooling-volume-3",
+          "chunk_index": 14,
+          "score": 0.6293681605708864
+        },
+        {
+          "document_key": "build-and-tooling-volume-1",
+          "chunk_index": 88,
+          "score": 0.6289658104140577
+        },
+        {
+          "document_key": "build-and-tooling-volume-6",
+          "chunk_index": 11,
+          "score": 0.6276135000721857
+        },
+        {
+          "document_key": "build-and-tooling-volume-3",
+          "chunk_index": 18,
+          "score": 0.6184668909589682
+        }
+      ]
+    },
+    {
+      "case_id": "build-semver-coerce-rtl-tuple",
+      "ranked_passages": [
+        {
+          "document_key": "build-and-tooling-volume-4",
+          "chunk_index": 73,
+          "score": 0.7042356309750313
+        },
+        {
+          "document_key": "build-and-tooling-volume-4",
+          "chunk_index": 51,
+          "score": 0.5733152031898499
+        },
+        {
+          "document_key": "build-and-tooling-volume-4",
+          "chunk_index": 58,
+          "score": 0.5236077904701233
+        },
+        {
+          "document_key": "build-and-tooling-volume-4",
+          "chunk_index": 57,
+          "score": 0.5122286081314087
+        },
+        {
+          "document_key": "build-and-tooling-volume-4",
+          "chunk_index": 54,
+          "score": 0.5231323553998691
+        }
+      ]
+    },
+    {
+      "case_id": "build-napi-postinstall-unrs-bridge",
+      "ranked_passages": [
+        {
+          "document_key": "build-and-tooling-volume-3",
+          "chunk_index": 66,
+          "score": 0.6766818165779162
+        },
+        {
+          "document_key": "build-and-tooling-volume-3",
+          "chunk_index": 73,
+          "score": 0.6472013803004499
+        },
+        {
+          "document_key": "build-and-tooling-volume-3",
+          "chunk_index": 70,
+          "score": 0.6476296572464512
+        },
+        {
+          "document_key": "build-and-tooling-volume-3",
+          "chunk_index": 72,
+          "score": 0.5877305619556057
+        },
+        {
+          "document_key": "build-and-tooling-volume-6",
+          "chunk_index": 69,
+          "score": 0.6268083826785327
+        }
+      ]
+    },
+    {
+      "case_id": "build-sharp-commercial-licence-price",
+      "ranked_passages": [
+        {
+          "document_key": "build-and-tooling-volume-2",
+          "chunk_index": 81,
+          "score": 0.4238985524238026
+        },
+        {
+          "document_key": "build-and-tooling-volume-2",
+          "chunk_index": 80,
+          "score": 0.45254632547773954
+        },
+        {
+          "document_key": "build-and-tooling-volume-4",
+          "chunk_index": 1,
+          "score": 0.4110351800918579
+        },
+        {
+          "document_key": "build-and-tooling-volume-4",
+          "chunk_index": 2,
+          "score": 0.4154033784688528
+        },
+        {
+          "document_key": "build-and-tooling-volume-4",
+          "chunk_index": 55,
+          "score": 0.36366868019104004
+        }
+      ]
+    },
+    {
+      "case_id": "dv-arc-default-digits",
+      "ranked_passages": [
+        {
+          "document_key": "data-visualisation-volume-1",
+          "chunk_index": 11,
+          "score": 0.6315080115648515
+        },
+        {
+          "document_key": "data-visualisation-volume-1",
+          "chunk_index": 5,
+          "score": 0.5971135675046914
+        },
+        {
+          "document_key": "data-visualisation-volume-1",
+          "chunk_index": 2,
+          "score": 0.536273543390459
+        },
+        {
+          "document_key": "data-visualisation-volume-1",
+          "chunk_index": 12,
+          "score": 0.5359727623438327
+        },
+        {
+          "document_key": "data-visualisation-volume-1",
+          "chunk_index": 6,
+          "score": 0.580352775486062
+        }
+      ]
+    },
+    {
+      "case_id": "dv-fraction-default-epsilon",
+      "ranked_passages": [
+        {
+          "document_key": "data-visualisation-volume-1",
+          "chunk_index": 98,
+          "score": 0.6794240474700928
+        },
+        {
+          "document_key": "data-visualisation-volume-1",
+          "chunk_index": 71,
+          "score": 0.6267085671424866
+        },
+        {
+          "document_key": "data-visualisation-volume-1",
+          "chunk_index": 59,
+          "score": 0.6369433023367356
+        },
+        {
+          "document_key": "data-visualisation-volume-1",
+          "chunk_index": 60,
+          "score": 0.6311976909637451
+        },
+        {
+          "document_key": "data-visualisation-volume-1",
+          "chunk_index": 78,
+          "score": 0.6386973261833191
+        }
+      ]
+    },
+    {
+      "case_id": "dv-format-round-precision",
+      "ranked_passages": [
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 10,
+          "score": 0.7511525974021139
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 2,
+          "score": 0.6624000072479248
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 9,
+          "score": 0.6539951757787223
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 6,
+          "score": 0.5858192618435404
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 3,
+          "score": 0.5914602875709534
+        }
+      ]
+    },
+    {
+      "case_id": "dv-symlog-constant",
+      "ranked_passages": [
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 33,
+          "score": 0.6020702360826601
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 45,
+          "score": 0.5344945947675288
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 49,
+          "score": 0.5163032412528992
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 29,
+          "score": 0.530957492050976
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 6,
+          "score": 0.47816930646208866
+        }
+      ]
+    },
+    {
+      "case_id": "dv-array-natural-sort",
+      "ranked_passages": [
+        {
+          "document_key": "data-visualisation-volume-3",
+          "chunk_index": 20,
+          "score": 0.6899466720207537
+        },
+        {
+          "document_key": "data-visualisation-volume-3",
+          "chunk_index": 34,
+          "score": 0.6735156975244196
+        },
+        {
+          "document_key": "data-visualisation-volume-1",
+          "chunk_index": 15,
+          "score": 0.6110580613263262
+        },
+        {
+          "document_key": "data-visualisation-volume-3",
+          "chunk_index": 24,
+          "score": 0.5847884737270492
+        },
+        {
+          "document_key": "data-visualisation-volume-1",
+          "chunk_index": 14,
+          "score": 0.5745114430493976
+        }
+      ]
+    },
+    {
+      "case_id": "dv-time-format-month-name",
+      "ranked_passages": [
+        {
+          "document_key": "data-visualisation-volume-4",
+          "chunk_index": 29,
+          "score": 0.5763406753540039
+        },
+        {
+          "document_key": "data-visualisation-volume-4",
+          "chunk_index": 21,
+          "score": 0.5636952779474699
+        },
+        {
+          "document_key": "data-visualisation-volume-4",
+          "chunk_index": 17,
+          "score": 0.5625496506690979
+        },
+        {
+          "document_key": "data-visualisation-volume-4",
+          "chunk_index": 25,
+          "score": 0.562190055847168
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 5,
+          "score": 0.5474098920822144
+        }
+      ]
+    },
+    {
+      "case_id": "dv-quantize-sample-domain",
+      "ranked_passages": [
+        {
+          "document_key": "data-visualisation-volume-5",
+          "chunk_index": 11,
+          "score": 0.6817708232129601
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 22,
+          "score": 0.6452708628935148
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 21,
+          "score": 0.6482726545171451
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 53,
+          "score": 0.6323572178099892
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 19,
+          "score": 0.6185945641156783
+        }
+      ]
+    },
+    {
+      "case_id": "dv-ease-back-overshoot",
+      "ranked_passages": [
+        {
+          "document_key": "data-visualisation-volume-6",
+          "chunk_index": 10,
+          "score": 0.6053287802538664
+        },
+        {
+          "document_key": "data-visualisation-volume-6",
+          "chunk_index": 11,
+          "score": 0.583210791158034
+        },
+        {
+          "document_key": "data-visualisation-volume-6",
+          "chunk_index": 2,
+          "score": 0.5620138906232194
+        },
+        {
+          "document_key": "data-visualisation-volume-6",
+          "chunk_index": 4,
+          "score": 0.5315321925522947
+        },
+        {
+          "document_key": "data-visualisation-volume-6",
+          "chunk_index": 7,
+          "score": 0.46203264820381196
+        }
+      ]
+    },
+    {
+      "case_id": "dv-recharts-pricing-roadmap",
+      "ranked_passages": [
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 73,
+          "score": 0.6065842509269714
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 81,
+          "score": 0.5420796871185303
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 82,
+          "score": 0.47311356823959616
+        },
+        {
+          "document_key": "data-visualisation-volume-3",
+          "chunk_index": 55,
+          "score": 0.40130728483200073
+        },
+        {
+          "document_key": "data-visualisation-volume-2",
+          "chunk_index": 74,
+          "score": 0.5017534494400024
+        }
+      ]
+    },
+    {
+      "case_id": "http-pqueue-strict-burst",
+      "ranked_passages": [
+        {
+          "document_key": "http-and-async-runtime-volume-6",
+          "chunk_index": 64,
+          "score": 0.6332547664642334
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 52,
+          "score": 0.6285447069568848
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 39,
+          "score": 0.5881043427052712
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 53,
+          "score": 0.5832934031907686
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 89,
+          "score": 0.5753749012947083
+        }
+      ]
+    },
+    {
+      "case_id": "http-pqueue-timeout-clock",
+      "ranked_passages": [
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 46,
+          "score": 0.6862587928771973
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 74,
+          "score": 0.6819974184036255
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 92,
+          "score": 0.6877322569212656
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 79,
+          "score": 0.6231918334960938
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 101,
+          "score": 0.6289969682693481
+        }
+      ]
+    },
+    {
+      "case_id": "http-ptimeout-fake-timers",
+      "ranked_passages": [
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 141,
+          "score": 0.6758199527371066
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 129,
+          "score": 0.5928965696219761
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 103,
+          "score": 0.6121570516684375
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 135,
+          "score": 0.5827942391879315
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 136,
+          "score": 0.5845624355264134
+        }
+      ]
+    },
+    {
+      "case_id": "http-nodefetch-agent-capabilities",
+      "ranked_passages": [
+        {
+          "document_key": "http-and-async-runtime-volume-3",
+          "chunk_index": 74,
+          "score": 0.733131750412689
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-3",
+          "chunk_index": 72,
+          "score": 0.5891197919845623
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-3",
+          "chunk_index": 50,
+          "score": 0.6087472568449088
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-3",
+          "chunk_index": 75,
+          "score": 0.58663254976273
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-6",
+          "chunk_index": 12,
+          "score": 0.5351151865858061
+        }
+      ]
+    },
+    {
+      "case_id": "http-openai-retry-statuses",
+      "ranked_passages": [
+        {
+          "document_key": "http-and-async-runtime-volume-4",
+          "chunk_index": 48,
+          "score": 0.5595191025303995
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-4",
+          "chunk_index": 33,
+          "score": 0.547136995025695
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-4",
+          "chunk_index": 38,
+          "score": 0.5723663909653668
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-4",
+          "chunk_index": 36,
+          "score": 0.6293625014640403
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-4",
+          "chunk_index": 35,
+          "score": 0.58072936534882
+        }
+      ]
+    },
+    {
+      "case_id": "http-agentkeepalive-reused-socket",
+      "ranked_passages": [
+        {
+          "document_key": "http-and-async-runtime-volume-6",
+          "chunk_index": 17,
+          "score": 0.726760745048523
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-6",
+          "chunk_index": 12,
+          "score": 0.5846703401011442
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 113,
+          "score": 0.5551130771636963
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-5",
+          "chunk_index": 34,
+          "score": 0.5476955714588715
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-6",
+          "chunk_index": 9,
+          "score": 0.543965220451355
+        }
+      ]
+    },
+    {
+      "case_id": "http-multihop-timeout-retry-clock",
+      "ranked_passages": [
+        {
+          "document_key": "http-and-async-runtime-volume-4",
+          "chunk_index": 37,
+          "score": 0.6395672393361045
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 120,
+          "score": 0.6266873701401143
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-4",
+          "chunk_index": 36,
+          "score": 0.6379698134678725
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-1",
+          "chunk_index": 136,
+          "score": 0.6111528144892675
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-4",
+          "chunk_index": 38,
+          "score": 0.5472619803391716
+        }
+      ]
+    },
+    {
+      "case_id": "http-openai-data-residency",
+      "ranked_passages": [
+        {
+          "document_key": "http-and-async-runtime-volume-5",
+          "chunk_index": 52,
+          "score": 0.5215774359669443
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-4",
+          "chunk_index": 48,
+          "score": 0.549615687086069
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-4",
+          "chunk_index": 49,
+          "score": 0.5403226501038081
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-4",
+          "chunk_index": 32,
+          "score": 0.516935871565571
+        },
+        {
+          "document_key": "http-and-async-runtime-volume-5",
+          "chunk_index": 54,
+          "score": 0.5169894273563368
+        }
+      ]
+    },
+    {
+      "case_id": "md-hastscript-injected-node",
+      "ranked_passages": [
+        {
+          "document_key": "markdown-pipeline-volume-1",
+          "chunk_index": 57,
+          "score": 0.6502599328601412
+        },
+        {
+          "document_key": "markdown-pipeline-volume-3",
+          "chunk_index": 74,
+          "score": 0.5601122117109435
+        },
+        {
+          "document_key": "markdown-pipeline-volume-2",
+          "chunk_index": 225,
+          "score": 0.5807174963400533
+        },
+        {
+          "document_key": "markdown-pipeline-volume-3",
+          "chunk_index": 83,
+          "score": 0.5741707428795553
+        },
+        {
+          "document_key": "markdown-pipeline-volume-2",
+          "chunk_index": 180,
+          "score": 0.5614472292991154
+        }
+      ]
+    },
+    {
+      "case_id": "md-mdx-jsx-tight-selfclosing",
+      "ranked_passages": [
+        {
+          "document_key": "markdown-pipeline-volume-6",
+          "chunk_index": 39,
+          "score": 0.6669227084058216
+        },
+        {
+          "document_key": "markdown-pipeline-volume-6",
+          "chunk_index": 43,
+          "score": 0.6629209712649596
+        },
+        {
+          "document_key": "markdown-pipeline-volume-6",
+          "chunk_index": 76,
+          "score": 0.6607512427271941
+        },
+        {
+          "document_key": "markdown-pipeline-volume-1",
+          "chunk_index": 136,
+          "score": 0.6594791006421018
+        },
+        {
+          "document_key": "markdown-pipeline-volume-6",
+          "chunk_index": 87,
+          "score": 0.6577129552022212
+        }
+      ]
+    },
+    {
+      "case_id": "md-micromark-virtual-line-endings",
+      "ranked_passages": [
+        {
+          "document_key": "markdown-pipeline-volume-4",
+          "chunk_index": 93,
+          "score": 0.7424734013535589
+        },
+        {
+          "document_key": "markdown-pipeline-volume-4",
+          "chunk_index": 95,
+          "score": 0.6219585948598828
+        },
+        {
+          "document_key": "markdown-pipeline-volume-6",
+          "chunk_index": 122,
+          "score": 0.589409666937878
+        },
+        {
+          "document_key": "markdown-pipeline-volume-4",
+          "chunk_index": 94,
+          "score": 0.5432808723021073
+        },
+        {
+          "document_key": "markdown-pipeline-volume-4",
+          "chunk_index": 77,
+          "score": 0.5419973619577912
+        }
+      ]
+    },
+    {
+      "case_id": "md-tojsx-solid-name-case",
+      "ranked_passages": [
+        {
+          "document_key": "markdown-pipeline-volume-5",
+          "chunk_index": 55,
+          "score": 0.6656494339003993
+        },
+        {
+          "document_key": "markdown-pipeline-volume-5",
+          "chunk_index": 99,
+          "score": 0.590968048034194
+        },
+        {
+          "document_key": "markdown-pipeline-volume-5",
+          "chunk_index": 48,
+          "score": 0.6443941189168134
+        },
+        {
+          "document_key": "markdown-pipeline-volume-5",
+          "chunk_index": 51,
+          "score": 0.5887136634800932
+        },
+        {
+          "document_key": "markdown-pipeline-volume-5",
+          "chunk_index": 53,
+          "score": 0.5627836677923562
+        }
+      ]
+    },
+    {
+      "case_id": "md-html-safe-url-protocols",
+      "ranked_passages": [
+        {
+          "document_key": "markdown-pipeline-volume-6",
+          "chunk_index": 121,
+          "score": 0.676965434732124
+        },
+        {
+          "document_key": "markdown-pipeline-volume-6",
+          "chunk_index": 120,
+          "score": 0.5775471250009949
+        },
+        {
+          "document_key": "markdown-pipeline-volume-6",
+          "chunk_index": 151,
+          "score": 0.49185931634064506
+        },
+        {
+          "document_key": "markdown-pipeline-volume-6",
+          "chunk_index": 153,
+          "score": 0.5064305368918509
+        },
+        {
+          "document_key": "markdown-pipeline-volume-3",
+          "chunk_index": 44,
+          "score": 0.5094467997551001
+        }
+      ]
+    },
+    {
+      "case_id": "md-rehype-katex-release-date",
+      "ranked_passages": [
+        {
+          "document_key": "markdown-pipeline-volume-6",
+          "chunk_index": 214,
+          "score": 0.6180812304640185
+        },
+        {
+          "document_key": "markdown-pipeline-volume-6",
+          "chunk_index": 224,
+          "score": 0.5786753814228223
+        },
+        {
+          "document_key": "markdown-pipeline-volume-1",
+          "chunk_index": 246,
+          "score": 0.49306638518173673
+        },
+        {
+          "document_key": "markdown-pipeline-volume-6",
+          "chunk_index": 215,
+          "score": 0.47765026919991604
+        },
+        {
+          "document_key": "markdown-pipeline-volume-4",
+          "chunk_index": 163,
+          "score": 0.4779085801785339
+        }
+      ]
+    },
+    {
+      "case_id": "md-remark-gfm-parse-pairing",
+      "ranked_passages": [
+        {
+          "document_key": "markdown-pipeline-volume-3",
+          "chunk_index": 195,
+          "score": 0.6879510097474474
+        },
+        {
+          "document_key": "markdown-pipeline-volume-4",
+          "chunk_index": 174,
+          "score": 0.5929953941112329
+        },
+        {
+          "document_key": "markdown-pipeline-volume-1",
+          "chunk_index": 246,
+          "score": 0.5620516538619995
+        },
+        {
+          "document_key": "markdown-pipeline-volume-3",
+          "chunk_index": 205,
+          "score": 0.5670538713650072
+        },
+        {
+          "document_key": "markdown-pipeline-volume-2",
+          "chunk_index": 151,
+          "score": 0.5755263566970825
+        }
+      ]
+    },
+    {
+      "case_id": "md-async-highlighter-deferred-refractor",
+      "ranked_passages": [
+        {
+          "document_key": "markdown-pipeline-volume-3",
+          "chunk_index": 167,
+          "score": 0.7389466231119597
+        },
+        {
+          "document_key": "markdown-pipeline-volume-3",
+          "chunk_index": 166,
+          "score": 0.686575930510518
+        },
+        {
+          "document_key": "markdown-pipeline-volume-3",
+          "chunk_index": 165,
+          "score": 0.6698940199550414
+        },
+        {
+          "document_key": "markdown-pipeline-volume-2",
+          "chunk_index": 119,
+          "score": 0.6313912052745356
+        },
+        {
+          "document_key": "markdown-pipeline-volume-3",
+          "chunk_index": 156,
+          "score": 0.6212952136993453
+        }
+      ]
+    },
+    {
+      "case_id": "md-highlightjs-v10-upgrade-reading",
+      "ranked_passages": [
+        {
+          "document_key": "markdown-pipeline-volume-5",
+          "chunk_index": 111,
+          "score": 0.6108194225538132
+        },
+        {
+          "document_key": "markdown-pipeline-volume-5",
+          "chunk_index": 129,
+          "score": 0.58748704195023
+        },
+        {
+          "document_key": "markdown-pipeline-volume-5",
+          "chunk_index": 123,
+          "score": 0.5409113603558753
+        },
+        {
+          "document_key": "markdown-pipeline-volume-5",
+          "chunk_index": 109,
+          "score": 0.5855334546208175
+        },
+        {
+          "document_key": "markdown-pipeline-volume-5",
+          "chunk_index": 121,
+          "score": 0.5453701019287148
+        }
+      ]
+    },
+    {
+      "case_id": "util-uuid-v8-helpers",
+      "ranked_passages": [
+        {
+          "document_key": "schemas-and-utilities-volume-3",
+          "chunk_index": 113,
+          "score": 0.7515628785826505
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-3",
+          "chunk_index": 116,
+          "score": 0.6063379176065824
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-3",
+          "chunk_index": 100,
+          "score": 0.6054257515326601
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-3",
+          "chunk_index": 130,
+          "score": 0.598082697277231
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-3",
+          "chunk_index": 98,
+          "score": 0.5865363232217038
+        }
+      ]
+    },
+    {
+      "case_id": "util-commander-required-flag",
+      "ranked_passages": [
+        {
+          "document_key": "schemas-and-utilities-volume-2",
+          "chunk_index": 63,
+          "score": 0.6180941094103998
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-2",
+          "chunk_index": 33,
+          "score": 0.5929396748542786
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-2",
+          "chunk_index": 57,
+          "score": 0.54857337474823
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-2",
+          "chunk_index": 44,
+          "score": 0.5439862012863159
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-3",
+          "chunk_index": 147,
+          "score": 0.5157155683210163
+        }
+      ]
+    },
+    {
+      "case_id": "util-ajv-format-compare",
+      "ranked_passages": [
+        {
+          "document_key": "schemas-and-utilities-volume-1",
+          "chunk_index": 76,
+          "score": 0.7346080979471278
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-1",
+          "chunk_index": 38,
+          "score": 0.7042207155425
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-1",
+          "chunk_index": 97,
+          "score": 0.6714395880699205
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-1",
+          "chunk_index": 37,
+          "score": 0.6380457662371269
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-1",
+          "chunk_index": 92,
+          "score": 0.616842545082722
+        }
+      ]
+    },
+    {
+      "case_id": "util-nuqs-default-value",
+      "ranked_passages": [
+        {
+          "document_key": "schemas-and-utilities-volume-4",
+          "chunk_index": 73,
+          "score": 0.6917546391487122
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-1",
+          "chunk_index": 64,
+          "score": 0.641510009765625
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-4",
+          "chunk_index": 71,
+          "score": 0.6072463159111937
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-2",
+          "chunk_index": 124,
+          "score": 0.5678911466663402
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-1",
+          "chunk_index": 91,
+          "score": 0.5649347823936046
+        }
+      ]
+    },
+    {
+      "case_id": "util-dotenv-override-order",
+      "ranked_passages": [
+        {
+          "document_key": "schemas-and-utilities-volume-6",
+          "chunk_index": 65,
+          "score": 0.6634057760238647
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-6",
+          "chunk_index": 62,
+          "score": 0.6017868102129346
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-6",
+          "chunk_index": 78,
+          "score": 0.5946225523948669
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-6",
+          "chunk_index": 46,
+          "score": 0.5587998628616333
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-6",
+          "chunk_index": 44,
+          "score": 0.5665877203099571
+        }
+      ]
+    },
+    {
+      "case_id": "util-fast-equals-strict-symbols",
+      "ranked_passages": [
+        {
+          "document_key": "schemas-and-utilities-volume-5",
+          "chunk_index": 71,
+          "score": 0.5918937921524048
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-5",
+          "chunk_index": 79,
+          "score": 0.5216130329139858
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-5",
+          "chunk_index": 73,
+          "score": 0.5870212562667585
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-5",
+          "chunk_index": 70,
+          "score": 0.5459820953596897
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-5",
+          "chunk_index": 77,
+          "score": 0.5591272378488051
+        }
+      ]
+    },
+    {
+      "case_id": "util-zod-json-schema-to-ajv",
+      "ranked_passages": [
+        {
+          "document_key": "schemas-and-utilities-volume-3",
+          "chunk_index": 140,
+          "score": 0.7240093679416985
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-1",
+          "chunk_index": 71,
+          "score": 0.6550067858399986
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-3",
+          "chunk_index": 160,
+          "score": 0.6408307552337646
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-1",
+          "chunk_index": 42,
+          "score": 0.6036612391471863
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-1",
+          "chunk_index": 72,
+          "score": 0.6577372158922437
+        }
+      ]
+    },
+    {
+      "case_id": "util-lru-cache-stale-entry",
+      "ranked_passages": [
+        {
+          "document_key": "schemas-and-utilities-volume-6",
+          "chunk_index": 145,
+          "score": 0.6521843101648741
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-6",
+          "chunk_index": 143,
+          "score": 0.643401286399289
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-6",
+          "chunk_index": 144,
+          "score": 0.6249251812785648
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-6",
+          "chunk_index": 142,
+          "score": 0.5938477162213506
+        },
+        {
+          "document_key": "schemas-and-utilities-volume-6",
+          "chunk_index": 140,
+          "score": 0.5303781312478711
+        }
+      ]
+    },
+    {
+      "case_id": "lint-axe-core-ie11",
+      "ranked_passages": [
+        {
+          "document_key": "testing-and-lint-volume-1",
+          "chunk_index": 44,
+          "score": 0.7065955960814201
+        },
+        {
+          "document_key": "testing-and-lint-volume-1",
+          "chunk_index": 55,
+          "score": 0.6023544252620469
+        },
+        {
+          "document_key": "testing-and-lint-volume-1",
+          "chunk_index": 40,
+          "score": 0.5651006530195303
+        },
+        {
+          "document_key": "testing-and-lint-volume-1",
+          "chunk_index": 53,
+          "score": 0.5150916729894781
+        },
+        {
+          "document_key": "testing-and-lint-volume-1",
+          "chunk_index": 43,
+          "score": 0.5681607892561197
+        }
+      ]
+    },
+    {
+      "case_id": "lint-glob-parent-non-glob",
+      "ranked_passages": [
+        {
+          "document_key": "testing-and-lint-volume-6",
+          "chunk_index": 88,
+          "score": 0.5800411856100833
+        },
+        {
+          "document_key": "testing-and-lint-volume-6",
+          "chunk_index": 81,
+          "score": 0.5613857005787822
+        },
+        {
+          "document_key": "testing-and-lint-volume-6",
+          "chunk_index": 85,
+          "score": 0.5443252000614969
+        },
+        {
+          "document_key": "testing-and-lint-volume-2",
+          "chunk_index": 142,
+          "score": 0.5388444615787947
+        },
+        {
+          "document_key": "testing-and-lint-volume-6",
+          "chunk_index": 80,
+          "score": 0.64501692980428
+        }
+      ]
+    },
+    {
+      "case_id": "lint-humanfs-node-emfile-budget",
+      "ranked_passages": [
+        {
+          "document_key": "testing-and-lint-volume-2",
+          "chunk_index": 3,
+          "score": 0.5246303237864474
+        },
+        {
+          "document_key": "testing-and-lint-volume-4",
+          "chunk_index": 25,
+          "score": 0.5356487035751343
+        },
+        {
+          "document_key": "testing-and-lint-volume-4",
+          "chunk_index": 37,
+          "score": 0.4720037612910588
+        },
+        {
+          "document_key": "testing-and-lint-volume-5",
+          "chunk_index": 77,
+          "score": 0.4754212200641632
+        },
+        {
+          "document_key": "testing-and-lint-volume-4",
+          "chunk_index": 24,
+          "score": 0.5428087387795018
+        }
+      ]
+    },
+    {
+      "case_id": "lint-minimatch-platform-default",
+      "ranked_passages": [
+        {
+          "document_key": "testing-and-lint-volume-1",
+          "chunk_index": 147,
+          "score": 0.6063063506070595
+        },
+        {
+          "document_key": "testing-and-lint-volume-2",
+          "chunk_index": 147,
+          "score": 0.5558376643560935
+        },
+        {
+          "document_key": "testing-and-lint-volume-2",
+          "chunk_index": 124,
+          "score": 0.5527114868164062
+        },
+        {
+          "document_key": "testing-and-lint-volume-2",
+          "chunk_index": 146,
+          "score": 0.5924185161341131
+        },
+        {
+          "document_key": "testing-and-lint-volume-2",
+          "chunk_index": 142,
+          "score": 0.5271689891815186
+        }
+      ]
+    },
+    {
+      "case_id": "lint-braces-range-limit",
+      "ranked_passages": [
+        {
+          "document_key": "testing-and-lint-volume-1",
+          "chunk_index": 76,
+          "score": 0.6282101120698363
+        },
+        {
+          "document_key": "testing-and-lint-volume-1",
+          "chunk_index": 83,
+          "score": 0.5594605803489685
+        },
+        {
+          "document_key": "testing-and-lint-volume-3",
+          "chunk_index": 133,
+          "score": 0.5466691851615906
+        },
+        {
+          "document_key": "testing-and-lint-volume-1",
+          "chunk_index": 60,
+          "score": 0.5491388171397944
+        },
+        {
+          "document_key": "testing-and-lint-volume-1",
+          "chunk_index": 73,
+          "score": 0.5244090557098389
+        }
+      ]
+    },
+    {
+      "case_id": "lint-ignore-allow-relative-paths",
+      "ranked_passages": [
+        {
+          "document_key": "testing-and-lint-volume-6",
+          "chunk_index": 117,
+          "score": 0.7257210775780049
+        },
+        {
+          "document_key": "testing-and-lint-volume-6",
+          "chunk_index": 119,
+          "score": 0.6807534098625183
+        },
+        {
+          "document_key": "testing-and-lint-volume-6",
+          "chunk_index": 104,
+          "score": 0.6469624428130664
+        },
+        {
+          "document_key": "testing-and-lint-volume-6",
+          "chunk_index": 113,
+          "score": 0.6382415510272067
+        },
+        {
+          "document_key": "testing-and-lint-volume-6",
+          "chunk_index": 114,
+          "score": 0.6350530982017517
+        }
+      ]
+    },
+    {
+      "case_id": "lint-basename-match-minimatch-vs-fastglob",
+      "ranked_passages": [
+        {
+          "document_key": "testing-and-lint-volume-2",
+          "chunk_index": 148,
+          "score": 0.682846506918863
+        },
+        {
+          "document_key": "testing-and-lint-volume-2",
+          "chunk_index": 146,
+          "score": 0.644958636465155
+        },
+        {
+          "document_key": "testing-and-lint-volume-2",
+          "chunk_index": 125,
+          "score": 0.690040111541748
+        },
+        {
+          "document_key": "testing-and-lint-volume-1",
+          "chunk_index": 123,
+          "score": 0.6759912161837607
+        },
+        {
+          "document_key": "testing-and-lint-volume-1",
+          "chunk_index": 147,
+          "score": 0.6365946910735792
+        }
+      ]
+    },
+    {
+      "case_id": "lint-paid-support-sla",
+      "ranked_passages": [
+        {
+          "document_key": "testing-and-lint-volume-4",
+          "chunk_index": 52,
+          "score": 0.501240745223783
+        },
+        {
+          "document_key": "testing-and-lint-volume-3",
+          "chunk_index": 37,
+          "score": 0.5101610574174245
+        },
+        {
+          "document_key": "testing-and-lint-volume-5",
+          "chunk_index": 118,
+          "score": 0.4731703086596911
+        },
+        {
+          "document_key": "testing-and-lint-volume-3",
+          "chunk_index": 51,
+          "score": 0.45653187969516984
+        },
+        {
+          "document_key": "testing-and-lint-volume-3",
+          "chunk_index": 41,
+          "score": 0.4384150170335184
+        }
+      ]
+    }
+  ]
+}

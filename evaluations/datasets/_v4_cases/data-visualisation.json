@@ -1,0 +1,190 @@
+[
+  {
+    "case_id": "dv-arc-default-digits",
+    "project_key": "data-visualisation",
+    "query": "When an arc generator emits SVG path data rather than drawing to a canvas, how many decimal places does it keep by default?",
+    "relevant_passages": [
+      {
+        "document_key": "data-visualisation-volume-1",
+        "chunk_index": 11,
+        "anchor": "If *digits* is specified, sets the maximum number of digits after the decimal separator and returns this arc generator. If *digits* is not specified, returns the current maximum fraction digits, which defaults to 3. This option only applies when the associated [*context*](#arc_context) is null, as when this arc generator is used to produce [path data](http://www.w3.org/TR/SVG/paths.html#PathData)."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "data-visualisation-volume-1",
+        "chunk_index": 8,
+        "anchor": "The *angle* is specified in radians, with 0 at -*y* (12 o’clock) and positive angles proceeding clockwise. If |endAngle - startAngle| ≥ τ, a complete circle or annulus is generated rather than a sector."
+      }
+    ],
+    "rationale": "The arc chunk states the maximum fraction digits default to 3 and applies only when context is null, whereas the endAngle/padAngle chunk describes angular arguments and never mentions digit precision.",
+    "difficulty": "easy"
+  },
+  {
+    "case_id": "dv-fraction-default-epsilon",
+    "project_key": "data-visualisation",
+    "query": "When I call Fraction.js simplify without an epsilon argument, how much imprecision does it accept for a value like 0.333?",
+    "relevant_passages": [
+      {
+        "document_key": "data-visualisation-volume-1",
+        "chunk_index": 98,
+        "anchor": "Simplifies the rational number under a certain error threshold. Ex. `0.333` will be `1/3` with `eps=0.001`"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "data-visualisation-volume-1",
+        "chunk_index": 61,
+        "anchor": "As native `BigInt` support in JavaScript becomes more common, libraries like *Fraction.js* use it to handle calculations with higher precision. This improves the speed and accuracy of math operations with large numbers, providing a better solution for tasks that need more precision than floating-point numbers can offer."
+      }
+    ],
+    "rationale": "The simplify entry shows the default eps of 0.001 and that 0.333 becomes 1/3 under it, while the adjacent Precision section only discusses BigInt-based arithmetic and gives no tolerance value.",
+    "difficulty": "easy"
+  },
+  {
+    "case_id": "dv-format-round-precision",
+    "project_key": "data-visualisation",
+    "query": "For values spaced 0.1 apart with a maximum magnitude of 1.1, what precision should d3-format recommend for significant-digit rounding?",
+    "relevant_passages": [
+      {
+        "document_key": "data-visualisation-volume-2",
+        "chunk_index": 10,
+        "anchor": "Whereas for the numbers 0.9, 1.0, and 1.1, the *step* should be 0.1, the *max* should be 1.1, and the suggested precision is 2:"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "data-visualisation-volume-2",
+        "chunk_index": 9,
+        "anchor": "Returns a suggested decimal precision for fixed point notation given the specified numeric *step* value. The *step* represents the minimum absolute difference between values that will be formatted. (This assumes that the values to be formatted are also multiples of *step*.) For example, given the numbers 1, 1.5, and 2, the *step* should be 0.5 and the suggested precision is 1:"
+      }
+    ],
+    "rationale": "The precisionRound chunk works the 0.9/1.0/1.1 example through to a suggested precision of 2, whereas the neighbouring precisionFixed chunk covers fixed-point notation with different step examples and no 0.1/1.1 case.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "dv-symlog-constant",
+    "project_key": "data-visualisation",
+    "query": "Which symlog scale option governs how the transform bends near zero, and what value does it start with?",
+    "relevant_passages": [
+      {
+        "document_key": "data-visualisation-volume-2",
+        "chunk_index": 33,
+        "anchor": "If *constant* is specified, sets the symlog constant to the specified number and returns this scale; otherwise returns the current value of the symlog constant, which defaults to 1. See “A bi-symmetric log transformation for wide-range data” by Webber for more."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "data-visualisation-volume-2",
+        "chunk_index": 30,
+        "anchor": "If *base* is specified, sets the base for this logarithmic scale to the specified value. If *base* is not specified, returns the current base, which defaults to 10."
+      }
+    ],
+    "rationale": "The symlog chunk names the constant option and says it defaults to 1, while the log-scale chunk documents the base option, which defaults to 10 and is a different scale type.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "dv-array-natural-sort",
+    "project_key": "data-visualisation",
+    "query": "Why is it unsafe to sort numeric arrays with JavaScript's default comparator, and what does d3's natural-order comparator return when either argument is null?",
+    "relevant_passages": [
+      {
+        "document_key": "data-visualisation-volume-3",
+        "chunk_index": 20,
+        "anchor": "Note that if no comparator function is specified to the built-in sort method, the default order is lexicographic (alphabetical), not natural! This can lead to surprising behavior when sorting an array of numbers."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "data-visualisation-volume-3",
+        "chunk_index": 9,
+        "anchor": "Returns the [minimum](#min) and [maximum](#max) value in the given *iterable* using natural order. If the iterable contains no comparable values, returns [undefined, undefined]. An optional *accessor* function may be specified, which is equivalent to calling Array.from before computing the extent."
+      }
+    ],
+    "rationale": "The ascending chunk shows the comparator returning NaN for nullish inputs and warns that the bare built-in sort is lexicographic, whereas the extent chunk only says min/max use natural order and covers neither sorting defaults nor null handling.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "dv-time-format-month-name",
+    "project_key": "data-visualisation",
+    "query": "在 d3-time-format 的格式指令列表中，输出完整月份名称和缩写月份名称的分别是哪两个说明符？",
+    "relevant_passages": [
+      {
+        "document_key": "data-visualisation-volume-4",
+        "chunk_index": 25,
+        "anchor": "* `%B` - full month name.*"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "data-visualisation-volume-4",
+        "chunk_index": 24,
+        "anchor": "An alias for [*locale*.format](#locale_format) on the [default locale](#timeFormatDefaultLocale)."
+      }
+    ],
+    "rationale": "The directive list explicitly pairs %B with the full month name and %b with the abbreviated one, while the alias chunk only maps d3.timeFormat/timeParse onto locale methods and lists no directives.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "dv-quantize-sample-domain",
+    "project_key": "data-visualisation",
+    "query": "If I generate a quantize scale's range by sampling a continuous interpolator, what does the sampling helper guarantee about the sample count and the first/last samples, and how does the scale then partition its continuous domain?",
+    "relevant_passages": [
+      {
+        "document_key": "data-visualisation-volume-5",
+        "chunk_index": 11,
+        "anchor": "Returns *n* uniformly-spaced samples from the specified *interpolator*, where *n* is an integer greater than one. The first sample is always at *t* = 0, and the last sample is always at *t* = 1."
+      },
+      {
+        "document_key": "data-visualisation-volume-2",
+        "chunk_index": 50,
+        "anchor": "Quantize scales are similar to [linear scales](#linear-scales), except they use a discrete rather than continuous range. The continuous input domain is divided into uniform segments based on the number of values in (*i.e.*, the cardinality of) the output range. Each range value *y* can be expressed as a quantized linear function of the domain value *x*: *y* = *m round(x)* + *b*. See [this choropleth](https://observablehq.com/@d3/choropleth) for an example."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "data-visualisation-volume-2",
+        "chunk_index": 52,
+        "anchor": "Returns the array of computed thresholds within the [domain](#quantize_domain)."
+      }
+    ],
+    "rationale": "The d3-interpolate quantize chunk fixes the sample count at n > 1 with the endpoints at t = 0 and t = 1, and the d3-scale quantize chunk explains that the domain is split into uniform segments equal to the range cardinality; the ticks chunk only references threshold and tick helpers and answers neither half.",
+    "difficulty": "hard"
+  },
+  {
+    "case_id": "dv-ease-back-overshoot",
+    "project_key": "data-visualisation",
+    "query": "Which d3-ease setter adjusts the anticipatory overshoot of back easing, and what value does it use when left unset?",
+    "relevant_passages": [
+      {
+        "document_key": "data-visualisation-volume-6",
+        "chunk_index": 10,
+        "anchor": "[Anticipatory](https://en.wikipedia.org/wiki/12_basic_principles_of_animation#Anticipation) easing, like a dancer bending his knees before jumping off the floor. The degree of [overshoot](#back_overshoot) is configurable; if not specified, it defaults to 1.70158."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "data-visualisation-volume-6",
+        "chunk_index": 5,
+        "anchor": "Symmetric polynomial easing; scales [polyIn](#easePolyIn) for *t* in [0, 0.5] and [polyOut](#easePolyOut) for *t* in [0.5, 1]. If the [exponent](#poly_exponent) is not specified, it defaults to 3, equivalent to [cubic](#easeCubic)."
+      }
+    ],
+    "rationale": "The back-easing chunk names the overshoot setter and gives its default of 1.70158, while the poly chunk only describes the polynomial exponent default of 3 and has no overshoot parameter.",
+    "difficulty": "hard"
+  },
+  {
+    "case_id": "dv-recharts-pricing-roadmap",
+    "project_key": "data-visualisation",
+    "query": "How much does Recharts charge per developer for enterprise support, and which features are planned for its next major release?",
+    "relevant_passages": [],
+    "distractor_passages": [
+      {
+        "document_key": "data-visualisation-volume-2",
+        "chunk_index": 81,
+        "anchor": "[Releases](https://github.com/recharts/recharts/releases) are automated via GH Actions - when a new release is created in GH, CI will trigger that:"
+      }
+    ],
+    "rationale": "The corpus has no pricing or feature-roadmap content; the closest chunk only describes how releases are built and published through GH Actions and states that version increments are not automated.",
+    "difficulty": "hard"
+  }
+]

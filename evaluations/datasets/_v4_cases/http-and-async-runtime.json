@@ -1,0 +1,163 @@
+[
+  {
+    "case_id": "http-pqueue-strict-burst",
+    "project_key": "http-and-async-runtime",
+    "query": "p-queue 的 strict 模式与默认的固定窗口限流相比，在窗口边界附近的任务突发行为上有什么不同？",
+    "relevant_passages": [
+      {
+        "document_key": "http-and-async-runtime-volume-1",
+        "chunk_index": 52,
+        "anchor": "- **Default mode (fixed window)**: Tasks can burst at window boundaries. You could execute 2 tasks at 999ms and 2 more at 1000ms, resulting in 4 tasks within 1ms."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "http-and-async-runtime-volume-1",
+        "chunk_index": 96,
+        "anchor": "- You're interacting with APIs that enforce strict rate limits and will throttle or block you if you exceed them, even briefly"
+      }
+    ],
+    "rationale": "The strict-mode option block contrasts fixed-window bursts with a sliding window that caps runs in any rolling interval, whereas the FAQ entry only advises when strict mode is worth its extra overhead and never describes boundary bursting.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "http-pqueue-timeout-clock",
+    "project_key": "http-and-async-runtime",
+    "query": "If a task waits in the p-queue backlog before it is allowed to run, does its configured timeout already count that waiting time?",
+    "relevant_passages": [
+      {
+        "document_key": "http-and-async-runtime-volume-1",
+        "chunk_index": 46,
+        "anchor": "The timeout begins when the operation is dequeued and starts execution, not while it's waiting in the queue."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "http-and-async-runtime-volume-1",
+        "chunk_index": 92,
+        "anchor": "You can set a timeout for all tasks or override it per task. When a task times out, a `TimeoutError` is thrown."
+      }
+    ],
+    "rationale": "The option reference states that the clock starts only when the operation is dequeued and begins execution, while the timeout how-to only shows how to set global and per-task limits and never says when the clock starts.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "http-ptimeout-fake-timers",
+    "project_key": "http-and-async-runtime",
+    "query": "How can I keep p-timeout's deadline working when a test installs sinon's fake timers?",
+    "relevant_passages": [
+      {
+        "document_key": "http-and-async-runtime-volume-1",
+        "chunk_index": 141,
+        "anchor": "Useful for testing purposes, in particular to work around [`sinon.useFakeTimers()`](https://sinonjs.org/releases/latest/fake-timers/)."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "http-and-async-runtime-volume-1",
+        "chunk_index": 129,
+        "anchor": "The package uses `setTimeout` and `clearTimeout` from the global scope, so you can use the [Node.js test timer mocking](https://nodejs.org/api/test.html#class-mocktimers) or a package like [`sinon`](https://github.com/sinonjs/sinon)."
+      }
+    ],
+    "rationale": "The customTimers option exists precisely to pass the real setTimeout and clearTimeout around sinon's fakes, whereas the p-retry FAQ only says that timers are taken from the global scope and mentions mocking libraries without offering an override.",
+    "difficulty": "easy"
+  },
+  {
+    "case_id": "http-nodefetch-agent-capabilities",
+    "project_key": "http-and-async-runtime",
+    "query": "Beyond the standard Fetch API, what networking behaviour can node-fetch's agent option take over?",
+    "relevant_passages": [
+      {
+        "document_key": "http-and-async-runtime-volume-3",
+        "chunk_index": 74,
+        "anchor": "The `agent` option allows you to specify networking related options which are out of the scope of Fetch, including and not limited to the following:"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "http-and-async-runtime-volume-3",
+        "chunk_index": 72,
+        "anchor": "agent: null         // http(s).Agent instance or function th"
+      }
+    ],
+    "rationale": "The Custom Agent section lists self-signed certificates, IPv4/IPv6 selection, custom DNS lookup and per-URL agent functions, while the options table only records that agent defaults to null and is an Agent instance or function without describing those capabilities.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "http-openai-retry-statuses",
+    "project_key": "http-and-async-runtime",
+    "query": "Which rate-limit and server-side failure responses does the OpenAI Node client retry out of the box?",
+    "relevant_passages": [
+      {
+        "document_key": "http-and-async-runtime-volume-4",
+        "chunk_index": 36,
+        "anchor": "429 Rate Limit, and >=500 Internal errors will all be retried by default."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "http-and-async-runtime-volume-1",
+        "chunk_index": 110,
+        "anchor": "Returns a `Promise` that is fulfilled when calling `input` returns a fulfilled promise. If calling `input` returns a rejected promise, `input` is called again until the max retries are reached, it then rejects with the last rejection reason."
+      }
+    ],
+    "rationale": "The Retries section names 429 Rate Limit and >=500 Internal errors as automatically retried, whereas the p-retry reference describes its own promise-based retry loop and never names any OpenAI HTTP status.",
+    "difficulty": "easy"
+  },
+  {
+    "case_id": "http-agentkeepalive-reused-socket",
+    "project_key": "http-and-async-runtime",
+    "query": "In agentkeepalive, how can an error handler tell that an ECONNRESET happened on a reused keep-alive socket so that a retry is justified?",
+    "relevant_passages": [
+      {
+        "document_key": "http-and-async-runtime-volume-6",
+        "chunk_index": 17,
+        "anchor": "This agent implements the `req.reusedSocket` to determine whether a request is send through a reused socket."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "http-and-async-runtime-volume-6",
+        "chunk_index": 13,
+        "anchor": "const keepaliveAgent = new HttpAgent({"
+      }
+    ],
+    "rationale": "The reusedSocket section exposes a per-request flag that marks a socket as reused for exactly this ECONNRESET retry decision, while the usage example only shows how to construct an agent with socket limits and never mentions reusedSocket.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "http-multihop-timeout-retry-clock",
+    "project_key": "http-and-async-runtime",
+    "query": "I give an OpenAI request a 20-second timeout and also wrap the call in p-retry with maxRetryTime: does the SDK itself retry requests that time out, and which clock does p-retry use to enforce that overall deadline?",
+    "relevant_passages": [
+      {
+        "document_key": "http-and-async-runtime-volume-4",
+        "chunk_index": 37,
+        "anchor": "Note that requests which time out will be [retried twice by default](#retries)."
+      },
+      {
+        "document_key": "http-and-async-runtime-volume-1",
+        "chunk_index": 120,
+        "anchor": "Measured with a monotonic clock (`performance.now()`) so system clock adjustments do not affect the limit."
+      }
+    ],
+    "distractor_passages": [],
+    "rationale": "The OpenAI timeout section says a timed-out request is retried twice by default, so the combined retry budget must account for both layers, and the p-retry maxRetryTime option states that the overall deadline is measured with a monotonic performance.now() clock immune to system clock changes.",
+    "difficulty": "hard"
+  },
+  {
+    "case_id": "http-openai-data-residency",
+    "project_key": "http-and-async-runtime",
+    "query": "Can the standard OpenAI Node client guarantee that prompts and completions are processed or stored only inside the EU?",
+    "relevant_passages": [],
+    "distractor_passages": [
+      {
+        "document_key": "http-and-async-runtime-volume-4",
+        "chunk_index": 41,
+        "anchor": "To use this library with [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/overview), use the `AzureOpenAI`"
+      }
+    ],
+    "rationale": "The corpus documents retries, timeouts and Azure class wiring but contains no data-residency guarantee or regional processing promise, and the Azure section only explains how to instantiate AzureOpenAI with an apiVersion, not where data is stored.",
+    "difficulty": "hard"
+  }
+]

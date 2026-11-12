@@ -1,10 +1,28 @@
-import os
+﻿import os
 
 from langgraph_sdk import get_sync_client
 
 
 API_URL = os.getenv("RESEARCHFLOW_API_URL", "http://127.0.0.1:2024")
 ASSISTANT_ID = "researchflow"
+USER_ID = os.getenv("RESEARCHFLOW_USER_ID")
+PROJECT_ID = os.getenv("RESEARCHFLOW_PROJECT_ID")
+
+
+def run_context() -> dict:
+    """Agent runs are scoped by immutable context, not by model arguments."""
+
+    if not USER_ID or not PROJECT_ID:
+        raise SystemExit(
+            "Set RESEARCHFLOW_USER_ID and RESEARCHFLOW_PROJECT_ID "
+            "(an existing Project) before running the smoke test."
+        )
+    return {
+        "knowledge_scope": {
+            "user_id": USER_ID,
+            "project_id": PROJECT_ID,
+        }
+    }
 
 
 def node_updates(events, node_name):
@@ -81,6 +99,7 @@ def main():
                     }
                 ]
             },
+            context=run_context(),
             stream_mode=["updates", "values"],
         )
     )
@@ -96,6 +115,10 @@ def main():
         raise AssertionError(
             "execute_tool ran but checkpoint state has no valid Evidence"
         )
+    if not research_state.get("sub_questions"):
+        raise AssertionError("planner did not write sub_questions into Graph State")
+    if "verification" not in research_state:
+        raise AssertionError("verifier did not record any citation verdicts")
 
     no_tool_events = list(
         client.runs.stream(
@@ -109,6 +132,7 @@ def main():
                     }
                 ]
             },
+            context=run_context(),
             stream_mode=["updates", "values"],
         )
     )

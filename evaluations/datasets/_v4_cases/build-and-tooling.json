@@ -1,0 +1,169 @@
+[
+  {
+    "case_id": "build-detect-libc-off-linux",
+    "project_key": "build-and-tooling",
+    "query": "detect-libc exposes a promise-based version lookup: what does that promise settle on when the code runs somewhere other than Linux?",
+    "relevant_passages": [
+      {
+        "document_key": "build-and-tooling-volume-1",
+        "chunk_index": 19,
+        "anchor": "* `null` when run on a non-Linux platform"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "build-and-tooling-volume-1",
+        "chunk_index": 22,
+        "anchor": "Synchronous version of `version()`."
+      }
+    ],
+    "rationale": "The detect-libc version passage states that the awaited call resolves to `null` on a non-Linux platform, whereas the versionSync passage only documents the synchronous signature and never says what it yields off Linux.",
+    "difficulty": "easy"
+  },
+  {
+    "case_id": "build-espree-default-ecma-version",
+    "project_key": "build-and-tooling",
+    "query": "If I call espree without supplying ecmaVersion, which ECMAScript edition will it parse as?",
+    "relevant_passages": [
+      {
+        "document_key": "build-and-tooling-volume-2",
+        "chunk_index": 11,
+        "anchor": "Set to 3, 5 (the default), 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 or 17 to specify the version of ECMAScript syntax you want to use."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "build-and-tooling-volume-2",
+        "chunk_index": 24,
+        "anchor": "Espree supports all ECMAScript 2025 features and partially supports ECMAScript 2026 features."
+      }
+    ],
+    "rationale": "The options passage marks 5 as the default ecmaVersion while listing every accepted value, whereas the FAQ passage only says which ECMAScript 2025 and 2026 features are supported and names no default.",
+    "difficulty": "easy"
+  },
+  {
+    "case_id": "build-enhanced-resolve-lower-level-factory",
+    "project_key": "build-and-tooling",
+    "query": "Which enhanced-resolve entry point hands back a reusable resolver that exposes hooks, and what must I supply myself that the shortcut helper fills in for me?",
+    "relevant_passages": [
+      {
+        "document_key": "build-and-tooling-volume-1",
+        "chunk_index": 39,
+        "anchor": "Lower-level factory. Returns a `Resolver` whose `resolve`, `resolveSync`, and `resolvePromise` methods accept `(context, path, request, resolveContext, [callback])`. Use this when you need a reusable resolver instance or access to its `hooks` (see the [Plugins](#plugins) section). `fileSystem` is required here — the high-level `resolve.create` defaults it for you."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "build-and-tooling-volume-1",
+        "chunk_index": 33,
+        "anchor": "Async Node-style resolver using the built-in defaults (`conditionNames: [\"node\"]`, `extensions: [\".js\", \".json\", \".node\"]`). `context` is optional; when omitted, a built-in Node context is used."
+      }
+    ],
+    "rationale": "The ResolverFactory passage calls itself the lower-level factory, exposes resolver hooks and says fileSystem is required there, while the top-level resolve() passage only documents its default conditionNames and extensions.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "build-tapable-withoptions-tap-order",
+    "project_key": "build-and-tooling",
+    "query": "A tapable-based library wants every tap it registers to run late, without repeating the stage value on each tap call. Which API is meant for that?",
+    "relevant_passages": [
+      {
+        "document_key": "build-and-tooling-volume-3",
+        "chunk_index": 106,
+        "anchor": "`withOptions` returns a facade around the hook whose `tap*` methods automatically merge `options` into every registration."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "build-and-tooling-volume-3",
+        "chunk_index": 104,
+        "anchor": "The first argument can be either a string (the plugin name) or an options object that also allows influencing the order in which taps run:"
+      }
+    ],
+    "rationale": "The withOptions passage describes a facade that merges options such as stage into every tap registration, while the Plugin API passage only documents the per-tap stage and before fields that the caller would have to repeat.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "build-cssesc-global-default-options",
+    "project_key": "build-and-tooling",
+    "query": "不想每次调用 cssesc 都传 options，要怎么一次性改掉它全局的默认选项？",
+    "relevant_passages": [
+      {
+        "document_key": "build-and-tooling-volume-3",
+        "chunk_index": 19,
+        "anchor": "The global default settings can be overridden by modifying the `css.options` object."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "build-and-tooling-volume-3",
+        "chunk_index": 18,
+        "anchor": "The `escapeEverything` option takes a boolean value (`true` or `false`), and defaults to `false` (disabled). When enabled, all the symbols in the output will be escaped, even printable ASCII symbols."
+      }
+    ],
+    "rationale": "这段文字说明可以修改 `css.options` 对象来统一覆盖全局默认值，而讲解 escapeEverything 选项的那段只演示了每次调用时单独传参的效果。",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "build-semver-coerce-rtl-tuple",
+    "project_key": "build-and-tooling",
+    "query": "With the rtl flag turned on, what does semver's coerce() produce for the input '1.2.3.4'?",
+    "relevant_passages": [
+      {
+        "document_key": "build-and-tooling-volume-4",
+        "chunk_index": 73,
+        "anchor": "`1.2.3.4` will return `2.3.4` in rtl mode"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "build-and-tooling-volume-4",
+        "chunk_index": 74,
+        "anchor": "This will return a cleaned and trimmed semver version."
+      }
+    ],
+    "rationale": "The Coercion passage explains that rtl mode keeps the right-most tuple that does not overlap a longer one, so `1.2.3.4` becomes `2.3.4`, while the Clean passage only covers trimming and validating a version string.",
+    "difficulty": "hard"
+  },
+  {
+    "case_id": "build-napi-postinstall-unrs-bridge",
+    "project_key": "build-and-tooling",
+    "query": "The napi-postinstall usage example asks the helper to prepare one particular NAPI package; which package is that, and which JavaScript module resolver is it a Rust reimplementation of?",
+    "relevant_passages": [
+      {
+        "document_key": "build-and-tooling-volume-3",
+        "chunk_index": 73,
+        "anchor": "void checkAndPreparePackage('unrs-resolver' /* <napi-package-name> */)"
+      },
+      {
+        "document_key": "build-and-tooling-volume-6",
+        "chunk_index": 53,
+        "anchor": "Rust port of [enhanced-resolve]."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "build-and-tooling-volume-3",
+        "chunk_index": 72,
+        "anchor": "export declare function checkAndPreparePackage("
+      }
+    ],
+    "rationale": "The napi-postinstall example names `unrs-resolver` as the package it prepares and only the unrs-resolver introduction says that project is a Rust port of enhanced-resolve, so the answer needs both volumes.",
+    "difficulty": "hard"
+  },
+  {
+    "case_id": "build-sharp-commercial-licence-price",
+    "project_key": "build-and-tooling",
+    "query": "What does a commercial licence for sharp cost per year, and which support tier is bundled with that price?",
+    "relevant_passages": [],
+    "distractor_passages": [
+      {
+        "document_key": "build-and-tooling-volume-2",
+        "chunk_index": 85,
+        "anchor": "Licensed under the Apache License, Version 2.0 (the \"License\");"
+      }
+    ],
+    "rationale": "The sharp licensing passage only reproduces the Apache 2.0 notice and quotes no price or support tier, so the corpus cannot say what a commercial licence costs.",
+    "difficulty": "medium"
+  }
+]

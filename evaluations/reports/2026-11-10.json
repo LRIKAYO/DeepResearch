@@ -1,0 +1,2506 @@
+{
+  "mode": "live",
+  "dataset_version": "retrieval-v2",
+  "dataset_sha256": "76cb2f29d74e960bae08eb7a03380053b9c38f83fd1bfefe671e8d7eeb88a81a",
+  "schema_version": 2,
+  "k": 5,
+  "abstain_threshold": 0.6,
+  "generated_at_utc": "2026-11-10T16:15:26+00:00",
+  "api": "http://127.0.0.1:8000",
+  "run_id": "398f66a6",
+  "cost_per_run": null,
+  "composition": {
+    "projects": 6,
+    "documents": 24,
+    "chunks": 122,
+    "cases": 50,
+    "easy": 10,
+    "medium": 25,
+    "hard": 15,
+    "unspecified": 0,
+    "hard_negative": 28,
+    "multi_hop": 6,
+    "cross_lingual": 6,
+    "unanswerable": 5
+  },
+  "metrics": {
+    "k": 5,
+    "case_count": 50,
+    "answerable_count": 45,
+    "unanswerable_count": 5,
+    "macro_recall": 1.0,
+    "micro_recall": 1.0,
+    "mrr": 0.9777777777777777,
+    "ndcg": 0.9785840292012153,
+    "hard_negative_case_count": 28,
+    "hard_negative_hit_rate": 0.75,
+    "cross_lingual_case_count": 6,
+    "cross_lingual_recall": 1.0,
+    "unanswerable_abstain_rate": 1.0,
+    "false_abstain_rate": 0.08888888888888889,
+    "abstain_correctness": 0.92,
+    "latency_p50_ms": 219.00000000096043,
+    "latency_p95_ms": 281.9999999992433
+  },
+  "cases": [
+    {
+      "case_id": "lab-spectrometer-calibration",
+      "project_key": "lab-operations",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "lab-handbook",
+          1
+        ]
+      ],
+      "distractors": [
+        [
+          "instrument-log",
+          3
+        ]
+      ],
+      "ranked": [
+        [
+          "lab-handbook",
+          1
+        ],
+        [
+          "instrument-log",
+          3
+        ],
+        [
+          "training-matrix",
+          3
+        ],
+        [
+          "lab-handbook",
+          2
+        ],
+        [
+          "lab-handbook",
+          3
+        ]
+      ],
+      "scores": [
+        0.7207607197308125,
+        0.5846771001815837,
+        0.5013281701411998,
+        0.4888638860664445,
+        0.45165366510705174
+      ],
+      "latency_ms": 265.99999999962165,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "lab-imaging-timezone",
+      "project_key": "lab-operations",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "instrument-log",
+          1
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "instrument-log",
+          1
+        ],
+        [
+          "instrument-log",
+          3
+        ],
+        [
+          "instrument-log",
+          2
+        ],
+        [
+          "lab-handbook",
+          1
+        ],
+        [
+          "training-matrix",
+          4
+        ]
+      ],
+      "scores": [
+        0.7399691343307495,
+        0.5332966168699642,
+        0.49419480562210083,
+        0.45235955715179443,
+        0.4253003686308452
+      ],
+      "latency_ms": 250.0,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "lab-biohazard-autoclave",
+      "project_key": "lab-operations",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "safety-and-waste",
+          2
+        ]
+      ],
+      "distractors": [
+        [
+          "safety-and-waste",
+          3
+        ]
+      ],
+      "ranked": [
+        [
+          "safety-and-waste",
+          2
+        ],
+        [
+          "lab-handbook",
+          4
+        ],
+        [
+          "lab-handbook",
+          3
+        ],
+        [
+          "safety-and-waste",
+          1
+        ],
+        [
+          "safety-and-waste",
+          3
+        ]
+      ],
+      "scores": [
+        0.7409494673639867,
+        0.4745285228175814,
+        0.4320509474247136,
+        0.40203559398651123,
+        0.3891890761014545
+      ],
+      "latency_ms": 250.0,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "lab-freezer-storage",
+      "project_key": "lab-operations",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "lab-handbook",
+          4
+        ]
+      ],
+      "distractors": [
+        [
+          "instrument-log",
+          4
+        ]
+      ],
+      "ranked": [
+        [
+          "lab-handbook",
+          4
+        ],
+        [
+          "safety-and-waste",
+          2
+        ],
+        [
+          "lab-handbook",
+          3
+        ],
+        [
+          "training-matrix",
+          2
+        ],
+        [
+          "instrument-log",
+          3
+        ]
+      ],
+      "scores": [
+        0.7252291604739941,
+        0.5273724480049352,
+        0.47957071783717253,
+        0.4517982602119446,
+        0.4496578842197596
+      ],
+      "latency_ms": 187.00000000171713,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "lab-incident-near-miss",
+      "project_key": "lab-operations",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "lab-handbook",
+          5
+        ],
+        [
+          "safety-and-waste",
+          5
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "lab-handbook",
+          5
+        ],
+        [
+          "safety-and-waste",
+          5
+        ],
+        [
+          "instrument-log",
+          2
+        ],
+        [
+          "training-matrix",
+          1
+        ],
+        [
+          "training-matrix",
+          2
+        ]
+      ],
+      "scores": [
+        0.740975104003403,
+        0.5930809312833191,
+        0.5405067366512639,
+        0.49252116635567944,
+        0.4818336511204737
+      ],
+      "latency_ms": 218.99999999732245,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": true,
+      "k": 5
+    },
+    {
+      "case_id": "lab-visitor-access",
+      "project_key": "lab-operations",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "training-matrix",
+          4
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "training-matrix",
+          4
+        ],
+        [
+          "training-matrix",
+          1
+        ],
+        [
+          "instrument-log",
+          1
+        ],
+        [
+          "safety-and-waste",
+          0
+        ],
+        [
+          "instrument-log",
+          3
+        ]
+      ],
+      "scores": [
+        0.6152363465515134,
+        0.4814454306033511,
+        0.42050851644600995,
+        0.3774516919957125,
+        0.36154544605721073
+      ],
+      "latency_ms": 219.00000000096043,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "lab-cross-lingual-biohazard",
+      "project_key": "lab-operations",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "safety-and-waste",
+          2
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "safety-and-waste",
+          2
+        ],
+        [
+          "safety-and-waste",
+          1
+        ],
+        [
+          "safety-and-waste",
+          3
+        ],
+        [
+          "lab-handbook",
+          3
+        ],
+        [
+          "lab-handbook",
+          4
+        ]
+      ],
+      "scores": [
+        0.6034177778114224,
+        0.4879435896873474,
+        0.48769248985327773,
+        0.44352400639510203,
+        0.43579778457893303
+      ],
+      "latency_ms": 203.00000000133878,
+      "abstained": false,
+      "cross_lingual": true,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "lab-unanswerable-radioactive",
+      "project_key": "lab-operations",
+      "difficulty": "hard",
+      "relevant": [],
+      "distractors": [
+        [
+          "safety-and-waste",
+          1
+        ],
+        [
+          "safety-and-waste",
+          2
+        ]
+      ],
+      "ranked": [
+        [
+          "safety-and-waste",
+          2
+        ],
+        [
+          "lab-handbook",
+          3
+        ],
+        [
+          "lab-handbook",
+          0
+        ],
+        [
+          "lab-handbook",
+          4
+        ],
+        [
+          "safety-and-waste",
+          0
+        ]
+      ],
+      "scores": [
+        0.4977319240570104,
+        0.4873655438423191,
+        0.45069862167516694,
+        0.4501483142375978,
+        0.44955980176446464
+      ],
+      "latency_ms": 217.99999999711872,
+      "abstained": true,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "api-upload-limits",
+      "project_key": "api-documentation",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "endpoints-documents",
+          1
+        ]
+      ],
+      "distractors": [
+        [
+          "endpoints-documents",
+          2
+        ]
+      ],
+      "ranked": [
+        [
+          "endpoints-documents",
+          1
+        ],
+        [
+          "endpoints-documents",
+          0
+        ],
+        [
+          "endpoints-documents",
+          2
+        ],
+        [
+          "endpoints-documents",
+          4
+        ],
+        [
+          "endpoints-projects",
+          2
+        ]
+      ],
+      "scores": [
+        0.681463958155867,
+        0.5966904341188205,
+        0.5003226697637242,
+        0.48852969808611535,
+        0.4878217723316485
+      ],
+      "latency_ms": 219.00000000096043,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "api-key-rotation",
+      "project_key": "api-documentation",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "authentication",
+          1
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "authentication",
+          1
+        ],
+        [
+          "authentication",
+          3
+        ],
+        [
+          "authentication",
+          0
+        ],
+        [
+          "webhooks",
+          2
+        ],
+        [
+          "webhooks",
+          4
+        ]
+      ],
+      "scores": [
+        0.7205690145492605,
+        0.5891615152359051,
+        0.5246296241658711,
+        0.49101543426514027,
+        0.4845575681065073
+      ],
+      "latency_ms": 280.9999999990396,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "api-rate-limit",
+      "project_key": "api-documentation",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "authentication",
+          3
+        ]
+      ],
+      "distractors": [
+        [
+          "endpoints-projects",
+          4
+        ]
+      ],
+      "ranked": [
+        [
+          "authentication",
+          3
+        ],
+        [
+          "authentication",
+          4
+        ],
+        [
+          "authentication",
+          0
+        ],
+        [
+          "authentication",
+          1
+        ],
+        [
+          "endpoints-projects",
+          4
+        ]
+      ],
+      "scores": [
+        0.7685942191723468,
+        0.5976715862057088,
+        0.5639660954475403,
+        0.5554886129207256,
+        0.5008987783314289
+      ],
+      "latency_ms": 219.00000000096043,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "api-soft-delete",
+      "project_key": "api-documentation",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "endpoints-projects",
+          3
+        ]
+      ],
+      "distractors": [
+        [
+          "endpoints-projects",
+          4
+        ]
+      ],
+      "ranked": [
+        [
+          "endpoints-projects",
+          3
+        ],
+        [
+          "endpoints-projects",
+          4
+        ],
+        [
+          "webhooks",
+          2
+        ],
+        [
+          "endpoints-projects",
+          1
+        ],
+        [
+          "endpoints-projects",
+          2
+        ]
+      ],
+      "scores": [
+        0.7421180980766547,
+        0.5107504699825121,
+        0.49066615271577574,
+        0.4721570081336479,
+        0.4610294150079026
+      ],
+      "latency_ms": 235.00000000058208,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "api-webhook-signature",
+      "project_key": "api-documentation",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "webhooks",
+          1
+        ]
+      ],
+      "distractors": [
+        [
+          "webhooks",
+          4
+        ]
+      ],
+      "ranked": [
+        [
+          "webhooks",
+          1
+        ],
+        [
+          "webhooks",
+          0
+        ],
+        [
+          "authentication",
+          1
+        ],
+        [
+          "authentication",
+          3
+        ],
+        [
+          "webhooks",
+          4
+        ]
+      ],
+      "scores": [
+        0.6109285950660706,
+        0.45297822636495755,
+        0.40003270506663957,
+        0.39743134990743767,
+        0.38607466220855713
+      ],
+      "latency_ms": 250.0,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "api-cross-lingual-upload",
+      "project_key": "api-documentation",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "endpoints-documents",
+          1
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "endpoints-documents",
+          1
+        ],
+        [
+          "endpoints-documents",
+          2
+        ],
+        [
+          "endpoints-documents",
+          0
+        ],
+        [
+          "endpoints-documents",
+          4
+        ],
+        [
+          "endpoints-projects",
+          2
+        ]
+      ],
+      "scores": [
+        0.6993698298555524,
+        0.537714199355668,
+        0.5371950268745422,
+        0.5186037399049153,
+        0.5159228444099426
+      ],
+      "latency_ms": 218.0000000007567,
+      "abstained": false,
+      "cross_lingual": true,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "api-multi-hop-key-event",
+      "project_key": "api-documentation",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "authentication",
+          1
+        ],
+        [
+          "webhooks",
+          3
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "webhooks",
+          0
+        ],
+        [
+          "authentication",
+          1
+        ],
+        [
+          "webhooks",
+          1
+        ],
+        [
+          "webhooks",
+          3
+        ],
+        [
+          "authentication",
+          0
+        ]
+      ],
+      "scores": [
+        0.6368698694187492,
+        0.5701815146099628,
+        0.5353232622146606,
+        0.5294426679611206,
+        0.5115275382995605
+      ],
+      "latency_ms": 281.9999999992433,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": true,
+      "k": 5
+    },
+    {
+      "case_id": "api-unanswerable-graphql",
+      "project_key": "api-documentation",
+      "difficulty": "medium",
+      "relevant": [],
+      "distractors": [
+        [
+          "endpoints-projects",
+          1
+        ],
+        [
+          "endpoints-documents",
+          3
+        ]
+      ],
+      "ranked": [
+        [
+          "endpoints-projects",
+          0
+        ],
+        [
+          "endpoints-documents",
+          0
+        ],
+        [
+          "webhooks",
+          0
+        ],
+        [
+          "authentication",
+          0
+        ],
+        [
+          "authentication",
+          2
+        ]
+      ],
+      "scores": [
+        0.5642545131672486,
+        0.5384956919250314,
+        0.5294880867004432,
+        0.5195457052913738,
+        0.4948211905253652
+      ],
+      "latency_ms": 218.0000000007567,
+      "abstained": true,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "hr-annual-leave-carryover",
+      "project_key": "hr-policy",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "leave-and-absence",
+          1
+        ]
+      ],
+      "distractors": [
+        [
+          "leave-and-absence",
+          2
+        ]
+      ],
+      "ranked": [
+        [
+          "leave-and-absence",
+          1
+        ],
+        [
+          "leave-and-absence",
+          2
+        ],
+        [
+          "leave-and-absence",
+          3
+        ],
+        [
+          "compensation",
+          4
+        ],
+        [
+          "onboarding",
+          4
+        ]
+      ],
+      "scores": [
+        0.7457652839562141,
+        0.6205555570456729,
+        0.5591233109905319,
+        0.5563700530749601,
+        0.5260029435157776
+      ],
+      "latency_ms": 250.0,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "hr-sick-certificate",
+      "project_key": "hr-policy",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "leave-and-absence",
+          2
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "leave-and-absence",
+          2
+        ],
+        [
+          "leave-and-absence",
+          3
+        ],
+        [
+          "leave-and-absence",
+          1
+        ],
+        [
+          "leave-and-absence",
+          4
+        ],
+        [
+          "compensation",
+          3
+        ]
+      ],
+      "scores": [
+        0.7126364153000491,
+        0.4995741396761664,
+        0.49312101325032276,
+        0.43201575970696704,
+        0.42429207491004406
+      ],
+      "latency_ms": 202.9999999977008,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "hr-parental-leave",
+      "project_key": "hr-policy",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "leave-and-absence",
+          3
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "leave-and-absence",
+          3
+        ],
+        [
+          "leave-and-absence",
+          2
+        ],
+        [
+          "leave-and-absence",
+          1
+        ],
+        [
+          "compensation",
+          1
+        ],
+        [
+          "compensation",
+          4
+        ]
+      ],
+      "scores": [
+        0.806422710418707,
+        0.5651628971099893,
+        0.5301710927282461,
+        0.48014135717924555,
+        0.4778566956520114
+      ],
+      "latency_ms": 266.00000000325963,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "hr-bonus-timing",
+      "project_key": "hr-policy",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "compensation",
+          2
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "compensation",
+          2
+        ],
+        [
+          "compensation",
+          1
+        ],
+        [
+          "leave-and-absence",
+          1
+        ],
+        [
+          "compensation",
+          0
+        ],
+        [
+          "onboarding",
+          4
+        ]
+      ],
+      "scores": [
+        0.7566389876653588,
+        0.5597233009420864,
+        0.5156148057443135,
+        0.4861084827120026,
+        0.4833668182273624
+      ],
+      "latency_ms": 265.99999999962165,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "hr-gift-limit",
+      "project_key": "hr-policy",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "conduct",
+          3
+        ]
+      ],
+      "distractors": [
+        [
+          "conduct",
+          2
+        ]
+      ],
+      "ranked": [
+        [
+          "conduct",
+          3
+        ],
+        [
+          "onboarding",
+          4
+        ],
+        [
+          "compensation",
+          4
+        ],
+        [
+          "compensation",
+          2
+        ],
+        [
+          "compensation",
+          3
+        ]
+      ],
+      "scores": [
+        0.6353254696920896,
+        0.5169159461905998,
+        0.5009860992431676,
+        0.48084816679093323,
+        0.46030608292745556
+      ],
+      "latency_ms": 202.9999999977008,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "hr-multi-hop-probation-salary",
+      "project_key": "hr-policy",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "onboarding",
+          2
+        ],
+        [
+          "compensation",
+          1
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "compensation",
+          1
+        ],
+        [
+          "onboarding",
+          2
+        ],
+        [
+          "leave-and-absence",
+          1
+        ],
+        [
+          "leave-and-absence",
+          3
+        ],
+        [
+          "leave-and-absence",
+          2
+        ]
+      ],
+      "scores": [
+        0.7018307238271645,
+        0.5588279629452261,
+        0.5334807594441462,
+        0.5150666236877478,
+        0.5125312805175818
+      ],
+      "latency_ms": 234.00000000037835,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": true,
+      "k": 5
+    },
+    {
+      "case_id": "hr-cross-lingual-parental",
+      "project_key": "hr-policy",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "leave-and-absence",
+          3
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "leave-and-absence",
+          3
+        ],
+        [
+          "leave-and-absence",
+          2
+        ],
+        [
+          "leave-and-absence",
+          1
+        ],
+        [
+          "compensation",
+          4
+        ],
+        [
+          "compensation",
+          1
+        ]
+      ],
+      "scores": [
+        0.7033499302476616,
+        0.4909581238602483,
+        0.4746762827231724,
+        0.46848043611529167,
+        0.4310959408013805
+      ],
+      "latency_ms": 188.00000000192085,
+      "abstained": false,
+      "cross_lingual": true,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "hr-conflict-disclosure",
+      "project_key": "hr-policy",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "conduct",
+          2
+        ]
+      ],
+      "distractors": [
+        [
+          "conduct",
+          3
+        ]
+      ],
+      "ranked": [
+        [
+          "conduct",
+          2
+        ],
+        [
+          "conduct",
+          4
+        ],
+        [
+          "conduct",
+          1
+        ],
+        [
+          "leave-and-absence",
+          2
+        ],
+        [
+          "leave-and-absence",
+          4
+        ]
+      ],
+      "scores": [
+        0.7760480046272278,
+        0.5334124724093818,
+        0.4901875847689867,
+        0.4833640744307094,
+        0.4789191484451294
+      ],
+      "latency_ms": 217.99999999711872,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "clin-primary-endpoint",
+      "project_key": "clinical-protocol",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "study-overview",
+          4
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "study-overview",
+          4
+        ],
+        [
+          "assessments",
+          1
+        ],
+        [
+          "assessments",
+          2
+        ],
+        [
+          "study-overview",
+          1
+        ],
+        [
+          "dosing",
+          1
+        ]
+      ],
+      "scores": [
+        0.720975918828007,
+        0.4692583503656107,
+        0.4237982115565133,
+        0.40435263514519026,
+        0.38478168158422066
+      ],
+      "latency_ms": 219.00000000096043,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "clin-eligibility-egfr",
+      "project_key": "clinical-protocol",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "study-overview",
+          2
+        ]
+      ],
+      "distractors": [
+        [
+          "dosing",
+          3
+        ]
+      ],
+      "ranked": [
+        [
+          "study-overview",
+          2
+        ],
+        [
+          "assessments",
+          1
+        ],
+        [
+          "study-overview",
+          3
+        ],
+        [
+          "dosing",
+          3
+        ],
+        [
+          "dosing",
+          1
+        ]
+      ],
+      "scores": [
+        0.5427087545394897,
+        0.4716467997922542,
+        0.4587132012077102,
+        0.4364563486848093,
+        0.43135368824005127
+      ],
+      "latency_ms": 219.00000000096043,
+      "abstained": true,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "clin-dose-escalation",
+      "project_key": "clinical-protocol",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "dosing",
+          1
+        ]
+      ],
+      "distractors": [
+        [
+          "dosing",
+          3
+        ]
+      ],
+      "ranked": [
+        [
+          "dosing",
+          1
+        ],
+        [
+          "dosing",
+          0
+        ],
+        [
+          "dosing",
+          3
+        ],
+        [
+          "dosing",
+          2
+        ],
+        [
+          "dosing",
+          4
+        ]
+      ],
+      "scores": [
+        0.7256404921030718,
+        0.6409345483222885,
+        0.6364915966987655,
+        0.5516854524612466,
+        0.4991495013743945
+      ],
+      "latency_ms": 234.00000000037835,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "clin-missed-dose",
+      "project_key": "clinical-protocol",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "dosing",
+          2
+        ]
+      ],
+      "distractors": [
+        [
+          "dosing",
+          4
+        ]
+      ],
+      "ranked": [
+        [
+          "dosing",
+          2
+        ],
+        [
+          "dosing",
+          4
+        ],
+        [
+          "assessments",
+          3
+        ],
+        [
+          "safety-reporting",
+          2
+        ],
+        [
+          "study-overview",
+          1
+        ]
+      ],
+      "scores": [
+        0.754570119763929,
+        0.5636340287596632,
+        0.5496840313171258,
+        0.50455932359928,
+        0.4916108397129483
+      ],
+      "latency_ms": 235.00000000058208,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "clin-renal-adjustment",
+      "project_key": "clinical-protocol",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "dosing",
+          3
+        ]
+      ],
+      "distractors": [
+        [
+          "study-overview",
+          2
+        ]
+      ],
+      "ranked": [
+        [
+          "dosing",
+          3
+        ],
+        [
+          "dosing",
+          1
+        ],
+        [
+          "study-overview",
+          2
+        ],
+        [
+          "assessments",
+          2
+        ],
+        [
+          "assessments",
+          1
+        ]
+      ],
+      "scores": [
+        0.7464229464530998,
+        0.6144010058402426,
+        0.5836509118288222,
+        0.45410700279155547,
+        0.42804332291950986
+      ],
+      "latency_ms": 264.9999999994179,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "clin-sae-timeline",
+      "project_key": "clinical-protocol",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "safety-reporting",
+          2
+        ]
+      ],
+      "distractors": [
+        [
+          "safety-reporting",
+          1
+        ]
+      ],
+      "ranked": [
+        [
+          "safety-reporting",
+          2
+        ],
+        [
+          "safety-reporting",
+          1
+        ],
+        [
+          "safety-reporting",
+          0
+        ],
+        [
+          "safety-reporting",
+          4
+        ],
+        [
+          "dosing",
+          4
+        ]
+      ],
+      "scores": [
+        0.7489902973175049,
+        0.5819088220596313,
+        0.5264993623792754,
+        0.49603469658001376,
+        0.47795602679252625
+      ],
+      "latency_ms": 235.00000000058208,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "clin-multi-hop-egfr-monitoring",
+      "project_key": "clinical-protocol",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "dosing",
+          3
+        ],
+        [
+          "assessments",
+          2
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "dosing",
+          3
+        ],
+        [
+          "dosing",
+          1
+        ],
+        [
+          "study-overview",
+          2
+        ],
+        [
+          "assessments",
+          2
+        ],
+        [
+          "assessments",
+          1
+        ]
+      ],
+      "scores": [
+        0.6760234043612137,
+        0.6027096509933472,
+        0.524516224861145,
+        0.5111076984139593,
+        0.485011025816531
+      ],
+      "latency_ms": 217.99999999711872,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": true,
+      "k": 5
+    },
+    {
+      "case_id": "clin-cross-lingual-sae",
+      "project_key": "clinical-protocol",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "safety-reporting",
+          2
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "safety-reporting",
+          2
+        ],
+        [
+          "safety-reporting",
+          1
+        ],
+        [
+          "safety-reporting",
+          4
+        ],
+        [
+          "dosing",
+          4
+        ],
+        [
+          "assessments",
+          3
+        ]
+      ],
+      "scores": [
+        0.7082571983337402,
+        0.5716830492019653,
+        0.49204219854003806,
+        0.4806230366230011,
+        0.4617875263944269
+      ],
+      "latency_ms": 250.0,
+      "abstained": false,
+      "cross_lingual": true,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "clin-unanswerable-stopping",
+      "project_key": "clinical-protocol",
+      "difficulty": "hard",
+      "relevant": [],
+      "distractors": [
+        [
+          "study-overview",
+          4
+        ],
+        [
+          "safety-reporting",
+          2
+        ]
+      ],
+      "ranked": [
+        [
+          "assessments",
+          2
+        ],
+        [
+          "study-overview",
+          4
+        ],
+        [
+          "study-overview",
+          3
+        ],
+        [
+          "assessments",
+          1
+        ],
+        [
+          "study-overview",
+          1
+        ]
+      ],
+      "scores": [
+        0.46759889923330866,
+        0.4606677293777466,
+        0.4418662155786889,
+        0.42653007586390024,
+        0.4233592794323404
+      ],
+      "latency_ms": 219.00000000096043,
+      "abstained": true,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "fin-purchase-threshold",
+      "project_key": "finance-policy",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "procurement",
+          1
+        ]
+      ],
+      "distractors": [
+        [
+          "procurement",
+          3
+        ]
+      ],
+      "ranked": [
+        [
+          "procurement",
+          1
+        ],
+        [
+          "procurement",
+          0
+        ],
+        [
+          "procurement",
+          3
+        ],
+        [
+          "budgeting",
+          4
+        ],
+        [
+          "audit-and-controls",
+          1
+        ]
+      ],
+      "scores": [
+        0.686569333076477,
+        0.5741982371570822,
+        0.5607665777206421,
+        0.5183194875717163,
+        0.5154838869264068
+      ],
+      "latency_ms": 235.00000000058208,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "fin-vendor-screening",
+      "project_key": "finance-policy",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "procurement",
+          2
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "procurement",
+          2
+        ],
+        [
+          "audit-and-controls",
+          1
+        ],
+        [
+          "procurement",
+          3
+        ],
+        [
+          "procurement",
+          1
+        ],
+        [
+          "procurement",
+          0
+        ]
+      ],
+      "scores": [
+        0.6217328535477618,
+        0.5328859090805091,
+        0.5151613643669278,
+        0.5097512895017102,
+        0.5072832988590072
+      ],
+      "latency_ms": 203.00000000133878,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "fin-travel-class",
+      "project_key": "finance-policy",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "expenses",
+          1
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "expenses",
+          1
+        ],
+        [
+          "expenses",
+          4
+        ],
+        [
+          "expenses",
+          0
+        ],
+        [
+          "procurement",
+          4
+        ],
+        [
+          "procurement",
+          2
+        ]
+      ],
+      "scores": [
+        0.7119922213559031,
+        0.5616607666015665,
+        0.5497025519786753,
+        0.49465137783868585,
+        0.4670409281825474
+      ],
+      "latency_ms": 250.0,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "fin-capitalization",
+      "project_key": "finance-policy",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "budgeting",
+          4
+        ]
+      ],
+      "distractors": [
+        [
+          "audit-and-controls",
+          4
+        ]
+      ],
+      "ranked": [
+        [
+          "budgeting",
+          4
+        ],
+        [
+          "procurement",
+          1
+        ],
+        [
+          "procurement",
+          3
+        ],
+        [
+          "procurement",
+          0
+        ],
+        [
+          "expenses",
+          1
+        ]
+      ],
+      "scores": [
+        0.7088976117640026,
+        0.5360208909517794,
+        0.517849103148255,
+        0.4896486559824411,
+        0.47112472269310746
+      ],
+      "latency_ms": 311.99999999807915,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "fin-multi-hop-purchase-control",
+      "project_key": "finance-policy",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "procurement",
+          1
+        ],
+        [
+          "audit-and-controls",
+          1
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "procurement",
+          1
+        ],
+        [
+          "audit-and-controls",
+          1
+        ],
+        [
+          "procurement",
+          0
+        ],
+        [
+          "procurement",
+          3
+        ],
+        [
+          "procurement",
+          4
+        ]
+      ],
+      "scores": [
+        0.6430940628051758,
+        0.5657191017698716,
+        0.5429983087780146,
+        0.5419406890869141,
+        0.4950459304424575
+      ],
+      "latency_ms": 203.00000000133878,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": true,
+      "k": 5
+    },
+    {
+      "case_id": "fin-cross-lingual-receipts",
+      "project_key": "finance-policy",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "expenses",
+          3
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "procurement",
+          2
+        ],
+        [
+          "expenses",
+          3
+        ],
+        [
+          "budgeting",
+          2
+        ],
+        [
+          "procurement",
+          4
+        ],
+        [
+          "expenses",
+          0
+        ]
+      ],
+      "scores": [
+        0.596401572227478,
+        0.5773561172889509,
+        0.5294841492791036,
+        0.5166985084594194,
+        0.4846801161766052
+      ],
+      "latency_ms": 202.9999999977008,
+      "abstained": true,
+      "cross_lingual": true,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "fin-emergency-purchase",
+      "project_key": "finance-policy",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "procurement",
+          4
+        ]
+      ],
+      "distractors": [
+        [
+          "procurement",
+          1
+        ]
+      ],
+      "ranked": [
+        [
+          "procurement",
+          4
+        ],
+        [
+          "procurement",
+          0
+        ],
+        [
+          "procurement",
+          1
+        ],
+        [
+          "procurement",
+          3
+        ],
+        [
+          "procurement",
+          2
+        ]
+      ],
+      "scores": [
+        0.7339891949898497,
+        0.5841563839726032,
+        0.5467211008071899,
+        0.5306950211524963,
+        0.5199176073074341
+      ],
+      "latency_ms": 204.0000000015425,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "fin-unanswerable-crypto",
+      "project_key": "finance-policy",
+      "difficulty": "medium",
+      "relevant": [],
+      "distractors": [
+        [
+          "procurement",
+          2
+        ],
+        [
+          "expenses",
+          4
+        ]
+      ],
+      "ranked": [
+        [
+          "procurement",
+          2
+        ],
+        [
+          "procurement",
+          0
+        ],
+        [
+          "audit-and-controls",
+          1
+        ],
+        [
+          "procurement",
+          1
+        ],
+        [
+          "procurement",
+          3
+        ]
+      ],
+      "scores": [
+        0.46770656301340163,
+        0.43760259075118546,
+        0.4288514852523835,
+        0.4188302505713559,
+        0.4141505113750399
+      ],
+      "latency_ms": 264.9999999994179,
+      "abstained": true,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "prod-embedding-dims",
+      "project_key": "product-spec",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "architecture",
+          2
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "architecture",
+          2
+        ],
+        [
+          "architecture",
+          1
+        ],
+        [
+          "api-contract",
+          3
+        ],
+        [
+          "product-requirements",
+          4
+        ],
+        [
+          "release-plan",
+          1
+        ]
+      ],
+      "scores": [
+        0.6389654874801636,
+        0.439336028059485,
+        0.4192267656326294,
+        0.37838677296717393,
+        0.3776589632034302
+      ],
+      "latency_ms": 219.00000000096043,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "prod-success-metric",
+      "project_key": "product-spec",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "product-requirements",
+          4
+        ]
+      ],
+      "distractors": [
+        [
+          "release-plan",
+          2
+        ]
+      ],
+      "ranked": [
+        [
+          "product-requirements",
+          4
+        ],
+        [
+          "release-plan",
+          1
+        ],
+        [
+          "release-plan",
+          2
+        ],
+        [
+          "product-requirements",
+          2
+        ],
+        [
+          "product-requirements",
+          0
+        ]
+      ],
+      "scores": [
+        0.6489591807747387,
+        0.5440284013748169,
+        0.5413860082626343,
+        0.48557424545288086,
+        0.46956100878483187
+      ],
+      "latency_ms": 203.00000000133878,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "prod-search-response",
+      "project_key": "product-spec",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "api-contract",
+          2
+        ]
+      ],
+      "distractors": [
+        [
+          "api-contract",
+          1
+        ]
+      ],
+      "ranked": [
+        [
+          "api-contract",
+          2
+        ],
+        [
+          "api-contract",
+          1
+        ],
+        [
+          "architecture",
+          1
+        ],
+        [
+          "release-plan",
+          1
+        ],
+        [
+          "release-plan",
+          2
+        ]
+      ],
+      "scores": [
+        0.49972766637802124,
+        0.46438230467982033,
+        0.44491845041027456,
+        0.4273150563240051,
+        0.40219035744667053
+      ],
+      "latency_ms": 296.9999999986612,
+      "abstained": true,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "prod-chunk-cap",
+      "project_key": "product-spec",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "architecture",
+          3
+        ]
+      ],
+      "distractors": [
+        [
+          "architecture",
+          2
+        ]
+      ],
+      "ranked": [
+        [
+          "architecture",
+          3
+        ],
+        [
+          "architecture",
+          1
+        ],
+        [
+          "api-contract",
+          2
+        ],
+        [
+          "architecture",
+          2
+        ],
+        [
+          "api-contract",
+          4
+        ]
+      ],
+      "scores": [
+        0.6041510645286203,
+        0.3685878844786781,
+        0.3650870431985571,
+        0.3593771564774859,
+        0.34780713008684694
+      ],
+      "latency_ms": 234.00000000037835,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "prod-no-model-training",
+      "project_key": "product-spec",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "product-requirements",
+          3
+        ]
+      ],
+      "distractors": [
+        [
+          "architecture",
+          2
+        ]
+      ],
+      "ranked": [
+        [
+          "product-requirements",
+          3
+        ],
+        [
+          "release-plan",
+          2
+        ],
+        [
+          "product-requirements",
+          1
+        ],
+        [
+          "release-plan",
+          1
+        ],
+        [
+          "product-requirements",
+          4
+        ]
+      ],
+      "scores": [
+        0.6092705260837749,
+        0.4628933325878811,
+        0.45881064989757325,
+        0.4471008714557765,
+        0.440985109864785
+      ],
+      "latency_ms": 202.9999999977008,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "prod-multi-hop-beta",
+      "project_key": "product-spec",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "release-plan",
+          2
+        ],
+        [
+          "product-requirements",
+          4
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "release-plan",
+          2
+        ],
+        [
+          "release-plan",
+          1
+        ],
+        [
+          "release-plan",
+          0
+        ],
+        [
+          "product-requirements",
+          4
+        ],
+        [
+          "release-plan",
+          3
+        ]
+      ],
+      "scores": [
+        0.6523304788869345,
+        0.5410486137241961,
+        0.5375118255615272,
+        0.5087470401827049,
+        0.4959844355601746
+      ],
+      "latency_ms": 219.00000000096043,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": true,
+      "k": 5
+    },
+    {
+      "case_id": "prod-cross-lingual-versioning",
+      "project_key": "product-spec",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "api-contract",
+          4
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "api-contract",
+          4
+        ],
+        [
+          "release-plan",
+          3
+        ],
+        [
+          "release-plan",
+          2
+        ],
+        [
+          "api-contract",
+          0
+        ],
+        [
+          "release-plan",
+          4
+        ]
+      ],
+      "scores": [
+        0.5987683713069075,
+        0.5117726020948538,
+        0.4591536521911621,
+        0.4576041723725701,
+        0.455073744058609
+      ],
+      "latency_ms": 219.00000000096043,
+      "abstained": true,
+      "cross_lingual": true,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "prod-rollback",
+      "project_key": "product-spec",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "release-plan",
+          3
+        ]
+      ],
+      "distractors": [
+        [
+          "release-plan",
+          4
+        ]
+      ],
+      "ranked": [
+        [
+          "release-plan",
+          3
+        ],
+        [
+          "product-requirements",
+          4
+        ],
+        [
+          "release-plan",
+          0
+        ],
+        [
+          "release-plan",
+          2
+        ],
+        [
+          "api-contract",
+          4
+        ]
+      ],
+      "scores": [
+        0.6760321838798207,
+        0.5138107215504557,
+        0.46477550478128316,
+        0.45326459964936106,
+        0.44819833801404096
+      ],
+      "latency_ms": 219.00000000096043,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "prod-unanswerable-onprem",
+      "project_key": "product-spec",
+      "difficulty": "hard",
+      "relevant": [],
+      "distractors": [
+        [
+          "architecture",
+          4
+        ],
+        [
+          "architecture",
+          2
+        ]
+      ],
+      "ranked": [
+        [
+          "product-requirements",
+          0
+        ],
+        [
+          "architecture",
+          4
+        ],
+        [
+          "api-contract",
+          1
+        ],
+        [
+          "release-plan",
+          3
+        ],
+        [
+          "architecture",
+          1
+        ]
+      ],
+      "scores": [
+        0.5471873609535323,
+        0.544258177280426,
+        0.4403534960852118,
+        0.4267376108922005,
+        0.426256801262904
+      ],
+      "latency_ms": 250.0,
+      "abstained": true,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    }
+  ]
+}

@@ -1,0 +1,190 @@
+[
+  {
+    "case_id": "md-hastscript-injected-node",
+    "project_key": "markdown-pipeline",
+    "query": "If a database hands hastscript's `h()` an object that looks like a syntax-tree node instead of the expected string, what does the README's security example show being rendered?",
+    "relevant_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-1",
+        "chunk_index": 57,
+        "anchor": "  children: [{type: 'text', value: 'alert(2)'}]"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-1",
+        "chunk_index": 55,
+        "anchor": "This package can be used with JSX."
+      }
+    ],
+    "rationale": "The relevant chunk shows the injected object being used as a child so a `<script>` element with `alert(2)` is serialised inside a span, while the distractor only explains how to use the package with JSX and never mentions untrusted input or injection.",
+    "difficulty": "easy"
+  },
+  {
+    "case_id": "md-mdx-jsx-tight-selfclosing",
+    "project_key": "markdown-pipeline",
+    "query": "用 mdast-util-mdx-jsx 把语法树写回 markdown 时，想让自闭合元素输出成 `<img/>`、不要中间那个多余的空格，应该打开哪个选项？",
+    "relevant_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-6",
+        "chunk_index": 59,
+        "anchor": "* `tightSelfClosing` (`boolean`, default: `false`)"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-3",
+        "chunk_index": 185,
+        "anchor": "* `singleTilde` (`boolean`, default: `true`)"
+      }
+    ],
+    "rationale": "The relevant chunk documents `tightSelfClosing` as the flag that drops the extra space before `/>`, whereas the distractor lists GFM serialiser fields such as `singleTilde` and table padding and says nothing about self-closing tags.",
+    "difficulty": "easy"
+  },
+  {
+    "case_id": "md-micromark-virtual-line-endings",
+    "project_key": "markdown-pipeline",
+    "query": "Apart from the actual CR and LF code points, which virtual character codes does micromark use when it needs to represent a markdown line ending?",
+    "relevant_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-4",
+        "chunk_index": 93,
+        "anchor": "LINE FEED (CRLF), M-0004 LINE FEED (LF) and M-0005 CARRIAGE RETURN (CR)."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-6",
+        "chunk_index": 122,
+        "anchor": "Default line ending to use when compiling to HTML, for line endings not in"
+      }
+    ],
+    "rationale": "The relevant chunk names the three virtual codes M-0003, M-0004 and M-0005 and what each stands for, while the distractor only discusses which real line ending the compiler reuses in generated HTML and never mentions virtual characters.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "md-tojsx-solid-name-case",
+    "project_key": "markdown-pipeline",
+    "query": "When I hand a hast tree to `toJsxRuntime` for Solid, which two casing options does the README insist I configure?",
+    "relevant_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-5",
+        "chunk_index": 99,
+        "anchor": "> `stylePropertyNameCase: 'css'` for Solid."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-5",
+        "chunk_index": 101,
+        "anchor": "> you must set `elementAttributeNameCase: 'html'` for Vue."
+      }
+    ],
+    "rationale": "The relevant chunk states that Solid needs both `elementAttributeNameCase: 'html'` and `stylePropertyNameCase: 'css'`, whereas the Vue distractor requires only the attribute-name case option and therefore gives an incomplete answer.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "md-html-safe-url-protocols",
+    "project_key": "markdown-pipeline",
+    "query": "Which protocols does the HTML serialiser keep for image URLs, and which extra ones does it also accept on links when the dangerous-protocol guard is left at its default?",
+    "relevant_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-6",
+        "chunk_index": 121,
+        "anchor": "`https`; for links: `http`, `https`, `irc`, `ircs`, `mailto`, `xmpp`), are"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-6",
+        "chunk_index": 187,
+        "anchor": "* `urlTransform` ([`UrlTransform`][api-url-transform], default:"
+      }
+    ],
+    "rationale": "The relevant chunk enumerates the safe image protocols (http, https) and the wider link list (http, https, irc, ircs, mailto, xmpp), while the distractor is an options table that only mentions a `urlTransform` hook and never lists which protocols survive.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "md-rehype-katex-release-date",
+    "project_key": "markdown-pipeline",
+    "query": "I need rehype-katex 7's npm publish date for our changelog - when was that release published?",
+    "relevant_passages": [],
+    "distractor_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-6",
+        "chunk_index": 224,
+        "anchor": "This means we try to keep the current release line, `rehype-katex@^7`,"
+      }
+    ],
+    "rationale": "The corpus only records which Node.js, unified and rehype versions rehype-katex 7 works with, so no publish date appears anywhere; the distractor is that same compatibility section, which looks like the right place for release information but contains no dates.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "md-remark-gfm-parse-pairing",
+    "project_key": "markdown-pipeline",
+    "query": "Which remark-parse release line does remark-gfm v4 need, and which one did the previous major of the plugin work against?",
+    "relevant_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-3",
+        "chunk_index": 195,
+        "anchor": "This plugin works with `remark-parse` version 11+ (`remark` version 15+)."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-4",
+        "chunk_index": 174,
+        "anchor": "This means we try to keep the current release line, `remark-math@^6`,"
+      }
+    ],
+    "rationale": "The relevant chunk pairs remark-gfm v4 with remark-parse 11+ (remark 15+) and v3 with remark-parse 10 (remark 14), while the distractor is another plugin's compatibility note that talks about remark-math and unified versions instead of remark-gfm's parser pairing.",
+    "difficulty": "hard"
+  },
+  {
+    "case_id": "md-async-highlighter-deferred-refractor",
+    "project_key": "markdown-pipeline",
+    "query": "I want react-syntax-highlighter's async Prism build so the highlighter payload stays out of my first chunk: what must my bundler be able to do, and what does the refractor import it defers give me by default?",
+    "relevant_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-3",
+        "chunk_index": 167,
+        "anchor": "This version requires you to use a bundler that supports the dynamic import syntax, like webpack."
+      },
+      {
+        "document_key": "markdown-pipeline-volume-4",
+        "chunk_index": 107,
+        "anchor": "* `refractor` (default) — 36 common languages"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-2",
+        "chunk_index": 123,
+        "anchor": "### Custom Language Support"
+      }
+    ],
+    "rationale": "The async-build chunk supplies the bundler requirement (dynamic `import`, as in webpack) and the deferred 17 kB refractor payload, the refractor chunk supplies the entry-point language counts (the default import gives 36 common languages, core 0, all 297), and the distractor is about prism-react-renderer's own language set, which answers neither half.",
+    "difficulty": "hard"
+  },
+  {
+    "case_id": "md-highlightjs-v10-upgrade-reading",
+    "project_key": "markdown-pipeline",
+    "query": "I'm moving an integration from highlight.js 9 to 10 - which documents does its README send me to, and what does each of them cover?",
+    "relevant_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-5",
+        "chunk_index": 111,
+        "anchor": "Please read [VERSION_10_UPGRADE.md](https://github.com/highlightjs/highlight.js/blob/main/VERSION_10_UPGRADE.md) for  high-level summary of breaking changes and any actions you may need to take. See [VERSION_10_BREAKING_CHANGES.md](https://github.com/highlightjs/highlight.js/blob/main/VERSION_10_BREAKING_CHANGES.md) for a more detailed list and [CHANGES.md](https://github.com/highlightjs/highlight.js/blob/main/CHANGES.md) to learn what else is new."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "markdown-pipeline-volume-5",
+        "chunk_index": 120,
+        "anchor": "Make sure to use the `.value` property to get the formatted html."
+      }
+    ],
+    "rationale": "The relevant chunk points at VERSION_10_UPGRADE.md for a high-level summary of breaking changes, VERSION_10_BREAKING_CHANGES.md for the detailed list and CHANGES.md for everything else, while the distractor only shows how to call the library under Node.js and names no upgrade documents.",
+    "difficulty": "hard"
+  }
+]

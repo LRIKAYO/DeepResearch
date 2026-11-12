@@ -1,28 +1,52 @@
+"""Tests for the frozen retrieval-v1 fixture through the new evaluation package.
+
+This file was updated when ``evaluations/retrieval.py`` was retired:
+
+* imports moved to ``evaluations.dataset`` / ``evaluations.metrics``;
+* the database-guard tests were removed because the replacement runner is
+  API-only and never opens a database connection, so the old
+  ``RESEARCHFLOW_TEST_DATABASE_URL`` guard no longer exists;
+* the old runtime-ID resolver test was replaced by a loader-level test that the
+  same v1 passage keys resolve against the real chunker and that a corrupt
+  chunk reference fails loudly.
+
+The v1 fixture itself is untouched and remains loadable through
+``evaluations.run_eval --dataset evaluations/retrieval_v1.json``.
+"""
+
+import json
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
-from evaluations.retrieval import (
-    RetrievalFixture,
-    load_fixture,
-    macro_recall,
-    recall_at_k,
-    require_test_database,
-    resolve_relevant,
+from evaluations.dataset import (
+    RETRIEVAL_V1_PATH,
+    DatasetValidationError,
+    RetrievalDatasetV1,
+    load_eval_dataset,
 )
+from evaluations.metrics import macro_recall, recall_at_k
+from researchflow.knowledge.chunking import chunk_markdown
+
+
+def _v1_raw() -> dict:
+    return json.loads(RETRIEVAL_V1_PATH.read_text(encoding="utf-8"))
 
 
 def test_frozen_fixture_has_nontrivial_candidate_pool():
     from researchflow.knowledge.chunking import chunk_markdown
 
-    fixture, digest = load_fixture()
+    dataset, digest = load_eval_dataset(RETRIEVAL_V1_PATH)
 
-    assert fixture.dataset_version == "retrieval-v1"
-    assert fixture.label_review == "synthetic_ai_reviewed"
+    assert dataset.schema_version == 1
+    assert dataset.dataset_version == "retrieval-v1"
+    assert dataset.label_review == "synthetic_ai_reviewed"
     assert len(digest) == 64
     assert sum(len(chunk_markdown(doc.content))
-               for project in fixture.projects for doc in project.documents) == 10
+               for project in dataset.projects for doc in project.documents) == 10
+    assert len(dataset.cases) == 3
 
 
 @pytest.mark.parametrize("mutation", [
@@ -32,8 +56,7 @@ def test_frozen_fixture_has_nontrivial_candidate_pool():
     "trivial_candidates",
 ])
 def test_manifest_rejects_ambiguous_or_invalid_ground_truth(mutation):
-    fixture, _ = load_fixture()
-    raw = deepcopy(fixture.model_dump())
+    raw = _v1_raw()
     project = raw["projects"][0]
     case = raw["cases"][0]
     if mutation == "duplicate_project":
@@ -65,7 +88,7 @@ def test_manifest_rejects_ambiguous_or_invalid_ground_truth(mutation):
             document["content"] = "One passage only."
 
     with pytest.raises(ValidationError):
-        RetrievalFixture.model_validate(raw)
+        RetrievalDatasetV1.model_validate(raw)
 
 
 @pytest.mark.parametrize(("relevant", "ranked", "expected"), [
@@ -87,38 +110,24 @@ def test_macro_is_unweighted_and_empty_ground_truth_is_rejected():
         macro_recall([])
 
 
-def test_resolver_survives_new_ingestion_ids_and_enforces_project_scope():
-    fixture, _ = load_fixture()
-    case = fixture.cases[0]
-    first = {
-        (case.project_key, "records", 0): "first-a",
-        (case.project_key, "records", 1): "first-b",
-        ("other-project", "records", 0): "wrong-scope",
-    }
-    second = {key: f"new-{value}" for key, value in first.items()}
+def test_v1_passage_keys_resolve_against_the_real_chunker():
+    dataset, _ = load_eval_dataset(RETRIEVAL_V1_PATH)
+    case = dataset.cases[0]
 
-    assert resolve_relevant(case, first) == {"first-a", "first-b"}
-    assert resolve_relevant(case, second) == {"new-first-a", "new-first-b"}
-    with pytest.raises(ValueError, match="Unresolved"):
-        resolve_relevant(case, {("other-project", "records", 0): "wrong-scope"})
-    with pytest.raises(ValueError, match="distinct"):
-        resolve_relevant(case, {key: "same" for key in first})
+    assert case.relevant_keys == (("records", 0), ("records", 1))
+    for project in dataset.projects:
+        for document in project.documents:
+            assert len(document.chunks) == len(chunk_markdown(document.content))
 
 
-@pytest.mark.parametrize("url", [
-    None,
-    "not-a-url",
-    "postgresql+psycopg://user:secret@localhost/researchflow",
-    "postgresql+psycopg://user:secret@remote-host/researchflow_test",
-    "postgresql+psycopg://user:secret@localhost/researchflow_test?dbname=researchflow",
-    "sqlite:///researchflow_test",
-])
-def test_database_guard_rejects_nonisolated_targets_without_echoing_credentials(url):
-    with pytest.raises(ValueError) as error:
-        require_test_database(url)
-    assert "secret" not in str(error.value)
+def test_v1_corrupt_chunk_fails_loudly_and_names_the_case(tmp_path: Path):
+    raw = _v1_raw()
+    raw["cases"][0]["relevant_passages"][0]["chunk_index"] = 999
+    path = tmp_path / "broken_v1.json"
+    path.write_text(json.dumps(raw), encoding="utf-8")
 
-
-def test_database_guard_accepts_only_explicit_local_test_target():
-    url = "postgresql+psycopg://user:secret@127.0.0.1:5432/researchflow_test"
-    assert require_test_database(url) == url
+    with pytest.raises(DatasetValidationError) as error:
+        load_eval_dataset(path)
+    message = str(error.value)
+    assert "archive-backup-schedule" in message
+    assert "missing Document/chunk" in message

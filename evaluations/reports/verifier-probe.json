@@ -1,0 +1,87 @@
+{
+  "cases": [
+    {
+      "citation_id": "c1",
+      "expected": "full",
+      "verdict": "full",
+      "correct": true,
+      "reason": "Passage states fraction digits defaults to 3, directly supporting the claim.",
+      "claim": "The arc generator keeps three decimal places by default."
+    },
+    {
+      "citation_id": "c2",
+      "expected": "none",
+      "verdict": "none",
+      "correct": true,
+      "reason": "Passage says timeout starts when added to queue, contradicting claim that it starts after backlog.",
+      "claim": "p-queue timeouts only start counting once the task leaves the backlog."
+    },
+    {
+      "citation_id": "c3",
+      "expected": "full",
+      "verdict": "full",
+      "correct": true,
+      "reason": "Passage explains baseNameMatch matches basename when true, confirming support.",
+      "claim": "fast-glob supports matching a basename with baseNameMatch."
+    },
+    {
+      "citation_id": "c4",
+      "expected": "full",
+      "verdict": "full",
+      "correct": true,
+      "reason": "Passage states expired entries removed automatically when maxAge is set, supporting the claim.",
+      "claim": "lru-cache purges expired entries on its own."
+    },
+    {
+      "citation_id": "c5",
+      "expected": "none",
+      "verdict": "none",
+      "correct": true,
+      "reason": "Passage discusses pgvector embeddings; unrelated to Markdown or chunking.",
+      "claim": "Chunking splits Markdown on ATX headings."
+    },
+    {
+      "citation_id": "c6",
+      "expected": "full",
+      "verdict": "full",
+      "correct": true,
+      "reason": "Passage explicitly describes DELETE endpoint deleting projects and scoped items.",
+      "claim": "The Product Backend exposes a delete endpoint for projects."
+    },
+    {
+      "citation_id": "c7",
+      "expected": "none",
+      "verdict": "none",
+      "correct": true,
+      "reason": "Passage lists only 408, 409, 429 and 5xx retried; other 4xx are not, contradicting.",
+      "claim": "The OpenAI Node client retries all 4xx responses by default."
+    },
+    {
+      "citation_id": "c8",
+      "expected": "full",
+      "verdict": "full",
+      "correct": true,
+      "reason": "Passage states coerce('1.2.3.4') returns 2.3.4 in rtl mode, matching claim.",
+      "claim": "semver coerce with rtl turns 1.2.3.4 into 2.3.4."
+    },
+    {
+      "citation_id": "c9",
+      "expected": "none",
+      "verdict": "none",
+      "correct": true,
+      "reason": "Passage says default is 5, not latest edition, contradicting claim.",
+      "claim": "espree parses as the latest ECMAScript edition when ecmaVersion is omitted."
+    },
+    {
+      "citation_id": "c10",
+      "expected": "full",
+      "verdict": "full",
+      "correct": true,
+      "reason": "Passage says RESEARCHFLOW_MAX_TOOL_ROUNDS caps rounds, directly supporting bounded loop.",
+      "claim": "The research loop is bounded by a tool-round budget."
+    }
+  ],
+  "correct": 10,
+  "strict_correct": 10,
+  "total": 10
+}

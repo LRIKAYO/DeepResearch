@@ -1,0 +1,2592 @@
+{
+  "mode": "live",
+  "dataset_version": "retrieval-v4",
+  "dataset_sha256": "6d9963ec1aea50d56adb2874f368a271c738a189d8f66adac253551230a13107",
+  "schema_version": 2,
+  "k": 5,
+  "abstain_threshold": 0.6,
+  "generated_at_utc": "2026-11-11T04:37:29+00:00",
+  "api": "http://127.0.0.1:8000",
+  "run_id": "751c5fd3",
+  "cost_per_run": null,
+  "provenance_note": null,
+  "composition": {
+    "projects": 6,
+    "documents": 36,
+    "chunks": 6157,
+    "cases": 50,
+    "easy": 12,
+    "medium": 24,
+    "hard": 14,
+    "unspecified": 0,
+    "hard_negative": 49,
+    "multi_hop": 6,
+    "cross_lingual": 6,
+    "unanswerable": 5
+  },
+  "metrics": {
+    "k": 5,
+    "case_count": 50,
+    "answerable_count": 45,
+    "unanswerable_count": 5,
+    "macro_recall": 0.8333333333333334,
+    "micro_recall": 0.803921568627451,
+    "mrr": 0.6351851851851852,
+    "ndcg": 0.6664676375969203,
+    "hard_negative_case_count": 49,
+    "hard_negative_hit_rate": 0.30612244897959184,
+    "cross_lingual_case_count": 6,
+    "cross_lingual_recall": 0.8333333333333334,
+    "unanswerable_abstain_rate": 0.6,
+    "false_abstain_rate": 0.022222222222222223,
+    "abstain_correctness": 0.94,
+    "latency_p50_ms": 155.99999999994907,
+    "latency_p95_ms": 297.00000000002547
+  },
+  "cases": [
+    {
+      "case_id": "build-detect-libc-off-linux",
+      "project_key": "build-and-tooling",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "build-and-tooling-volume-1",
+          27
+        ]
+      ],
+      "distractors": [
+        [
+          "build-and-tooling-volume-1",
+          30
+        ]
+      ],
+      "ranked": [
+        [
+          "build-and-tooling-volume-1",
+          22
+        ],
+        [
+          "build-and-tooling-volume-1",
+          29
+        ],
+        [
+          "build-and-tooling-volume-1",
+          31
+        ],
+        [
+          "build-and-tooling-volume-1",
+          27
+        ],
+        [
+          "build-and-tooling-volume-1",
+          23
+        ]
+      ],
+      "scores": [
+        0.654451390835561,
+        0.6421164700846157,
+        0.6042465151621855,
+        0.5859562507841747,
+        0.5572761297225952
+      ],
+      "latency_ms": 172.00000000002547,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "build-espree-default-ecma-version",
+      "project_key": "build-and-tooling",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "build-and-tooling-volume-2",
+          11
+        ]
+      ],
+      "distractors": [
+        [
+          "build-and-tooling-volume-2",
+          26
+        ]
+      ],
+      "ranked": [
+        [
+          "build-and-tooling-volume-2",
+          9
+        ],
+        [
+          "build-and-tooling-volume-2",
+          7
+        ],
+        [
+          "build-and-tooling-volume-2",
+          17
+        ],
+        [
+          "build-and-tooling-volume-2",
+          26
+        ],
+        [
+          "build-and-tooling-volume-2",
+          10
+        ]
+      ],
+      "scores": [
+        0.763159865611772,
+        0.68909313348214,
+        0.6363191794252222,
+        0.6352115245352584,
+        0.6165216977440939
+      ],
+      "latency_ms": 172.00000000002547,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "build-enhanced-resolve-lower-level-factory",
+      "project_key": "build-and-tooling",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "build-and-tooling-volume-1",
+          47
+        ]
+      ],
+      "distractors": [
+        [
+          "build-and-tooling-volume-1",
+          41
+        ]
+      ],
+      "ranked": [
+        [
+          "build-and-tooling-volume-1",
+          92
+        ],
+        [
+          "build-and-tooling-volume-1",
+          88
+        ],
+        [
+          "build-and-tooling-volume-6",
+          85
+        ],
+        [
+          "build-and-tooling-volume-1",
+          74
+        ],
+        [
+          "build-and-tooling-volume-1",
+          35
+        ]
+      ],
+      "scores": [
+        0.6231500955641156,
+        0.6017713188069284,
+        0.5974985957145733,
+        0.5956120846040395,
+        0.5843087930311212
+      ],
+      "latency_ms": 172.00000000002547,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "build-tapable-withoptions-tap-order",
+      "project_key": "build-and-tooling",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "build-and-tooling-volume-3",
+          122
+        ]
+      ],
+      "distractors": [
+        [
+          "build-and-tooling-volume-3",
+          119
+        ]
+      ],
+      "ranked": [
+        [
+          "build-and-tooling-volume-3",
+          123
+        ],
+        [
+          "build-and-tooling-volume-3",
+          147
+        ],
+        [
+          "build-and-tooling-volume-3",
+          122
+        ],
+        [
+          "build-and-tooling-volume-3",
+          119
+        ],
+        [
+          "build-and-tooling-volume-3",
+          120
+        ]
+      ],
+      "scores": [
+        0.6166151165962219,
+        0.6139851808547974,
+        0.5854105702287309,
+        0.5807836055755615,
+        0.5772270652326464
+      ],
+      "latency_ms": 155.99999999994907,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "build-cssesc-global-default-options",
+      "project_key": "build-and-tooling",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "build-and-tooling-volume-3",
+          21
+        ]
+      ],
+      "distractors": [
+        [
+          "build-and-tooling-volume-3",
+          20
+        ]
+      ],
+      "ranked": [
+        [
+          "build-and-tooling-volume-3",
+          21
+        ],
+        [
+          "build-and-tooling-volume-3",
+          16
+        ],
+        [
+          "build-and-tooling-volume-1",
+          126
+        ],
+        [
+          "build-and-tooling-volume-6",
+          14
+        ],
+        [
+          "build-and-tooling-volume-3",
+          20
+        ]
+      ],
+      "scores": [
+        0.7131789497626466,
+        0.6302872896194502,
+        0.6297331264694619,
+        0.6281804885649098,
+        0.6196602582931563
+      ],
+      "latency_ms": 157.0000000001528,
+      "abstained": false,
+      "cross_lingual": true,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "build-semver-coerce-rtl-tuple",
+      "project_key": "build-and-tooling",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "build-and-tooling-volume-4",
+          100
+        ]
+      ],
+      "distractors": [
+        [
+          "build-and-tooling-volume-4",
+          101
+        ]
+      ],
+      "ranked": [
+        [
+          "build-and-tooling-volume-4",
+          100
+        ],
+        [
+          "build-and-tooling-volume-4",
+          99
+        ],
+        [
+          "build-and-tooling-volume-4",
+          72
+        ],
+        [
+          "build-and-tooling-volume-4",
+          66
+        ],
+        [
+          "build-and-tooling-volume-4",
+          69
+        ]
+      ],
+      "scores": [
+        0.7429223367068419,
+        0.6522829727018769,
+        0.615298330783844,
+        0.5742116824262342,
+        0.5711804968822308
+      ],
+      "latency_ms": 125.0,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "build-napi-postinstall-unrs-bridge",
+      "project_key": "build-and-tooling",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "build-and-tooling-volume-3",
+          82
+        ],
+        [
+          "build-and-tooling-volume-6",
+          67
+        ]
+      ],
+      "distractors": [
+        [
+          "build-and-tooling-volume-3",
+          81
+        ]
+      ],
+      "ranked": [
+        [
+          "build-and-tooling-volume-3",
+          75
+        ],
+        [
+          "build-and-tooling-volume-3",
+          82
+        ],
+        [
+          "build-and-tooling-volume-3",
+          79
+        ],
+        [
+          "build-and-tooling-volume-6",
+          85
+        ],
+        [
+          "build-and-tooling-volume-3",
+          81
+        ]
+      ],
+      "scores": [
+        0.6768711401897001,
+        0.6472013399839027,
+        0.6471599971365946,
+        0.6287593841552779,
+        0.5884325153569878
+      ],
+      "latency_ms": 155.99999999994907,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": true,
+      "k": 5
+    },
+    {
+      "case_id": "build-sharp-commercial-licence-price",
+      "project_key": "build-and-tooling",
+      "difficulty": "medium",
+      "relevant": [],
+      "distractors": [
+        [
+          "build-and-tooling-volume-2",
+          98
+        ]
+      ],
+      "ranked": [
+        [
+          "build-and-tooling-volume-5",
+          51
+        ],
+        [
+          "build-and-tooling-volume-2",
+          92
+        ],
+        [
+          "build-and-tooling-volume-2",
+          32
+        ],
+        [
+          "build-and-tooling-volume-2",
+          93
+        ],
+        [
+          "build-and-tooling-volume-5",
+          111
+        ]
+      ],
+      "scores": [
+        0.46758732392863567,
+        0.44891867346056347,
+        0.43181130696467784,
+        0.42652637204370736,
+        0.4239432559047196
+      ],
+      "latency_ms": 186.99999999989814,
+      "abstained": true,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "dv-arc-default-digits",
+      "project_key": "data-visualisation",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "data-visualisation-volume-1",
+          21
+        ]
+      ],
+      "distractors": [
+        [
+          "data-visualisation-volume-1",
+          15
+        ]
+      ],
+      "ranked": [
+        [
+          "data-visualisation-volume-1",
+          21
+        ],
+        [
+          "data-visualisation-volume-1",
+          60
+        ],
+        [
+          "data-visualisation-volume-1",
+          20
+        ],
+        [
+          "data-visualisation-volume-1",
+          8
+        ],
+        [
+          "data-visualisation-volume-1",
+          7
+        ]
+      ],
+      "scores": [
+        0.6950615644454956,
+        0.6247080192143917,
+        0.6136560440063477,
+        0.6028823133847383,
+        0.6003612041688694
+      ],
+      "latency_ms": 235.00000000012733,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "dv-fraction-default-epsilon",
+      "project_key": "data-visualisation",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "data-visualisation-volume-1",
+          162
+        ]
+      ],
+      "distractors": [
+        [
+          "data-visualisation-volume-1",
+          121
+        ]
+      ],
+      "ranked": [
+        [
+          "data-visualisation-volume-1",
+          162
+        ],
+        [
+          "data-visualisation-volume-1",
+          141
+        ],
+        [
+          "data-visualisation-volume-1",
+          119
+        ],
+        [
+          "data-visualisation-volume-1",
+          120
+        ],
+        [
+          "data-visualisation-volume-1",
+          138
+        ]
+      ],
+      "scores": [
+        0.6799910449992413,
+        0.6413311576049842,
+        0.6369433023367356,
+        0.6311976909637451,
+        0.6307191252708435
+      ],
+      "latency_ms": 139.99999999987267,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "dv-format-round-precision",
+      "project_key": "data-visualisation",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "data-visualisation-volume-2",
+          19
+        ]
+      ],
+      "distractors": [
+        [
+          "data-visualisation-volume-2",
+          16
+        ]
+      ],
+      "ranked": [
+        [
+          "data-visualisation-volume-2",
+          19
+        ],
+        [
+          "data-visualisation-volume-2",
+          18
+        ],
+        [
+          "data-visualisation-volume-2",
+          2
+        ],
+        [
+          "data-visualisation-volume-2",
+          20
+        ],
+        [
+          "data-visualisation-volume-2",
+          16
+        ]
+      ],
+      "scores": [
+        0.7225440359873786,
+        0.6523306369781494,
+        0.6516197323799133,
+        0.613261901541836,
+        0.601783293538788
+      ],
+      "latency_ms": 141.0000000000764,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "dv-symlog-constant",
+      "project_key": "data-visualisation",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "data-visualisation-volume-2",
+          66
+        ]
+      ],
+      "distractors": [
+        [
+          "data-visualisation-volume-2",
+          59
+        ]
+      ],
+      "ranked": [
+        [
+          "data-visualisation-volume-2",
+          66
+        ],
+        [
+          "data-visualisation-volume-2",
+          65
+        ],
+        [
+          "data-visualisation-volume-2",
+          91
+        ],
+        [
+          "data-visualisation-volume-2",
+          58
+        ],
+        [
+          "data-visualisation-volume-2",
+          97
+        ]
+      ],
+      "scores": [
+        0.6057353380760763,
+        0.5891680472593346,
+        0.5320618748664856,
+        0.5318013429641724,
+        0.5113850831985474
+      ],
+      "latency_ms": 141.0000000000764,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "dv-array-natural-sort",
+      "project_key": "data-visualisation",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "data-visualisation-volume-3",
+          37
+        ]
+      ],
+      "distractors": [
+        [
+          "data-visualisation-volume-3",
+          14
+        ]
+      ],
+      "ranked": [
+        [
+          "data-visualisation-volume-3",
+          38
+        ],
+        [
+          "data-visualisation-volume-3",
+          36
+        ],
+        [
+          "data-visualisation-volume-3",
+          66
+        ],
+        [
+          "data-visualisation-volume-3",
+          37
+        ],
+        [
+          "data-visualisation-volume-3",
+          21
+        ]
+      ],
+      "scores": [
+        0.6895440426332966,
+        0.6714923973537402,
+        0.6712616677944435,
+        0.6585785346799655,
+        0.608091312888006
+      ],
+      "latency_ms": 139.99999999987267,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "dv-time-format-month-name",
+      "project_key": "data-visualisation",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "data-visualisation-volume-4",
+          43
+        ]
+      ],
+      "distractors": [
+        [
+          "data-visualisation-volume-4",
+          41
+        ]
+      ],
+      "ranked": [
+        [
+          "data-visualisation-volume-4",
+          52
+        ],
+        [
+          "data-visualisation-volume-4",
+          43
+        ],
+        [
+          "data-visualisation-volume-4",
+          41
+        ],
+        [
+          "data-visualisation-volume-4",
+          49
+        ],
+        [
+          "data-visualisation-volume-4",
+          30
+        ]
+      ],
+      "scores": [
+        0.6175253391265869,
+        0.5764597310745887,
+        0.5589168071746826,
+        0.5566976070404053,
+        0.5564855238633348
+      ],
+      "latency_ms": 141.0000000000764,
+      "abstained": false,
+      "cross_lingual": true,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "dv-quantize-sample-domain",
+      "project_key": "data-visualisation",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "data-visualisation-volume-5",
+          20
+        ],
+        [
+          "data-visualisation-volume-2",
+          98
+        ]
+      ],
+      "distractors": [
+        [
+          "data-visualisation-volume-2",
+          103
+        ]
+      ],
+      "ranked": [
+        [
+          "data-visualisation-volume-5",
+          20
+        ],
+        [
+          "data-visualisation-volume-2",
+          36
+        ],
+        [
+          "data-visualisation-volume-2",
+          40
+        ],
+        [
+          "data-visualisation-volume-2",
+          84
+        ],
+        [
+          "data-visualisation-volume-2",
+          37
+        ]
+      ],
+      "scores": [
+        0.6970137177117894,
+        0.6527637632348396,
+        0.6510542437120034,
+        0.6493288085064673,
+        0.6487707286340433
+      ],
+      "latency_ms": 139.99999999987267,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": true,
+      "k": 5
+    },
+    {
+      "case_id": "dv-ease-back-overshoot",
+      "project_key": "data-visualisation",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "data-visualisation-volume-6",
+          18
+        ]
+      ],
+      "distractors": [
+        [
+          "data-visualisation-volume-6",
+          7
+        ]
+      ],
+      "ranked": [
+        [
+          "data-visualisation-volume-6",
+          19
+        ],
+        [
+          "data-visualisation-volume-6",
+          18
+        ],
+        [
+          "data-visualisation-volume-6",
+          2
+        ],
+        [
+          "data-visualisation-volume-6",
+          13
+        ],
+        [
+          "data-visualisation-volume-6",
+          6
+        ]
+      ],
+      "scores": [
+        0.6526789458202792,
+        0.617677949805383,
+        0.5625773332966973,
+        0.5133019379793452,
+        0.5106763826994439
+      ],
+      "latency_ms": 157.0000000001528,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "dv-recharts-pricing-roadmap",
+      "project_key": "data-visualisation",
+      "difficulty": "hard",
+      "relevant": [],
+      "distractors": [
+        [
+          "data-visualisation-volume-2",
+          149
+        ]
+      ],
+      "ranked": [
+        [
+          "data-visualisation-volume-2",
+          140
+        ],
+        [
+          "data-visualisation-volume-2",
+          141
+        ],
+        [
+          "data-visualisation-volume-2",
+          144
+        ],
+        [
+          "data-visualisation-volume-2",
+          149
+        ],
+        [
+          "data-visualisation-volume-2",
+          146
+        ]
+      ],
+      "scores": [
+        0.6156005217671885,
+        0.607059258432969,
+        0.5819224639465651,
+        0.5431921371691372,
+        0.5397079473472808
+      ],
+      "latency_ms": 297.00000000002547,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "http-pqueue-strict-burst",
+      "project_key": "http-and-async-runtime",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "http-and-async-runtime-volume-1",
+          56
+        ]
+      ],
+      "distractors": [
+        [
+          "http-and-async-runtime-volume-1",
+          104
+        ]
+      ],
+      "ranked": [
+        [
+          "http-and-async-runtime-volume-6",
+          75
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          56
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          43
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          58
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          95
+        ]
+      ],
+      "scores": [
+        0.6332443137910564,
+        0.6252693683230124,
+        0.5883765571341857,
+        0.5837949614280417,
+        0.5754819602348757
+      ],
+      "latency_ms": 139.99999999987267,
+      "abstained": false,
+      "cross_lingual": true,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "http-pqueue-timeout-clock",
+      "project_key": "http-and-async-runtime",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "http-and-async-runtime-volume-1",
+          50
+        ]
+      ],
+      "distractors": [
+        [
+          "http-and-async-runtime-volume-1",
+          100
+        ]
+      ],
+      "ranked": [
+        [
+          "http-and-async-runtime-volume-1",
+          100
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          50
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          80
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          79
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          85
+        ]
+      ],
+      "scores": [
+        0.6882129888344195,
+        0.6862805468189304,
+        0.6817761632604319,
+        0.6373157933574014,
+        0.6231464147567927
+      ],
+      "latency_ms": 219.00000000005093,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "http-ptimeout-fake-timers",
+      "project_key": "http-and-async-runtime",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "http-and-async-runtime-volume-1",
+          154
+        ]
+      ],
+      "distractors": [
+        [
+          "http-and-async-runtime-volume-1",
+          142
+        ]
+      ],
+      "ranked": [
+        [
+          "http-and-async-runtime-volume-1",
+          154
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          147
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          114
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          142
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          149
+        ]
+      ],
+      "scores": [
+        0.6759947924620209,
+        0.6604704069530526,
+        0.6128772497177124,
+        0.5936543345451355,
+        0.5851972103118896
+      ],
+      "latency_ms": 141.0000000000764,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "http-nodefetch-agent-capabilities",
+      "project_key": "http-and-async-runtime",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "http-and-async-runtime-volume-3",
+          84
+        ]
+      ],
+      "distractors": [
+        [
+          "http-and-async-runtime-volume-3",
+          81
+        ]
+      ],
+      "ranked": [
+        [
+          "http-and-async-runtime-volume-3",
+          84
+        ],
+        [
+          "http-and-async-runtime-volume-4",
+          54
+        ],
+        [
+          "http-and-async-runtime-volume-3",
+          81
+        ],
+        [
+          "http-and-async-runtime-volume-3",
+          57
+        ],
+        [
+          "http-and-async-runtime-volume-3",
+          86
+        ]
+      ],
+      "scores": [
+        0.7491407840931896,
+        0.6297222751213487,
+        0.6181771527634365,
+        0.6102157002816032,
+        0.5877156607935237
+      ],
+      "latency_ms": 139.99999999987267,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "http-openai-retry-statuses",
+      "project_key": "http-and-async-runtime",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "http-and-async-runtime-volume-4",
+          41
+        ]
+      ],
+      "distractors": [
+        [
+          "http-and-async-runtime-volume-1",
+          121
+        ]
+      ],
+      "ranked": [
+        [
+          "http-and-async-runtime-volume-4",
+          41
+        ],
+        [
+          "http-and-async-runtime-volume-4",
+          38
+        ],
+        [
+          "http-and-async-runtime-volume-4",
+          43
+        ],
+        [
+          "http-and-async-runtime-volume-4",
+          39
+        ],
+        [
+          "http-and-async-runtime-volume-4",
+          54
+        ]
+      ],
+      "scores": [
+        0.6293193918872253,
+        0.5843590993453187,
+        0.5736184628464664,
+        0.5697250536002237,
+        0.5591784715652466
+      ],
+      "latency_ms": 188.00000000010186,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "http-agentkeepalive-reused-socket",
+      "project_key": "http-and-async-runtime",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "http-and-async-runtime-volume-6",
+          19
+        ]
+      ],
+      "distractors": [
+        [
+          "http-and-async-runtime-volume-6",
+          15
+        ]
+      ],
+      "ranked": [
+        [
+          "http-and-async-runtime-volume-6",
+          19
+        ],
+        [
+          "http-and-async-runtime-volume-6",
+          13
+        ],
+        [
+          "http-and-async-runtime-volume-6",
+          15
+        ],
+        [
+          "http-and-async-runtime-volume-6",
+          20
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          123
+        ]
+      ],
+      "scores": [
+        0.7262747720643755,
+        0.5686711668968201,
+        0.5646118689957821,
+        0.5571704174774647,
+        0.556063711643219
+      ],
+      "latency_ms": 217.9999999998472,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "http-multihop-timeout-retry-clock",
+      "project_key": "http-and-async-runtime",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "http-and-async-runtime-volume-4",
+          42
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          133
+        ]
+      ],
+      "distractors": [],
+      "ranked": [
+        [
+          "http-and-async-runtime-volume-4",
+          42
+        ],
+        [
+          "http-and-async-runtime-volume-4",
+          41
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          133
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          100
+        ],
+        [
+          "http-and-async-runtime-volume-1",
+          149
+        ]
+      ],
+      "scores": [
+        0.641198196482552,
+        0.6389968014361392,
+        0.6283943057060242,
+        0.6187895720836395,
+        0.6125172972679138
+      ],
+      "latency_ms": 125.0,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": true,
+      "k": 5
+    },
+    {
+      "case_id": "http-openai-data-residency",
+      "project_key": "http-and-async-runtime",
+      "difficulty": "hard",
+      "relevant": [],
+      "distractors": [
+        [
+          "http-and-async-runtime-volume-4",
+          46
+        ]
+      ],
+      "ranked": [
+        [
+          "http-and-async-runtime-volume-1",
+          38
+        ],
+        [
+          "http-and-async-runtime-volume-2",
+          118
+        ],
+        [
+          "http-and-async-runtime-volume-4",
+          54
+        ],
+        [
+          "http-and-async-runtime-volume-4",
+          38
+        ],
+        [
+          "http-and-async-runtime-volume-4",
+          56
+        ]
+      ],
+      "scores": [
+        0.5687672408313095,
+        0.5681203773057636,
+        0.5633789804618662,
+        0.5599390697497528,
+        0.538805289900157
+      ],
+      "latency_ms": 188.00000000010186,
+      "abstained": true,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "md-hastscript-injected-node",
+      "project_key": "markdown-pipeline",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "markdown-pipeline-volume-1",
+          47
+        ]
+      ],
+      "distractors": [
+        [
+          "markdown-pipeline-volume-1",
+          44
+        ]
+      ],
+      "ranked": [
+        [
+          "markdown-pipeline-volume-1",
+          46
+        ],
+        [
+          "markdown-pipeline-volume-5",
+          56
+        ],
+        [
+          "markdown-pipeline-volume-1",
+          47
+        ],
+        [
+          "markdown-pipeline-volume-1",
+          37
+        ],
+        [
+          "markdown-pipeline-volume-5",
+          4
+        ]
+      ],
+      "scores": [
+        0.630402803421025,
+        0.6194735396222162,
+        0.6146527392086102,
+        0.5913287888373389,
+        0.5865363303859159
+      ],
+      "latency_ms": 125.0,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "md-mdx-jsx-tight-selfclosing",
+      "project_key": "markdown-pipeline",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "markdown-pipeline-volume-6",
+          65
+        ]
+      ],
+      "distractors": [
+        [
+          "markdown-pipeline-volume-3",
+          217
+        ]
+      ],
+      "ranked": [
+        [
+          "markdown-pipeline-volume-6",
+          45
+        ],
+        [
+          "markdown-pipeline-volume-6",
+          49
+        ],
+        [
+          "markdown-pipeline-volume-6",
+          99
+        ],
+        [
+          "markdown-pipeline-volume-6",
+          47
+        ],
+        [
+          "markdown-pipeline-volume-6",
+          85
+        ]
+      ],
+      "scores": [
+        0.6675799688792239,
+        0.6626534655873185,
+        0.6577699968540711,
+        0.6542798258566557,
+        0.6529956642384175
+      ],
+      "latency_ms": 141.0000000000764,
+      "abstained": false,
+      "cross_lingual": true,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "md-micromark-virtual-line-endings",
+      "project_key": "markdown-pipeline",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "markdown-pipeline-volume-4",
+          101
+        ]
+      ],
+      "distractors": [
+        [
+          "markdown-pipeline-volume-6",
+          136
+        ]
+      ],
+      "ranked": [
+        [
+          "markdown-pipeline-volume-4",
+          101
+        ],
+        [
+          "markdown-pipeline-volume-4",
+          103
+        ],
+        [
+          "markdown-pipeline-volume-6",
+          121
+        ],
+        [
+          "markdown-pipeline-volume-6",
+          136
+        ],
+        [
+          "markdown-pipeline-volume-6",
+          154
+        ]
+      ],
+      "scores": [
+        0.7427079984297754,
+        0.6209709233335005,
+        0.5938709024267862,
+        0.5892483836860438,
+        0.5667005608469103
+      ],
+      "latency_ms": 202.99999999997453,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "md-tojsx-solid-name-case",
+      "project_key": "markdown-pipeline",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "markdown-pipeline-volume-5",
+          117
+        ]
+      ],
+      "distractors": [
+        [
+          "markdown-pipeline-volume-5",
+          120
+        ]
+      ],
+      "ranked": [
+        [
+          "markdown-pipeline-volume-5",
+          71
+        ],
+        [
+          "markdown-pipeline-volume-5",
+          63
+        ],
+        [
+          "markdown-pipeline-volume-5",
+          67
+        ],
+        [
+          "markdown-pipeline-volume-5",
+          117
+        ],
+        [
+          "markdown-pipeline-volume-5",
+          118
+        ]
+      ],
+      "scores": [
+        0.6658650636672974,
+        0.6441939685229093,
+        0.5891957458614038,
+        0.5869161979059979,
+        0.5746330194065877
+      ],
+      "latency_ms": 139.99999999987267,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "md-html-safe-url-protocols",
+      "project_key": "markdown-pipeline",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "markdown-pipeline-volume-6",
+          135
+        ]
+      ],
+      "distractors": [
+        [
+          "markdown-pipeline-volume-6",
+          210
+        ]
+      ],
+      "ranked": [
+        [
+          "markdown-pipeline-volume-6",
+          135
+        ],
+        [
+          "markdown-pipeline-volume-6",
+          134
+        ],
+        [
+          "markdown-pipeline-volume-6",
+          198
+        ],
+        [
+          "markdown-pipeline-volume-5",
+          56
+        ],
+        [
+          "markdown-pipeline-volume-3",
+          101
+        ]
+      ],
+      "scores": [
+        0.676639478006333,
+        0.5770986424147284,
+        0.5449749718584097,
+        0.5212122512586276,
+        0.5184336304664648
+      ],
+      "latency_ms": 157.0000000001528,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "md-rehype-katex-release-date",
+      "project_key": "markdown-pipeline",
+      "difficulty": "medium",
+      "relevant": [],
+      "distractors": [
+        [
+          "markdown-pipeline-volume-6",
+          259
+        ]
+      ],
+      "ranked": [
+        [
+          "markdown-pipeline-volume-6",
+          248
+        ],
+        [
+          "markdown-pipeline-volume-6",
+          259
+        ],
+        [
+          "markdown-pipeline-volume-6",
+          264
+        ],
+        [
+          "markdown-pipeline-volume-6",
+          243
+        ],
+        [
+          "markdown-pipeline-volume-6",
+          241
+        ]
+      ],
+      "scores": [
+        0.6174240568370796,
+        0.5775680118074423,
+        0.5535115003585815,
+        0.5330450693680369,
+        0.5246999576508983
+      ],
+      "latency_ms": 155.99999999994907,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "md-remark-gfm-parse-pairing",
+      "project_key": "markdown-pipeline",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "markdown-pipeline-volume-3",
+          228
+        ]
+      ],
+      "distractors": [
+        [
+          "markdown-pipeline-volume-4",
+          199
+        ]
+      ],
+      "ranked": [
+        [
+          "markdown-pipeline-volume-3",
+          228
+        ],
+        [
+          "markdown-pipeline-volume-3",
+          209
+        ],
+        [
+          "markdown-pipeline-volume-2",
+          23
+        ],
+        [
+          "markdown-pipeline-volume-3",
+          25
+        ],
+        [
+          "markdown-pipeline-volume-3",
+          204
+        ]
+      ],
+      "scores": [
+        0.6876137256622314,
+        0.6016857028007507,
+        0.6005235910415649,
+        0.6002658605575562,
+        0.5994096755629595
+      ],
+      "latency_ms": 202.99999999997453,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "md-async-highlighter-deferred-refractor",
+      "project_key": "markdown-pipeline",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "markdown-pipeline-volume-3",
+          193
+        ],
+        [
+          "markdown-pipeline-volume-4",
+          116
+        ]
+      ],
+      "distractors": [
+        [
+          "markdown-pipeline-volume-2",
+          142
+        ]
+      ],
+      "ranked": [
+        [
+          "markdown-pipeline-volume-3",
+          193
+        ],
+        [
+          "markdown-pipeline-volume-3",
+          191
+        ],
+        [
+          "markdown-pipeline-volume-3",
+          190
+        ],
+        [
+          "markdown-pipeline-volume-2",
+          149
+        ],
+        [
+          "markdown-pipeline-volume-2",
+          136
+        ]
+      ],
+      "scores": [
+        0.7389628887176566,
+        0.6844880988888812,
+        0.6709631681442308,
+        0.6499478816986131,
+        0.6315240263938948
+      ],
+      "latency_ms": 155.99999999994907,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": true,
+      "k": 5
+    },
+    {
+      "case_id": "md-highlightjs-v10-upgrade-reading",
+      "project_key": "markdown-pipeline",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "markdown-pipeline-volume-5",
+          132
+        ]
+      ],
+      "distractors": [
+        [
+          "markdown-pipeline-volume-5",
+          141
+        ]
+      ],
+      "ranked": [
+        [
+          "markdown-pipeline-volume-5",
+          132
+        ],
+        [
+          "markdown-pipeline-volume-5",
+          151
+        ],
+        [
+          "markdown-pipeline-volume-5",
+          130
+        ],
+        [
+          "markdown-pipeline-volume-5",
+          150
+        ],
+        [
+          "markdown-pipeline-volume-2",
+          279
+        ]
+      ],
+      "scores": [
+        0.6103247585989465,
+        0.5870710365218542,
+        0.5846989824147008,
+        0.5730527214125613,
+        0.5552739666483991
+      ],
+      "latency_ms": 141.0000000000764,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "util-uuid-v8-helpers",
+      "project_key": "schemas-and-utilities",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "schemas-and-utilities-volume-3",
+          131
+        ]
+      ],
+      "distractors": [
+        [
+          "schemas-and-utilities-volume-3",
+          130
+        ]
+      ],
+      "ranked": [
+        [
+          "schemas-and-utilities-volume-3",
+          131
+        ],
+        [
+          "schemas-and-utilities-volume-3",
+          139
+        ],
+        [
+          "schemas-and-utilities-volume-3",
+          135
+        ],
+        [
+          "schemas-and-utilities-volume-3",
+          113
+        ],
+        [
+          "schemas-and-utilities-volume-3",
+          149
+        ]
+      ],
+      "scores": [
+        0.7507893294566483,
+        0.6110223531723022,
+        0.6063432043501643,
+        0.6025156378746033,
+        0.5986560583114624
+      ],
+      "latency_ms": 139.99999999987267,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "util-commander-required-flag",
+      "project_key": "schemas-and-utilities",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "schemas-and-utilities-volume-2",
+          48
+        ]
+      ],
+      "distractors": [
+        [
+          "schemas-and-utilities-volume-2",
+          44
+        ]
+      ],
+      "ranked": [
+        [
+          "schemas-and-utilities-volume-2",
+          90
+        ],
+        [
+          "schemas-and-utilities-volume-2",
+          66
+        ],
+        [
+          "schemas-and-utilities-volume-2",
+          76
+        ],
+        [
+          "schemas-and-utilities-volume-2",
+          48
+        ],
+        [
+          "schemas-and-utilities-volume-2",
+          35
+        ]
+      ],
+      "scores": [
+        0.6120939437178955,
+        0.5987373768907006,
+        0.5956586180823632,
+        0.5928115425351724,
+        0.5785296135702617
+      ],
+      "latency_ms": 172.00000000002547,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "util-ajv-format-compare",
+      "project_key": "schemas-and-utilities",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "schemas-and-utilities-volume-1",
+          111
+        ]
+      ],
+      "distractors": [
+        [
+          "schemas-and-utilities-volume-1",
+          113
+        ]
+      ],
+      "ranked": [
+        [
+          "schemas-and-utilities-volume-1",
+          52
+        ],
+        [
+          "schemas-and-utilities-volume-1",
+          54
+        ],
+        [
+          "schemas-and-utilities-volume-1",
+          110
+        ],
+        [
+          "schemas-and-utilities-volume-1",
+          111
+        ],
+        [
+          "schemas-and-utilities-volume-1",
+          145
+        ]
+      ],
+      "scores": [
+        0.7052113027933631,
+        0.7033300609388968,
+        0.6996675729751587,
+        0.6777017318517489,
+        0.6662283142669025
+      ],
+      "latency_ms": 297.00000000002547,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "util-nuqs-default-value",
+      "project_key": "schemas-and-utilities",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "schemas-and-utilities-volume-4",
+          88
+        ]
+      ],
+      "distractors": [
+        [
+          "schemas-and-utilities-volume-4",
+          83
+        ]
+      ],
+      "ranked": [
+        [
+          "schemas-and-utilities-volume-4",
+          87
+        ],
+        [
+          "schemas-and-utilities-volume-1",
+          93
+        ],
+        [
+          "schemas-and-utilities-volume-4",
+          88
+        ],
+        [
+          "schemas-and-utilities-volume-1",
+          130
+        ],
+        [
+          "schemas-and-utilities-volume-1",
+          94
+        ]
+      ],
+      "scores": [
+        0.7005140006848587,
+        0.6519293785095215,
+        0.6173695921897888,
+        0.6169476509094238,
+        0.6015161813661046
+      ],
+      "latency_ms": 266.0000000000764,
+      "abstained": false,
+      "cross_lingual": true,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "util-dotenv-override-order",
+      "project_key": "schemas-and-utilities",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "schemas-and-utilities-volume-6",
+          76
+        ]
+      ],
+      "distractors": [
+        [
+          "schemas-and-utilities-volume-6",
+          83
+        ]
+      ],
+      "ranked": [
+        [
+          "schemas-and-utilities-volume-6",
+          76
+        ],
+        [
+          "schemas-and-utilities-volume-6",
+          73
+        ],
+        [
+          "schemas-and-utilities-volume-6",
+          91
+        ],
+        [
+          "schemas-and-utilities-volume-6",
+          99
+        ],
+        [
+          "schemas-and-utilities-volume-6",
+          93
+        ]
+      ],
+      "scores": [
+        0.6631266474723816,
+        0.6019173860549927,
+        0.594279384272063,
+        0.5915267467498779,
+        0.5833452592286323
+      ],
+      "latency_ms": 202.99999999997453,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "util-fast-equals-strict-symbols",
+      "project_key": "schemas-and-utilities",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "schemas-and-utilities-volume-5",
+          109
+        ]
+      ],
+      "distractors": [
+        [
+          "schemas-and-utilities-volume-5",
+          110
+        ]
+      ],
+      "ranked": [
+        [
+          "schemas-and-utilities-volume-5",
+          109
+        ],
+        [
+          "schemas-and-utilities-volume-5",
+          110
+        ],
+        [
+          "schemas-and-utilities-volume-5",
+          104
+        ],
+        [
+          "schemas-and-utilities-volume-5",
+          98
+        ],
+        [
+          "schemas-and-utilities-volume-5",
+          112
+        ]
+      ],
+      "scores": [
+        0.6351322124937839,
+        0.6319181323051453,
+        0.6124404072761536,
+        0.6059904279109966,
+        0.5968562720332319
+      ],
+      "latency_ms": 155.99999999994907,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "util-zod-json-schema-to-ajv",
+      "project_key": "schemas-and-utilities",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "schemas-and-utilities-volume-3",
+          161
+        ],
+        [
+          "schemas-and-utilities-volume-1",
+          104
+        ]
+      ],
+      "distractors": [
+        [
+          "schemas-and-utilities-volume-3",
+          154
+        ]
+      ],
+      "ranked": [
+        [
+          "schemas-and-utilities-volume-3",
+          161
+        ],
+        [
+          "schemas-and-utilities-volume-1",
+          106
+        ],
+        [
+          "schemas-and-utilities-volume-1",
+          104
+        ],
+        [
+          "schemas-and-utilities-volume-3",
+          190
+        ],
+        [
+          "schemas-and-utilities-volume-1",
+          103
+        ]
+      ],
+      "scores": [
+        0.7232941820200803,
+        0.6576254367828369,
+        0.6539490807606975,
+        0.6423736214637756,
+        0.6373343087831563
+      ],
+      "latency_ms": 125.0,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": true,
+      "k": 5
+    },
+    {
+      "case_id": "util-lru-cache-stale-entry",
+      "project_key": "schemas-and-utilities",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "schemas-and-utilities-volume-6",
+          163
+        ]
+      ],
+      "distractors": [
+        [
+          "schemas-and-utilities-volume-6",
+          166
+        ]
+      ],
+      "ranked": [
+        [
+          "schemas-and-utilities-volume-6",
+          166
+        ],
+        [
+          "schemas-and-utilities-volume-6",
+          164
+        ],
+        [
+          "schemas-and-utilities-volume-6",
+          165
+        ],
+        [
+          "schemas-and-utilities-volume-6",
+          163
+        ],
+        [
+          "schemas-and-utilities-volume-6",
+          161
+        ]
+      ],
+      "scores": [
+        0.6478650393646909,
+        0.6291886380556657,
+        0.625667177100947,
+        0.6167272786227133,
+        0.5988794804287277
+      ],
+      "latency_ms": 327.99999999997453,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "lint-axe-core-ie11",
+      "project_key": "testing-and-lint",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "testing-and-lint-volume-1",
+          58
+        ]
+      ],
+      "distractors": [
+        [
+          "testing-and-lint-volume-1",
+          63
+        ]
+      ],
+      "ranked": [
+        [
+          "testing-and-lint-volume-1",
+          58
+        ],
+        [
+          "testing-and-lint-volume-1",
+          70
+        ],
+        [
+          "testing-and-lint-volume-1",
+          57
+        ],
+        [
+          "testing-and-lint-volume-1",
+          51
+        ],
+        [
+          "testing-and-lint-volume-6",
+          76
+        ]
+      ],
+      "scores": [
+        0.7071983392716457,
+        0.601943051930849,
+        0.5684927363102007,
+        0.5616753101348877,
+        0.5531720087877517
+      ],
+      "latency_ms": 172.00000000002547,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "lint-glob-parent-non-glob",
+      "project_key": "testing-and-lint",
+      "difficulty": "easy",
+      "relevant": [
+        [
+          "testing-and-lint-volume-6",
+          93
+        ]
+      ],
+      "distractors": [
+        [
+          "testing-and-lint-volume-6",
+          96
+        ]
+      ],
+      "ranked": [
+        [
+          "testing-and-lint-volume-6",
+          92
+        ],
+        [
+          "testing-and-lint-volume-6",
+          95
+        ],
+        [
+          "testing-and-lint-volume-6",
+          100
+        ],
+        [
+          "testing-and-lint-volume-6",
+          93
+        ],
+        [
+          "testing-and-lint-volume-3",
+          158
+        ]
+      ],
+      "scores": [
+        0.6439216349171629,
+        0.6147885689013355,
+        0.5795347941199078,
+        0.560889720916748,
+        0.5511632890202585
+      ],
+      "latency_ms": 250.0,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "lint-humanfs-node-emfile-budget",
+      "project_key": "testing-and-lint",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "testing-and-lint-volume-4",
+          40
+        ]
+      ],
+      "distractors": [
+        [
+          "testing-and-lint-volume-4",
+          49
+        ]
+      ],
+      "ranked": [
+        [
+          "testing-and-lint-volume-4",
+          35
+        ],
+        [
+          "testing-and-lint-volume-4",
+          34
+        ],
+        [
+          "testing-and-lint-volume-2",
+          3
+        ],
+        [
+          "testing-and-lint-volume-4",
+          32
+        ],
+        [
+          "testing-and-lint-volume-4",
+          36
+        ]
+      ],
+      "scores": [
+        0.54245525598526,
+        0.5316939670857181,
+        0.5237848914797574,
+        0.5145622474477033,
+        0.5127120904498056
+      ],
+      "latency_ms": 141.0000000000764,
+      "abstained": true,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "lint-minimatch-platform-default",
+      "project_key": "testing-and-lint",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "testing-and-lint-volume-2",
+          180
+        ]
+      ],
+      "distractors": [
+        [
+          "testing-and-lint-volume-2",
+          174
+        ]
+      ],
+      "ranked": [
+        [
+          "testing-and-lint-volume-2",
+          152
+        ],
+        [
+          "testing-and-lint-volume-1",
+          179
+        ],
+        [
+          "testing-and-lint-volume-3",
+          132
+        ],
+        [
+          "testing-and-lint-volume-2",
+          156
+        ],
+        [
+          "testing-and-lint-volume-1",
+          154
+        ]
+      ],
+      "scores": [
+        0.6355442025933157,
+        0.6190548170176269,
+        0.6164973378181458,
+        0.5911146646073671,
+        0.5879876613616943
+      ],
+      "latency_ms": 139.99999999987267,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "lint-braces-range-limit",
+      "project_key": "testing-and-lint",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "testing-and-lint-volume-1",
+          89
+        ]
+      ],
+      "distractors": [
+        [
+          "testing-and-lint-volume-1",
+          110
+        ]
+      ],
+      "ranked": [
+        [
+          "testing-and-lint-volume-1",
+          94
+        ],
+        [
+          "testing-and-lint-volume-1",
+          79
+        ],
+        [
+          "testing-and-lint-volume-1",
+          89
+        ],
+        [
+          "testing-and-lint-volume-1",
+          101
+        ],
+        [
+          "testing-and-lint-volume-1",
+          92
+        ]
+      ],
+      "scores": [
+        0.6166544328125985,
+        0.5955850240936901,
+        0.5712089879041317,
+        0.569922924041752,
+        0.5631974079130545
+      ],
+      "latency_ms": 204.00000000017826,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "lint-ignore-allow-relative-paths",
+      "project_key": "testing-and-lint",
+      "difficulty": "medium",
+      "relevant": [
+        [
+          "testing-and-lint-volume-6",
+          133
+        ]
+      ],
+      "distractors": [
+        [
+          "testing-and-lint-volume-6",
+          136
+        ]
+      ],
+      "ranked": [
+        [
+          "testing-and-lint-volume-6",
+          133
+        ],
+        [
+          "testing-and-lint-volume-6",
+          135
+        ],
+        [
+          "testing-and-lint-volume-6",
+          119
+        ],
+        [
+          "testing-and-lint-volume-6",
+          129
+        ],
+        [
+          "testing-and-lint-volume-6",
+          130
+        ]
+      ],
+      "scores": [
+        0.7250427871993527,
+        0.6800016570092248,
+        0.6465249832302312,
+        0.6368619962766167,
+        0.634422340060613
+      ],
+      "latency_ms": 170.99999999982174,
+      "abstained": false,
+      "cross_lingual": true,
+      "multi_hop": false,
+      "k": 5
+    },
+    {
+      "case_id": "lint-basename-match-minimatch-vs-fastglob",
+      "project_key": "testing-and-lint",
+      "difficulty": "hard",
+      "relevant": [
+        [
+          "testing-and-lint-volume-2",
+          168
+        ],
+        [
+          "testing-and-lint-volume-5",
+          99
+        ]
+      ],
+      "distractors": [
+        [
+          "testing-and-lint-volume-2",
+          146
+        ]
+      ],
+      "ranked": [
+        [
+          "testing-and-lint-volume-2",
+          156
+        ],
+        [
+          "testing-and-lint-volume-1",
+          154
+        ],
+        [
+          "testing-and-lint-volume-2",
+          182
+        ],
+        [
+          "testing-and-lint-volume-3",
+          170
+        ],
+        [
+          "testing-and-lint-volume-1",
+          128
+        ]
+      ],
+      "scores": [
+        0.6902719324665122,
+        0.6759092211723328,
+        0.6702988940299228,
+        0.6602510410622076,
+        0.65053790807724
+      ],
+      "latency_ms": 141.0000000000764,
+      "abstained": false,
+      "cross_lingual": false,
+      "multi_hop": true,
+      "k": 5
+    },
+    {
+      "case_id": "lint-paid-support-sla",
+      "project_key": "testing-and-lint",
+      "difficulty": "hard",
+      "relevant": [],
+      "distractors": [
+        [
+          "testing-and-lint-volume-1",
+          64
+        ]
+      ],
+      "ranked": [
+        [
+          "testing-and-lint-volume-3",
+          44
+        ],
+        [
+          "testing-and-lint-volume-4",
+          71
+        ],
+        [
+          "testing-and-lint-volume-2",
+          84
+        ],
+        [
+          "testing-and-lint-volume-3",
+          70
+        ],
+        [
+          "testing-and-lint-volume-6",
+          35
+        ]
+      ],
+      "scores": [
+        0.5097161823680301,
+        0.5016370415687561,
+        0.5010147094726562,
+        0.48866689340271185,
+        0.4854237283892553
+      ],
+      "latency_ms": 155.99999999994907,
+      "abstained": true,
+      "cross_lingual": false,
+      "multi_hop": false,
+      "k": 5
+    }
+  ]
+}

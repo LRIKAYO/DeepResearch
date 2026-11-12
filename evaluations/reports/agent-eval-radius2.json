@@ -1,0 +1,93 @@
+{
+  "summary": {
+    "questions": 4,
+    "failures": 0,
+    "tool_rounds_total": 6,
+    "tool_rounds_mean": 1.5,
+    "citations_total": 43,
+    "citation_coverage_mean": 1.0,
+    "verdicts": {
+      "full": 16,
+      "partial": 2,
+      "none": 25
+    },
+    "support_rate": 0.372,
+    "latency_p50_seconds": 72.7
+  },
+  "cases": [
+    {
+      "case_id": "arc-default-digits",
+      "language": "en",
+      "elapsed_seconds": 72.7,
+      "error": null,
+      "tool_rounds": 2,
+      "sub_questions": 3,
+      "citations": 16,
+      "citation_coverage": 1.0,
+      "uncited_ids": 0,
+      "unmarked_claims": 8,
+      "verification": {
+        "none": 15,
+        "full": 1
+      },
+      "report_chars": 3223,
+      "report_head": "# Research Report: `arc.digits()` Return Value and Decimal Places Option\n\n## 1. Default Return Value of `arc.digits()` When Called Without Arguments\n\nWhen `arc.digits()` is called without any arguments, it returns the current maximum fraction digits setting, which defaults to **3** [c14]. This means"
+    },
+    {
+      "case_id": "d3-natural-sort",
+      "language": "en",
+      "elapsed_seconds": 69.4,
+      "error": null,
+      "tool_rounds": 1,
+      "sub_questions": 3,
+      "citations": 8,
+      "citation_coverage": 1.0,
+      "uncited_ids": 0,
+      "unmarked_claims": 21,
+      "verification": {
+        "full": 5,
+        "none": 2,
+        "partial": 1
+      },
+      "report_chars": 6041,
+      "report_head": "# Why the Default Numeric Sort of d3-array Can Be Unsafe, and What the Natural-Order Comparator Returns for `null`\n\n## 1. Default Numeric Sort Behavior and Its Pitfalls\n\n### The `ascending` and `descending` Comparator Functions\n\nThe `d3.ascending` function is the default comparator for `d3.sort` whe"
+    },
+    {
+      "case_id": "d3-array-zip",
+      "language": "zh",
+      "elapsed_seconds": 43.8,
+      "error": null,
+      "tool_rounds": 1,
+      "sub_questions": 3,
+      "citations": 8,
+      "citation_coverage": 1.0,
+      "uncited_ids": 0,
+      "unmarked_claims": 0,
+      "verification": {
+        "none": 4,
+        "partial": 1,
+        "full": 3
+      },
+      "report_chars": 1418,
+      "report_head": "# d3.zip 在参数长度不一致时的行为研究报告\n\n## 子问题 1：返回数组的长度由哪个参数决定？\n\n**返回数组的长度由最短的参数数组决定。** 当多个数组作为参数传入 `d3.zip` 时，返回的数组会被截断（truncated）至所有参数数组中最短的那个长度 [c6][c7][c8]。这意味着如果传入的数组长度不一致，较长数组中的多余元素将不会出现在返回结果中。\n\n例如，如果传入 `d3.zip([1, 2, 3], [4, 5])`，由于第二个数组长度为 2，返回的数组长度将为 2，第一个数组中的第三个元素 `3` 将被忽略 [c6][c7]。\n\n## 子问题 2：返回数组中的每个"
+    },
+    {
+      "case_id": "unsupported-pricing",
+      "language": "en",
+      "elapsed_seconds": 94.5,
+      "error": null,
+      "tool_rounds": 2,
+      "sub_questions": 4,
+      "citations": 11,
+      "citation_coverage": 1.0,
+      "uncited_ids": 0,
+      "unmarked_claims": 13,
+      "verification": {
+        "full": 7,
+        "none": 4
+      },
+      "report_chars": 4333,
+      "report_head": "# Research Report: d3-shape Commercial Licence Cost and Support SLA\n\n## 1. Official Annual Commercial Licence Fee for d3-shape\n\n**d3-shape does not have a commercial licence fee because it is not commercially licensed software.** The package is distributed under the ISC License, a permissive open-so"
+    }
+  ]
+}

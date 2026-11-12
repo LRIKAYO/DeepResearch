@@ -1,0 +1,175 @@
+[
+  {
+    "case_id": "util-uuid-v8-helpers",
+    "project_key": "schemas-and-utilities",
+    "query": "Our database already holds experimental version-8 UUIDs. The uuid package will not generate them, so which helpers can still accept such a value?",
+    "relevant_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-3",
+        "chunk_index": 113,
+        "anchor": "The `validate()` and `version()` methods do work with such UUIDs, however."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-3",
+        "chunk_index": 112,
+        "anchor": "31 bit monotonic sequence counter as `Number` between 0 - 0x7fffffff"
+      }
+    ],
+    "rationale": "Chunk 115 records that no v8() creator exists because RFC 9562 defines no algorithm for version 8, yet validate() and version() still work on such UUIDs, whereas the v7 chunk only documents timestamp and sequence options for generating version 7 identifiers.",
+    "difficulty": "easy"
+  },
+  {
+    "case_id": "util-commander-required-flag",
+    "project_key": "schemas-and-utilities",
+    "query": "How do I mark a CLI flag as mandatory with Commander so parsing fails when the user leaves it out, and what does the emitted error look like?",
+    "relevant_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-2",
+        "chunk_index": 33,
+        "anchor": "error: required option '-c, --cheese <type>' not specified"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-2",
+        "chunk_index": 30,
+        "anchor": "You can specify a default value for an option which takes a value."
+      }
+    ],
+    "rationale": "Chunk 35 shows .requiredOption plus the exact 'required option ... not specified' failure message, while the default-value chunk only explains fallback values for flags that may legitimately be omitted.",
+    "difficulty": "easy"
+  },
+  {
+    "case_id": "util-ajv-format-compare",
+    "project_key": "schemas-and-utilities",
+    "query": "I register a custom string format with Ajv and also rely on ajv-keywords' formatMinimum/formatMaximum checks. Which property of the format object do I supply so those keywords can order values, and what must it return when comparing two values?",
+    "relevant_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-1",
+        "chunk_index": 76,
+        "anchor": "- _compare_: an optional comparison function that accepts two strings and compares them according to the format meaning."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-1",
+        "chunk_index": 78,
+        "anchor": "- _type_: optional string or array of strings with data type(s) that the keyword applies to."
+      }
+    ],
+    "rationale": "Chunk 76 defines the optional compare function that formatMaximum/formatMinimum use and its 1/-1/0 ordering contract, whereas the addKeyword chunk documents keyword definition fields and never mentions a comparator.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "util-nuqs-default-value",
+    "project_key": "schemas-and-utilities",
+    "query": "给 nuqs 的查询参数用 withDefault() 指定默认值后，这个默认值会被写进地址栏吗？如果把状态设成 null 又会发生什么？",
+    "relevant_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-4",
+        "chunk_index": 73,
+        "anchor": "the default value is internal to React, it will **not** be written to the"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-4",
+        "chunk_index": 72,
+        "anchor": "If your state type is not a string, you must pass a parsing function in the"
+      }
+    ],
+    "rationale": "Chunk 74 states that the default value is internal to React and never written to the URL and that setting null removes the key and restores the default, while the parsing chunk only lists parser functions for non-string state.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "util-dotenv-override-order",
+    "project_key": "schemas-and-utilities",
+    "query": "When dotenv loads several .env files in one config call, which file's value survives for a duplicated key, and does enabling override change that?",
+    "relevant_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-6",
+        "chunk_index": 65,
+        "anchor": "Without `override` being set, the first value wins. With `override` set the last value wins."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-6",
+        "chunk_index": 72,
+        "anchor": "Override any environment variables that have already been set."
+      }
+    ],
+    "rationale": "Chunk 66 states first-value-wins without override and last-value-wins with it when several paths are combined, while the populate chunk only describes override as a boolean for merging into a target object.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "util-fast-equals-strict-symbols",
+    "project_key": "schemas-and-utilities",
+    "query": "Two objects are identical apart from their symbol-keyed properties. Which fast-equals comparator notices that difference, and what other extra structural details does it inspect?",
+    "relevant_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-5",
+        "chunk_index": 73,
+        "anchor": "- Checking symbol properties"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-5",
+        "chunk_index": 74,
+        "anchor": "- Checking non-enumerable properties in object comparisons"
+      }
+    ],
+    "rationale": "Chunk 94 lists symbol properties among what strictDeepEqual compares beyond deepEqual, whereas the strictShallowEqual chunk gives a similar list without symbol properties and only compares one level.",
+    "difficulty": "medium"
+  },
+  {
+    "case_id": "util-zod-json-schema-to-ajv",
+    "project_key": "schemas-and-utilities",
+    "query": "I convert a Zod schema with zodToJsonSchema, passing the name as the second argument, then hand the result to Ajv and compile my root schema. Where does the generated schema end up, and how does Ajv treat the key passed to addSchema?",
+    "relevant_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-3",
+        "chunk_index": 140,
+        "anchor": "your schema will end up inside a definitions object property on the root and referenced from there"
+      },
+      {
+        "document_key": "schemas-and-utilities-volume-1",
+        "chunk_index": 71,
+        "anchor": "Key can be passed that can be used to reference the schema and will be used as the schema id if there is no id inside the schema."
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-3",
+        "chunk_index": 135,
+        "anchor": "Resolves recursive and recurring schemas with internal `$ref`s."
+      }
+    ],
+    "rationale": "The zod-to-json-schema chunk places a named schema inside a definitions object on the document root, and the Ajv chunk explains that addSchema's key references the schema and becomes its id when none is present, so neither passage alone answers the round trip.",
+    "difficulty": "hard"
+  },
+  {
+    "case_id": "util-lru-cache-stale-entry",
+    "project_key": "schemas-and-utilities",
+    "query": "With lru-cache configured with a maxAge, do expired entries get purged on their own, and what does get() hand back for one when stale is not enabled?",
+    "relevant_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-6",
+        "chunk_index": 143,
+        "anchor": "* `maxAge` Maximum age in ms.  Items are not pro-actively pruned out"
+      }
+    ],
+    "distractor_passages": [
+      {
+        "document_key": "schemas-and-utilities-volume-6",
+        "chunk_index": 145,
+        "anchor": "Returns the key value (or `undefined` if not found) without"
+      }
+    ],
+    "rationale": "Chunk 145 says maxAge entries are not pruned proactively and that get() drops an over-age item and yields undefined unless stale is set, while the API chunk only covers hit and miss behaviour of get, peek and has.",
+    "difficulty": "hard"
+  }
+]
