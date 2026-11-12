@@ -235,6 +235,8 @@ research session, and ask something that needs both the document and the web.
 [`VERIFY.md`](VERIFY.md) is the ten-minute checklist: what to click, what each step
 should produce, and what a failure would look like. `py -3.12 -m scripts.e2e_smoke`
 checks the three services agree, without a browser.
+[`ACCEPTANCE.md`](ACCEPTANCE.md) records the manual browser pass, including the
+defect it found and the fix.
 
 `langgraph.json` declares `env: .env`, so the agent server loads that file directly —
 no manual `$env:` exports needed for the agent. The backend reads the same file when
