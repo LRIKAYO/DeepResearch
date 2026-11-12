@@ -84,9 +84,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Same install as the Python job; no service container, database URL,
-      # credentials, or .env file is provided to this job.
+      # No service container, database URL, credentials, or .env file is provided
+      # to this job. The backend extras are installed for their dependencies, not
+      # for a database: evaluations/dataset.py validates with pydantic, which the
+      # dev extras only reach transitively.
       - uses: ./.github/actions/setup-python
+        with:
+          extras: backend,dev
 
       - name: Validate the evaluation dataset
         run: python -m evaluations.run_eval --validate-only
