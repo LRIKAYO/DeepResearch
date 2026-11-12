@@ -1,3 +1,5 @@
+import type { Citation, VerificationVerdict } from "@/lib/citations";
+
 export type Project = {
   project_id: string;
   name: string;
@@ -16,6 +18,16 @@ export type ProjectDocument = {
   project_id: string;
   filename: string;
   media_type: "text/markdown";
+  created_at: string;
+};
+
+export type StoredReport = {
+  report_id: string;
+  research_session_id: string;
+  report: string;
+  citations: Citation[];
+  verification: VerificationVerdict[];
+  tool_rounds: number;
   created_at: string;
 };
 
@@ -118,6 +130,17 @@ export function uploadProjectDocument(
   });
 }
 
+export function listSessionReports(
+  projectId: string,
+  sessionId: string,
+  signal?: AbortSignal,
+): Promise<StoredReport[]> {
+  return request(
+    `/projects/${encodeURIComponent(projectId)}/research-sessions/${encodeURIComponent(sessionId)}/reports`,
+    { signal },
+  );
+}
+
 export function documentErrorMessage(error: unknown): string {
   if (!process.env.NEXT_PUBLIC_BACKEND_URL?.trim()) {
     return "Configure NEXT_PUBLIC_BACKEND_URL and restart the frontend.";
@@ -146,4 +169,24 @@ export function documentErrorMessage(error: unknown): string {
     }
   }
   return "Cannot reach the Product Backend. Check the connection and refresh the list before retrying an upload.";
+}
+
+export function sessionReportsErrorMessage(error: unknown): string {
+  if (!process.env.NEXT_PUBLIC_BACKEND_URL?.trim()) {
+    return "Configure NEXT_PUBLIC_BACKEND_URL and restart the frontend.";
+  }
+  if (!process.env.NEXT_PUBLIC_RESEARCHFLOW_USER_ID?.trim()) {
+    return "Configure the local ResearchFlow user ID and restart the frontend.";
+  }
+  if (error instanceof ProductBackendError) {
+    switch (error.status) {
+      case 401:
+        return "ResearchFlow identity is missing or invalid. Check the local user ID configuration.";
+      case 404:
+        return "Saved reports are unavailable for this research session.";
+      default:
+        return "Saved reports could not be loaded. Refresh the page to try again.";
+    }
+  }
+  return "Cannot reach the Product Backend. Check the connection and refresh the page to try again.";
 }

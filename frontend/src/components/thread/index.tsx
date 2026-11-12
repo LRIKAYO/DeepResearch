@@ -8,6 +8,8 @@ import { Button } from "../ui/button";
 import { Checkpoint, Message } from "@langchain/langgraph-sdk";
 import { AssistantMessage, AssistantMessageLoading } from "./messages/ai";
 import { LatestResearchSources } from "./sources";
+import { PersistedReports } from "./persisted-reports";
+import { ResearchPlan } from "./research-plan";
 import { HumanMessage } from "./messages/human";
 import {
   DO_NOT_RENDER_ID_PREFIX,
@@ -21,8 +23,6 @@ import {
   PanelRightOpen,
   PanelRightClose,
   SquarePen,
-  XIcon,
-  Plus,
 } from "lucide-react";
 import { useQueryState, parseAsBoolean } from "nuqs";
 import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
@@ -38,14 +38,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { useFileUpload } from "@/hooks/use-file-upload";
-import { ContentBlocksPreview } from "./ContentBlocksPreview";
-import {
-  useArtifactOpen,
-  ArtifactContent,
-  ArtifactTitle,
-  useArtifactContext,
-} from "./artifact";
 import { useProjectSession } from "@/providers/ProjectSession";
 function StickyToBottomContent(props: {
   content: ReactNode;
@@ -113,8 +105,6 @@ function OpenGitHubRepo() {
 }
 
 export function Thread() {
-  const [artifactContext, setArtifactContext] = useArtifactContext();
-  const [artifactOpen, closeArtifact] = useArtifactOpen();
   const {
     canSubmit,
     createResearchSession,
@@ -133,16 +123,6 @@ export function Thread() {
     parseAsBoolean.withDefault(false),
   );
   const [input, setInput] = useState("");
-  const {
-    contentBlocks,
-    setContentBlocks,
-    handleFileUpload,
-    dropRef,
-    removeBlock,
-    resetBlocks: _resetBlocks,
-    dragOver,
-    handlePaste,
-  } = useFileUpload();
   const [firstTokenReceived, setFirstTokenReceived] = useState(false);
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
 
@@ -151,11 +131,6 @@ export function Thread() {
   const isLoading = stream.isLoading;
 
   const lastError = useRef<string | undefined>(undefined);
-
-  useEffect(() => {
-    closeArtifact();
-    setArtifactContext({});
-  }, [closeArtifact, selectedSession?.research_session_id, setArtifactContext]);
 
   useEffect(() => {
     if (!stream.error) {
@@ -201,37 +176,25 @@ export function Thread() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (
-      !canSubmit ||
-      isLoading ||
-      (input.trim().length === 0 && contentBlocks.length === 0)
-    )
-      return;
+    if (!canSubmit || isLoading || input.trim().length === 0) return;
     setFirstTokenReceived(false);
 
     const newHumanMessage: Message = {
       id: uuidv4(),
       type: "human",
-      content: [
-        ...(input.trim().length > 0 ? [{ type: "text", text: input }] : []),
-        ...contentBlocks,
-      ] as Message["content"],
+      content: input,
     };
 
     const toolMessages = ensureToolCallsHaveResponses(stream.messages);
 
-    const context =
-      Object.keys(artifactContext).length > 0 ? artifactContext : undefined;
-
     stream.submit(
-      { messages: [...toolMessages, newHumanMessage], context },
+      { messages: [...toolMessages, newHumanMessage] },
       {
         streamMode: ["values"],
         streamSubgraphs: true,
         streamResumable: true,
         optimisticValues: (prev) => ({
           ...prev,
-          context,
           messages: [
             ...(prev.messages ?? []),
             ...toolMessages,
@@ -242,7 +205,6 @@ export function Thread() {
     );
 
     setInput("");
-    setContentBlocks([]);
   };
 
   const handleRegenerate = (
@@ -262,9 +224,11 @@ export function Thread() {
 
   const chatStarted = !!selectedSession;
 
-  const hasNoAIOrToolMessages = !messages.find(
-    (m) => m.type === "ai" || m.type === "tool",
-  );
+  // SDK history clears in an effect; reject another thread's snapshot even
+  // during the first selection-change render.
+  const isSelectedSessionSnapshot =
+    !!selectedSession &&
+    stream.history[0]?.checkpoint.thread_id === selectedSession.thread_id;
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -293,12 +257,7 @@ export function Thread() {
         </motion.div>
       </div>
 
-      <div
-        className={cn(
-          "grid w-full grid-cols-[1fr_0fr] transition-all duration-500",
-          artifactOpen && "grid-cols-[3fr_2fr]",
-        )}
-      >
+      <div className="grid w-full grid-cols-[1fr]">
         <motion.div
           className={cn(
             "relative flex min-w-0 flex-1 flex-col overflow-hidden",
@@ -413,6 +372,25 @@ export function Thread() {
               contentClassName="pt-8 pb-16 max-w-3xl mx-auto flex flex-col gap-4 w-full"
               content={
                 <>
+                  {selectedSession && (
+                    <ResearchPlan
+                      researchQuery={
+                        isSelectedSessionSnapshot
+                          ? stream.values.research_query
+                          : undefined
+                      }
+                      subQuestions={
+                        isSelectedSessionSnapshot
+                          ? stream.values.sub_questions
+                          : undefined
+                      }
+                      toolRounds={
+                        isSelectedSessionSnapshot
+                          ? stream.values.tool_rounds
+                          : undefined
+                      }
+                    />
+                  )}
                   {messages
                     .filter((m) => !m.id?.startsWith(DO_NOT_RENDER_ID_PREFIX))
                     .map((message, index) =>
@@ -431,31 +409,29 @@ export function Thread() {
                         />
                       ),
                     )}
-                  {/* Special rendering case where there are no AI/tool messages, but there is an interrupt.
-                    We need to render it outside of the messages list, since there are no messages to render */}
-                  {hasNoAIOrToolMessages && !!stream.interrupt && (
-                    <AssistantMessage
-                      key="interrupt-msg"
-                      message={undefined}
-                      isLoading={isLoading}
-                      handleRegenerate={handleRegenerate}
-                    />
-                  )}
                   {isLoading && !firstTokenReceived && (
                     <AssistantMessageLoading />
                   )}
                   {selectedSession && (
                     <LatestResearchSources
                       citations={
-                        // SDK history clears in an effect; reject another thread's
-                        // snapshot even during the first selection-change render.
-                        stream.history[0]?.checkpoint.thread_id ===
-                        selectedSession.thread_id
+                        isSelectedSessionSnapshot
                           ? stream.values.citations
+                          : undefined
+                      }
+                      verification={
+                        isSelectedSessionSnapshot
+                          ? stream.values.verification
                           : undefined
                       }
                       isLoading={isLoading}
                       hasError={!!stream.error}
+                    />
+                  )}
+                  {selectedSession && (
+                    <PersistedReports
+                      projectId={selectedSession.project_id}
+                      sessionId={selectedSession.research_session_id}
                     />
                   )}
                 </>
@@ -473,28 +449,15 @@ export function Thread() {
 
                   <ScrollToBottom className="animate-in fade-in-0 zoom-in-95 absolute bottom-full left-1/2 mb-4 -translate-x-1/2" />
 
-                  <div
-                    ref={dropRef}
-                    className={cn(
-                      "bg-muted relative z-10 mx-auto mb-8 w-full max-w-3xl rounded-2xl shadow-xs transition-all",
-                      dragOver
-                        ? "border-primary border-2 border-dotted"
-                        : "border border-solid",
-                    )}
-                  >
+                  <div className="bg-muted relative z-10 mx-auto mb-8 w-full max-w-3xl rounded-2xl border border-solid shadow-xs">
                     <form
                       onSubmit={handleSubmit}
                       className="mx-auto grid max-w-3xl grid-rows-[1fr_auto] gap-2"
                     >
-                      <ContentBlocksPreview
-                        blocks={contentBlocks}
-                        onRemove={removeBlock}
-                      />
                       <textarea
                         value={input}
                         disabled={!canSubmit}
                         onChange={(e) => setInput(e.target.value)}
-                        onPaste={handlePaste}
                         onKeyDown={(e) => {
                           if (
                             e.key === "Enter" &&
@@ -532,24 +495,6 @@ export function Thread() {
                             </Label>
                           </div>
                         </div>
-                        <Label
-                          htmlFor="file-input"
-                          className="flex cursor-pointer items-center gap-2"
-                        >
-                          <Plus className="size-5 text-gray-600" />
-                          <span className="text-sm text-gray-600">
-                            Upload PDF or Image
-                          </span>
-                        </Label>
-                        <input
-                          id="file-input"
-                          type="file"
-                          disabled={!canSubmit}
-                          onChange={handleFileUpload}
-                          multiple
-                          accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
-                          className="hidden"
-                        />
                         {stream.isLoading ? (
                           <Button
                             key="stop"
@@ -563,11 +508,7 @@ export function Thread() {
                           <Button
                             type="submit"
                             className="ml-auto shadow-md transition-all"
-                            disabled={
-                              !canSubmit ||
-                              isLoading ||
-                              (!input.trim() && contentBlocks.length === 0)
-                            }
+                            disabled={!canSubmit || isLoading || !input.trim()}
                           >
                             Send
                           </Button>
@@ -580,20 +521,6 @@ export function Thread() {
             />
           </StickToBottom>
         </motion.div>
-        <div className="relative flex flex-col border-l">
-          <div className="absolute inset-0 flex min-w-[30vw] flex-col">
-            <div className="grid grid-cols-[1fr_auto] border-b p-4">
-              <ArtifactTitle className="truncate overflow-hidden" />
-              <button
-                onClick={closeArtifact}
-                className="cursor-pointer"
-              >
-                <XIcon className="size-5" />
-              </button>
-            </div>
-            <ArtifactContent className="relative flex-grow" />
-          </div>
-        </div>
       </div>
     </div>
   );

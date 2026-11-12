@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
+    "check:modules": "esbuild scripts/check-frontend-modules.tsx --bundle --platform=node --outfile=.next/frontend-check.cjs --jsx=automatic --loader:.css=empty && node .next/frontend-check.cjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

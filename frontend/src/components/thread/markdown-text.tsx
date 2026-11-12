@@ -12,6 +12,7 @@ import { SyntaxHighlighter } from "@/components/thread/syntax-highlighter";
 
 import { TooltipIconButton } from "@/components/thread/tooltip-icon-button";
 import { cn } from "@/lib/utils";
+import { linkCitationMarkers } from "@/lib/citations";
 
 import "katex/dist/katex.min.css";
 
@@ -118,15 +119,35 @@ const defaultComponents: any = {
       {...props}
     />
   ),
-  a: ({ className, ...props }: { className?: string }) => (
-    <a
-      className={cn(
-        "text-primary font-medium underline underline-offset-4",
-        className,
-      )}
-      {...props}
-    />
-  ),
+  a: ({
+    className,
+    href,
+    children,
+    ...props
+  }: {
+    className?: string;
+    href?: string;
+    children?: React.ReactNode;
+  }) => {
+    // [cN] markers become links to the source row, so a claim is one click
+    // away from the passage that supports it.
+    const isCitationLink =
+      typeof href === "string" && href.startsWith("#citation-");
+    return (
+      <a
+        href={href}
+        className={cn(
+          isCitationLink
+            ? "citation-ref mx-0.5 rounded bg-muted px-1 align-baseline text-[0.75em] font-semibold no-underline hover:bg-muted/70"
+            : "text-primary font-medium underline underline-offset-4",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </a>
+    );
+  },
   blockquote: ({ className, ...props }: { className?: string }) => (
     <blockquote
       className={cn("border-l-2 pl-6 italic", className)}
@@ -251,7 +272,7 @@ const MarkdownTextImpl: FC<{ children: string }> = ({ children }) => {
         rehypePlugins={[rehypeKatex]}
         components={defaultComponents}
       >
-        {children}
+        {linkCitationMarkers(children)}
       </ReactMarkdown>
     </div>
   );

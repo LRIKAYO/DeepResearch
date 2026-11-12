@@ -149,3 +149,14 @@
     box-shadow: inset 9px 0 6px -1px rgb(0 0 0 / 0.02);
   }
 }
+
+/* Citation markers in a report link to their source row; scrolling should read
+   as a movement, not a jump. */
+html {
+  scroll-behavior: smooth;
+}
+
+.markdown-content a.citation-ref {
+  text-decoration: none;
+  white-space: nowrap;
+}

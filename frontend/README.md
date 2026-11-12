@@ -1,4 +1,4 @@
-# ResearchFlow Frontend
+﻿# ResearchFlow Frontend
 
 ResearchFlow's Next.js client is derived from the workspace snapshot of
 [LangChain Agent Chat UI](https://github.com/langchain-ai/agent-chat-ui).
@@ -6,8 +6,8 @@ The snapshot has no Git metadata, so this repository does not claim an upstream
 commit SHA. Its MIT license is retained in `LICENSE`.
 
 This first integration intentionally reuses the upstream LangGraph Client,
-`useStream`, thread/history handling, and standard Message/Tool/Interrupt
-rendering. It does not define ResearchFlow Research Progress or Evidence events.
+`useStream`, thread/history handling, and standard Message/Tool rendering. It
+does not define ResearchFlow Research Progress or Evidence events.
 
 ## Local Setup
 
@@ -84,7 +84,8 @@ pnpm dev
 
 Open `http://127.0.0.1:3000` and verify:
 
-1. The setup form is skipped and no LangGraph connection error is shown.
+1. The static LangGraph configuration panel is not shown; the URL and assistant
+   ID come from `.env.local`.
 2. Create a Project, then select **New research** once.
 3. Confirm the URL contains `projectId` and `researchSessionId`, never a
    standalone `threadId`, and message submission remains disabled until the
@@ -113,8 +114,8 @@ it does not introduce Research Progress events or Evidence replay.
 Permanent Knowledge is managed in **Project Knowledge** in the existing desktop
 sidebar or mobile Research sheet. Select a Project; no Research Session is
 required. Use **Markdown document** and **Upload Markdown** to upload one
-non-empty UTF-8 `.md` file of at most 1,048,576 bytes. This is separate from the
-composer's transient PDF/image attachments.
+non-empty UTF-8 `.md` file of at most 1,048,576 bytes. The message composer is
+text-only; permanent Knowledge is uploaded only through this sidebar panel.
 
 The browser sends exactly one multipart `file` part, preserving the file bytes
 and normalizing its part type to `text/markdown`. Backend `201` means indexing
@@ -145,13 +146,21 @@ added. Reload uses the existing selected Session → `thread_id` → SDK checkpo
 history path. A checkpoint-thread guard prevents another Session's old Sources
 from flashing during selection changes.
 
+Agent State also carries `research_query`, `sub_questions`, `tool_rounds`, and
+`verification`. Above the conversation, **Research plan** renders the planned
+sub-questions as a numbered list and the tool-round count when present. The
+Sources panel joins each `verification` verdict to its Citation by
+`citation_id` and labels every source `Supported`, `Partial`, or `Unverified`
+(with the verifier reason as secondary text). A source without a matching
+verdict is always `Unverified`, never `Supported`. The same checkpoint-thread
+guard covers the plan and verdicts, so another Session's State cannot flash.
+
 ### Focused module checks
 
 From `frontend`, using the already installed dependencies:
 
 ```powershell
-pnpm exec esbuild scripts/check-p8.tsx --bundle --platform=node --outfile=.next/p8-check.cjs --jsx=automatic
-node .next/p8-check.cjs
+pnpm check:modules
 pnpm exec tsc --noEmit
 pnpm lint
 pnpm build
@@ -191,18 +200,16 @@ not all approved ResearchFlow product Contracts.
 
 ## Usage
 
-Once the app is running (or if using the deployed site), you'll be prompted to enter:
-
-- **Deployment URL**: The URL of the LangGraph server you want to chat with. This can be a production or development URL.
-- **Assistant/Graph ID**: The name of the graph, or ID of the assistant to use when fetching, and submitting runs via the chat interface.
-- **LangSmith API Key**: (only required for connecting to deployed LangGraph servers) Your LangSmith API key to use when authenticating requests sent to LangGraph servers.
-- **Built with Agent Builder**: Toggle this on for Agent Builder deployments. This automatically sets the auth scheme to `langsmith-api-key`.
-
-After entering these values, click `Continue`. You'll then be redirected to a chat interface where you can start chatting with your LangGraph server.
+The app has no in-app deployment form. Set `NEXT_PUBLIC_API_URL` and
+`NEXT_PUBLIC_ASSISTANT_ID` in `.env.local` before starting it. If either value is
+missing, the app renders a static configuration error that points back to
+`.env.local` instead of the chat. The `apiUrl`, `assistantId`, and `authScheme`
+URL query parameters still override those values, and a LangSmith API key stored
+under `lg:chat:apiKey` in browser local storage is still sent when present.
 
 ## Environment Variables
 
-You can bypass the initial setup form by setting the following environment variables:
+Configure the LangGraph connection with the following environment variables:
 
 ```bash
 NEXT_PUBLIC_API_URL=http://127.0.0.1:2024
@@ -224,7 +231,9 @@ To use these variables:
 2. Fill in the values in the `.env` file
 3. Restart the application
 
-When these environment variables are set, the application will use them instead of showing the setup form.
+When these environment variables are set, the application uses them. If
+`NEXT_PUBLIC_API_URL` or `NEXT_PUBLIC_ASSISTANT_ID` is missing, the app shows the
+static configuration panel instead of the chat.
 
 ## Hiding Messages in the Chat
 
@@ -280,67 +289,6 @@ return { messages: [result] };
 ```
 
 This approach guarantees the message remains completely hidden from the user interface.
-
-## Rendering Artifacts
-
-The Agent Chat UI supports rendering artifacts in the chat. Artifacts are rendered in a side panel to the right of the chat. To render an artifact, you can obtain the artifact context from the `thread.meta.artifact` field. Here's a sample utility hook for obtaining the artifact context:
-
-```tsx
-export function useArtifact<TContext = Record<string, unknown>>() {
-  type Component = (props: {
-    children: React.ReactNode;
-    title?: React.ReactNode;
-  }) => React.ReactNode;
-
-  type Context = TContext | undefined;
-
-  type Bag = {
-    open: boolean;
-    setOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
-
-    context: Context;
-    setContext: (value: Context | ((prev: Context) => Context)) => void;
-  };
-
-  const thread = useStreamContext<
-    { messages: Message[]; ui: UIMessage[] },
-    { MetaType: { artifact: [Component, Bag] } }
-  >();
-
-  return thread.meta?.artifact;
-}
-```
-
-After which you can render additional content using the `Artifact` component from the `useArtifact` hook:
-
-```tsx
-import { useArtifact } from "../utils/use-artifact";
-import { LoaderIcon } from "lucide-react";
-
-export function Writer(props: {
-  title?: string;
-  content?: string;
-  description?: string;
-}) {
-  const [Artifact, { open, setOpen }] = useArtifact();
-
-  return (
-    <>
-      <div
-        onClick={() => setOpen(!open)}
-        className="cursor-pointer rounded-lg border p-4"
-      >
-        <p className="font-medium">{props.title}</p>
-        <p className="text-sm text-gray-500">{props.description}</p>
-      </div>
-
-      <Artifact title={props.title}>
-        <p className="whitespace-pre-wrap p-4">{props.content}</p>
-      </Artifact>
-    </>
-  );
-}
-```
 
 ## Going to Production
 
