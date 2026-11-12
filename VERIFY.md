@@ -8,20 +8,38 @@ file was written; if something fails, the failure is real.
 ```powershell
 cd ResearchFlow
 
-# 1. Database (the only container)
-docker compose up -d postgres
+# 1. Database + backend + agent (three containers, one command)
+docker compose up -d --build
 
-# 2. Backend + Agent Server, one terminal each
-py -3.12 -m scripts.run_local_stack backend     # http://127.0.0.1:8000
-py -3.12 -m scripts.run_local_stack agent       # http://127.0.0.1:2024
-
-# 3. Frontend
+# 2. Frontend
 cd frontend; pnpm install --frozen-lockfile; pnpm dev   # http://127.0.0.1:3000
 ```
 
-Docker is optional for the last two: if the registry is unreachable,
-`docker compose up --build` cannot pull `python:3.12-slim`, but the two local
-processes above are the same code with the same environment.
+Then confirm the three services agree with each other:
+
+```powershell
+py -3.12 -m scripts.e2e_smoke
+```
+
+It creates a Project, provisions a real thread, uploads two documents, runs the
+agent through the Agent Server, and checks that the persisted report matches the
+thread state. `PASS` means the stack works end to end.
+
+**No registry access?** `docker compose up -d --build` cannot pull
+`python:3.12-slim`. Run the database as a container and the two Python services as
+local processes instead — same code, same environment:
+
+```powershell
+docker compose up -d postgres
+py -3.12 -m scripts.run_local_stack backend     # http://127.0.0.1:8000
+py -3.12 -m scripts.run_local_stack agent       # http://127.0.0.1:2024
+```
+
+**Port 2024 already in use, and the agent seems to forget threads?** A stale local
+`langgraph dev` can hold `127.0.0.1:2024` while Docker publishes `0.0.0.0:2024`.
+Windows prefers the more specific binding, so the host would talk to the old
+process while the containers talk to the container. Stop every local agent before
+`docker compose up` (`Get-NetTCPConnection -LocalPort 2024 -State Listen`).
 
 ## The checklist
 
@@ -48,6 +66,13 @@ processes above are the same code with the same environment.
    question comes back in English.
 
 ## What a failure would look like
+
+- **"Research session" creation returns 503.** The Agent Server is not reachable
+  from the Backend. Check `docker compose logs agent` and the
+  `RESEARCHFLOW_LANGGRAPH_URL` the Backend sees.
+- **A thread exists on one side but not the other.** Two agent servers are
+  running; see the port note above.
+
 
 - No `[cN]` markers at all → the Writer audit did not run.
 - Markers that do not scroll → the citation anchor rewrite or the source ids.

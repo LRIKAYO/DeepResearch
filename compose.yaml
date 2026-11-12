@@ -48,7 +48,9 @@ services:
   agent:
     # Reuses the image built by the backend service above.
     image: researchflow:local
-    command: langgraph dev --host 0.0.0.0 --port 2024 --no-browser --allow-blocking
+    # --no-reload: the image is static, and a reload would clear the in-memory
+    # thread store, orphaning every session that already holds a thread id.
+    command: langgraph dev --host 0.0.0.0 --port 2024 --no-browser --allow-blocking --no-reload
     env_file:
       - path: .env
         required: false

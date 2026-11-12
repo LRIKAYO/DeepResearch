@@ -78,6 +78,8 @@ def main(argv: list[str] | None = None) -> int:
             str(args.agent_port),
             "--no-browser",
             "--allow-blocking",
+            # A reload clears the in-memory thread store and orphans live sessions.
+            "--no-reload",
         ],
         cwd=ROOT,
         env=os.environ,
