@@ -28,5 +28,8 @@ def clean_backend_tables():
 
     with engine.begin() as connection:
         connection.execute(
-            text("TRUNCATE document_chunks, documents, research_sessions, projects")
+            text(
+                "TRUNCATE reports, document_chunks, documents, "
+                "research_sessions, projects"
+            )
         )

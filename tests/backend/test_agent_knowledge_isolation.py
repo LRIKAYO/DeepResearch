@@ -28,7 +28,7 @@ class FakeEmbeddings:
 class FakeResearcherModel:
     def bind_tools(self, tools, **kwargs):
         assert [tool.name for tool in tools] == ["web_search", "knowledge_search"]
-        assert kwargs == {"parallel_tool_calls": False}
+        assert kwargs == {"parallel_tool_calls": True}
         return self
 
     def invoke(self, messages):
@@ -115,6 +115,9 @@ def test_agent_run_context_isolates_project_knowledge():
             post=backend_post,
         ),
         writer_impl=writer,
+        # One round is enough: this test is about context isolation, and the fake
+        # model repeats the same tool call on every turn.
+        max_tool_rounds=1,
     )
 
     try:

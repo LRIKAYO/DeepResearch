@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict, field_validator
-from sqlalchemy import DateTime, ForeignKey, Text, Uuid, func, select
+from sqlalchemy import DateTime, ForeignKey, Text, Uuid, delete, func, select
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from .agent_server import AgentServerClient, get_agent_server
@@ -175,3 +175,57 @@ def read_research_session(
             detail="Research session not found",
         )
     return research_session
+
+
+@router.delete("/{research_session_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_research_session(
+    project_id: UUID,
+    research_session_id: UUID,
+    owner_user_id: CurrentUserId,
+    db: Session = Depends(get_session),
+    agent_server: AgentServerClient = Depends(get_agent_server),
+) -> None:
+    """Remove a session, then best-effort delete its LangGraph thread.
+
+    PostgreSQL is the source of truth for sessions, so the row goes first. A
+    failed thread deletion leaves an orphan thread that no session references,
+    which is invisible to the product; the reverse order could leave a session
+    pointing at a thread that no longer exists.
+    """
+
+    require_project(db, project_id, owner_user_id)
+    research_session = db.scalar(
+        select(ResearchSession).where(
+            ResearchSession.project_id == project_id,
+            ResearchSession.research_session_id == research_session_id,
+        )
+    )
+    if research_session is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Research session not found",
+        )
+
+    # Reports reference the session, and the foreign key has no cascade.
+    from .reports import Report
+
+    db.execute(
+        delete(Report).where(Report.research_session_id == research_session_id)
+    )
+
+    thread_id = research_session.thread_id
+    db.execute(
+        delete(ResearchSession).where(
+            ResearchSession.research_session_id == research_session_id
+        )
+    )
+    db.commit()
+
+    try:
+        agent_server.delete_thread(thread_id)
+    except Exception:
+        logger.warning(
+            "Failed to delete LangGraph thread for a removed session",
+            extra={"thread_id": thread_id, "research_session_id": str(research_session_id)},
+            exc_info=True,
+        )

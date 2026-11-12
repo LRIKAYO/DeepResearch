@@ -4,7 +4,11 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from researchflow.backend.models import Base
-from researchflow.backend import projects, research_sessions  # noqa: F401
+
+# Every module that declares a mapped class must be imported here, otherwise
+# autogenerate compares the database against partial metadata and proposes
+# dropping tables it never saw (the reports table, for instance).
+from researchflow.backend import projects, reports, research_sessions  # noqa: F401
 
 
 config = context.config

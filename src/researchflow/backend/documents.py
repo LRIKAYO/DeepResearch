@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from pydantic import BaseModel, ConfigDict, field_validator
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 from typing_extensions import Annotated
 
@@ -176,3 +176,31 @@ def _reject_undeclared_form_parts(form) -> None:
                 }
             ],
         )
+
+
+@router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_document(
+    project_id: UUID,
+    document_id: UUID,
+    owner_user_id: CurrentUserId,
+    session: Session = Depends(get_session),
+) -> None:
+    """Remove one Document and its chunks, so a re-run can replace it."""
+
+    require_project(session, project_id, owner_user_id)
+    document = session.scalar(
+        select(Document).where(
+            Document.project_id == project_id,
+            Document.document_id == document_id,
+        )
+    )
+    if document is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Document not found"
+        )
+
+    session.execute(
+        delete(DocumentChunk).where(DocumentChunk.document_id == document_id)
+    )
+    session.execute(delete(Document).where(Document.document_id == document_id))
+    session.commit()

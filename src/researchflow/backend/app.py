@@ -9,6 +9,7 @@ from . import database
 from .documents import router as documents_router
 from .knowledge_search import router as knowledge_router
 from .projects import router as projects_router
+from .reports import router as reports_router
 from .research_sessions import router as research_sessions_router
 
 
@@ -31,6 +32,7 @@ def create_app() -> FastAPI:
     app.include_router(research_sessions_router)
     app.include_router(documents_router)
     app.include_router(knowledge_router)
+    app.include_router(reports_router)
 
     @app.get("/health")
     def health() -> dict[str, str]:
