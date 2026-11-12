@@ -1,0 +1,134 @@
+name: CI
+
+# Every push and pull request runs the deterministic checks from README.md.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to the same branch supersedes an in-flight run.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Python tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      # pgvector 0.8.6 on PostgreSQL 18, matching compose.yaml.
+      postgres:
+        image: pgvector/pgvector:0.8.6-pg18
+        env:
+          POSTGRES_USER: researchflow
+          POSTGRES_PASSWORD: researchflow_dev_only
+          POSTGRES_DB: researchflow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U researchflow -d researchflow"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      RESEARCHFLOW_DATABASE_URL: postgresql+psycopg://researchflow:researchflow_dev_only@127.0.0.1:5432/researchflow
+      RESEARCHFLOW_TEST_DATABASE_URL: postgresql+psycopg://researchflow:researchflow_dev_only@127.0.0.1:5432/researchflow_test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-python
+
+      - name: Create researchflow_test and enable pgvector
+        # The image creates only POSTGRES_DB; backend tests require a second
+        # database literally named researchflow_test.
+        run: |
+          python - <<'PY'
+          import psycopg
+
+          server = "postgresql://researchflow:researchflow_dev_only@127.0.0.1:5432"
+          with psycopg.connect(f"{server}/researchflow", autocommit=True) as conn:
+              exists = conn.execute(
+                  "SELECT 1 FROM pg_database WHERE datname = 'researchflow_test'"
+              ).fetchone()
+              if exists is None:
+                  conn.execute("CREATE DATABASE researchflow_test")
+
+          for database in ("researchflow", "researchflow_test"):
+              with psycopg.connect(f"{server}/{database}", autocommit=True) as conn:
+                  conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
+          PY
+
+      - name: Migrate researchflow
+        run: python -m alembic -c pyproject.toml upgrade head
+
+      - name: Migrate researchflow_test
+        env:
+          RESEARCHFLOW_DATABASE_URL: postgresql+psycopg://researchflow:researchflow_dev_only@127.0.0.1:5432/researchflow_test
+        run: python -m alembic -c pyproject.toml upgrade head
+
+      - name: Run the test suite
+        # No model credentials: agent tests stub the model, backend tests stub embeddings.
+        run: python -m pytest tests -q -W error
+
+      - name: Check installed dependencies
+        run: python -m pip check
+
+  evaluation:
+    name: Evaluation (offline)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # Same install as the Python job; no service container, database URL,
+      # credentials, or .env file is provided to this job.
+      - uses: ./.github/actions/setup-python
+
+      - name: Validate the evaluation dataset
+        run: python -m evaluations.run_eval --validate-only
+
+      - name: Run offline quality tests
+        # The committed corpora are used as-is, at the 2000/0 chunking defaults
+        # they were built with; setting RESEARCHFLOW_CHUNK_* would invalidate them.
+        run: python -m pytest tests/quality -q
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm exec tsc --noEmit
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Check module contracts
+        run: pnpm check:modules
+
+      - name: Build
+        run: pnpm build

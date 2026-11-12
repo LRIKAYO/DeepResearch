@@ -1,0 +1,16 @@
+name: Set up Python
+description: Install Python 3.12 with pip caching and the project's backend/dev dependencies.
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+        cache: pip
+        cache-dependency-path: pyproject.toml
+
+    - name: Install the package in editable mode
+      shell: bash
+      run: python -m pip install -e ".[backend,dev]"
