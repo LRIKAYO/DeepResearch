@@ -144,6 +144,71 @@ Research Session 1 ─── 1 LangGraph thread
 LangGraph thread 1 ─── 0..N LangGraph runs
 ```
 
+## Report
+
+**Status:** Implemented 2026-11-11 (append-only persistence).
+
+### Meaning and Lifecycle
+
+A Report is the durable copy of what one Agent run produced: the Markdown body,
+the citation inventory, the verifier's verdicts, and the tool-round count. Before
+this table existed, the only copy lived in the LangGraph checkpoint, which the
+local development server keeps in memory — restarting it lost every report while
+the Research Session row survived.
+
+Reports are **append-only**. A re-run inserts a row; it never updates or deletes
+one. That keeps the history of a session readable and makes a failed run
+incapable of destroying an earlier good report.
+
+### Logical Fields
+
+| Field | Type | Required | First writer | Update semantics | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `report_id` | UUID | yes | Product Backend application | immutable | Identity of one stored report. |
+| `research_session_id` | UUID | yes | Agent run context, forwarded by the Frontend | immutable | Owning session; foreign key to `research_sessions.research_session_id`. |
+| `report` | text | yes | Agent Writer | immutable | Markdown report body; non-empty, at most 200,000 characters. |
+| `citations` | JSONB array | yes | Agent `map_evidence_to_citations` | immutable | Run-local citation inventory, stored verbatim. |
+| `verification` | JSONB array | yes | Agent verifier | immutable | One support verdict per citation id, stored verbatim. |
+| `tool_rounds` | integer | yes | Agent Researcher | immutable | Research rounds the run spent; 0 to 100. |
+| `created_at` | timezone-aware time | yes | PostgreSQL server default | immutable | Creation instant, returned in UTC. |
+
+`citations` and `verification` are deliberately opaque to the Backend. They are
+an Agent contract; the Backend stores and returns them without interpreting them,
+so an Agent-side schema change does not require a migration here.
+
+### Physical PostgreSQL Mapping
+
+| Column | PostgreSQL shape | Constraints |
+| --- | --- | --- |
+| `report_id` | `uuid` | primary key, not null; Backend-generated UUID v4 |
+| `research_session_id` | `uuid` | not null; foreign key to `research_sessions`; indexed |
+| `report` | `text` | not null; check `char_length(report) > 0` |
+| `citations` | `jsonb` | not null; server default `'[]'::jsonb` |
+| `verification` | `jsonb` | not null; server default `'[]'::jsonb` |
+| `tool_rounds` | `integer` | not null; server default `0`; check `>= 0` |
+| `created_at` | `timestamptz` | not null; server default `CURRENT_TIMESTAMP` |
+
+Composite index `ix_reports_session_created` on
+`(research_session_id, created_at)` serves the only read pattern: newest reports
+of one session.
+
+`DELETE /research-sessions/{id}` and `DELETE /projects/{id}` remove the reports
+explicitly before removing the parent row. The foreign keys carry no
+`ON DELETE CASCADE`, so the order is part of the implementation, not an accident.
+
+### Relationships
+
+```text
+Research Session 1 ─── 0..N Reports
+Report N ─── 1 Research Session
+```
+
+### Non-goals
+
+- No report edit, no version chain, no diff between two runs.
+- No Evidence/Citation rows of their own: they stay inside the report row.
+- No cross-session report index or search.
+
 ## Document
 
 **Status:** Implemented by P6-002.

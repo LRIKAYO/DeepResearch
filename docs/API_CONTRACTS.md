@@ -534,16 +534,141 @@ citation correctness, a PostgreSQL entity, a replay API, or a durable identity
 scheme. P7-003B acceptance used fresh checkpointed threads and adds no
 checkpoint migration.
 
+### `DELETE /projects/{project_id}`
+
+Deletes the Project and everything scoped to it: its Documents, their Chunks,
+and its Research Sessions. Row order is explicit because the foreign keys carry
+no `ON DELETE CASCADE`; the whole deletion is one transaction.
+
+Successful response:
+
+```http
+204 No Content
+```
+
+A Project that is missing or owned by another user returns the same `404` as
+`GET`, so deletion does not reveal the existence of other users' Projects.
+
+### `DELETE /projects/{project_id}/documents/{document_id}`
+
+Deletes one Document and its Chunks. Used to replace a Document before a re-run.
+
+```http
+204 No Content
+```
+
+A Document that belongs to another Project, or that does not exist, returns
+`404 Document not found`.
+
+### `DELETE /projects/{project_id}/research-sessions/{research_session_id}`
+
+Deletes the Research Session row, then best-effort deletes its LangGraph thread.
+PostgreSQL is the source of truth for sessions, so the row goes first: a failed
+thread deletion leaves an orphan thread nothing references, whereas the reverse
+order could leave a session pointing at a deleted thread. A failed thread
+deletion is logged and still returns `204`.
+
+```http
+204 No Content
+```
+
+### `POST /projects/{project_id}/research-sessions/{research_session_id}/reports`
+
+Appends a Report to a session. This is the durable copy of what the Agent
+produced: Graph State lives in the LangGraph checkpoint, which the local
+development server keeps in memory.
+
+Request body:
+
+```json
+{
+  "report": "# Markdown report ...",
+  "citations": [{ "citation_id": "c1", "source_type": "user_upload" }],
+  "verification": [{ "citation_id": "c1", "support": "full", "reason": "..." }],
+  "tool_rounds": 2
+}
+```
+
+`report` must be non-empty and at most 200,000 characters. `tool_rounds` is an
+integer from 0 to 100. `citations` and `verification` are arrays of objects, at
+most 200 items each; their internal shape belongs to the Agent contract and the
+Backend stores them verbatim.
+
+```http
+201 Created
+```
+
+Reports are **append-only**: a re-run adds a row, it never replaces one. A failed
+or worse run therefore cannot destroy an earlier good report.
+
+### `GET /projects/{project_id}/research-sessions/{research_session_id}/reports`
+
+Returns the newest reports of one session, newest first, at most 20:
+
+```json
+[
+  {
+    "report_id": "0b7c...",
+    "research_session_id": "9f1a...",
+    "report": "# Markdown report ...",
+    "citations": [],
+    "verification": [],
+    "tool_rounds": 2,
+    "created_at": "2026-11-11T15:04:05Z"
+  }
+]
+```
+
+A session with no reports returns `[]`. Unknown or foreign sessions return the
+same `404` as the session endpoints.
+
+### `GET /projects/{project_id}/research-sessions/{research_session_id}/reports/{report_id}`
+
+Returns one Report. A report id that belongs to another session returns `404`.
+
+### `GET /projects/{project_id}/knowledge/chunks/{chunk_id}/context`
+
+Returns one chunk together with its neighbours, for the Agent to widen a
+retrieval hit before the Writer sees it.
+
+Query parameter `radius` (0–3, default 2) sets how many chunks on each side are
+included. Above 3 the response is `422`; the measurement behind the default
+saturates at 2.
+
+```json
+{
+  "document_id": "…",
+  "chunk_id": "…",
+  "chunk_index": 12,
+  "filename": "notes.md",
+  "content": "matched chunk, then following chunks, then preceding chunks",
+  "start_index": 10,
+  "end_index": 14
+}
+```
+
+`content` deliberately **starts with the matched chunk** rather than following
+document order: the citation excerpt (500 characters) and the verifier passage
+(1200 characters) both read a prefix of the evidence, so a document-order window
+would show them the surrounding text and not the answer. The Writer still
+receives every neighbour.
+
+A chunk that does not exist, belongs to another Project, or belongs to another
+user returns the same `404`.
+
 ## Explicitly Deferred API Surface
 
-- Project update and delete.
+- Project update (rename) and Project ownership transfer.
 - Product User CRUD, passwords, login, token issuing, and identity-provider
   implementation. The trusted user context and Project ownership enforcement
   are part of P6-002.
-- Research Session title, status, update, delete, archive, and run history.
-- Persisted Report/Evidence/Citation/Source resources, Citation UI or inline
-  claim markers, saved Web Source, non-Markdown Document, Document
-  mutation/download, and Agent-specific Knowledge endpoints.
+- Research Session title, status, update, archive, and run history. Deletion is
+  implemented; renaming is not.
+- Persisted Evidence, Citation or Source rows, saved Web Source, non-Markdown
+  Document, Document download, and Agent-specific Knowledge endpoints beyond the
+  search and chunk-context routes. Document
+  deletion is implemented; mutation is not. Reports are persisted as one row
+  holding the report plus its citation and verification blobs.
 - Agent streaming proxy endpoints and historical event replay.
 
 ## References

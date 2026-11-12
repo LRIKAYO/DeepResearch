@@ -1,4 +1,4 @@
-# ResearchFlow Architecture
+﻿# ResearchFlow Architecture
 
 This document records cross-module boundaries that are already needed by the
 implemented system. It is not a target-state inventory.
@@ -12,11 +12,19 @@ implemented system. It is not a target-state inventory.
 ### Current Repository Facts
 
 - `langgraph.json` registers the Agent graph as `researchflow` on LangGraph
-  Agent Server.
-- The current Graph State contains `messages`, internal `research_query` and
-  validated JSON-safe `evidence`, plus the final `report` and run-local
-  `citations`. The Writer appends the Report as the final AI message and updates
-  that message, Report, and Citation list atomically.
+  Agent Server, and declares `env: .env` so the server loads that file itself.
+- The graph is `planner → researcher ⇄ execute_tool → writer → verifier`. The
+  Planner decomposes the question into 2-4 sub-questions and resets the per-run
+  search slice (`evidence`, `tool_rounds`); the Researcher loops while
+  `tool_rounds < RESEARCHFLOW_MAX_TOOL_ROUNDS` and stops on its own when the
+  evidence is sufficient. The Writer appends the Report as the final AI message
+  and updates that message, Report, and Citation list atomically; the Verifier
+  then records one support verdict per citation.
+- The current Graph State contains `messages`, internal `research_query`,
+  `sub_questions`, `tool_rounds`, validated JSON-safe `evidence`, plus the final
+  `report`, run-local `citations`, and `verification` verdicts. `report`,
+  `citations`, and `verification` are written only by a successful
+  Writer/Verifier pass, so a failed run does not erase the previous good triple.
 - The Frontend uses `@langchain/langgraph-sdk` 1.8.10 `useStream`, explicitly
   requests `values`, enables `fetchStateHistory`, and sets
   `streamResumable: true` when submitting. Consuming `stream.messages` adds
@@ -472,10 +480,42 @@ would have no Product Backend association.
 
 ### Still Deferred
 
-Research Progress, Evidence/Sources UI, event replay, session title/status,
-session deletion, pagination, Product-managed password/login/token issuance,
-Report persistence, RAG, and any final product URL hierarchy remain outside
-this slice. D-014 later adds a trusted upstream user identity boundary.
+Research Progress events, event replay, session title/status, session deletion,
+pagination, Product-managed password/login/token issuance, Report persistence,
+and any final product URL hierarchy remain outside this slice. The Sources panel
+and the citation support badges are implemented (D-020); the deferred item there
+is claim-level attribution inside the report body, not the source inventory.
+D-014 later adds a trusted upstream user identity boundary.
+
+## Verifiable Research Loop
+
+**Decision:** D-020
+**Status:** Accepted and implemented
+
+The Agent graph is a bounded loop, not a single pass:
+
+- The **Planner** owns per-run reset (`evidence`, `tool_rounds`) and the
+  sub-question decomposition. It never resets `report`, `citations`, or
+  `verification`, because those must survive a failed run.
+- The **Researcher** receives the plan plus a rendered `[c1]..[cN]` evidence
+  block. Without that, the loop would call tools blindly; with it, the model can
+  decide that the evidence is sufficient and stop.
+- The **budget** is enforced in two places: the Researcher stops binding the tool
+  schema once `tool_rounds` reaches `RESEARCHFLOW_MAX_TOOL_ROUNDS`, and routing
+  sends `execute_tool` straight to the Writer when the budget is spent. The loop
+  therefore never leaves an unanswered `tool_call` in the message history.
+- The **Writer** audits its own citation coverage before returning: every id in
+  the evidence inventory must appear in the report body. When ids are listed but
+  uncited, it attempts exactly one rewrite that adds the missing markers without
+  changing the findings; a failed or unhelpful rewrite keeps the original draft.
+  This exists because the inventory lists every retrieved passage, so a report
+  that cites four of twenty-five still published twenty-five sources.
+- The **Verifier** is advisory: a verifier failure returns no verdicts and keeps
+  the Report. A citation that the Writer listed but never cited is recorded as
+  `none` with an explicit reason, not silently accepted.
+- The **Frontend** rewrites `[cN]` into `#citation-cN` links and gives every
+  source row that id, so a claim is one click from its passage. Fenced code
+  blocks are left alone; a report may quote JSON that contains the same text.
 
 ## Permanent Project Knowledge Boundary
 

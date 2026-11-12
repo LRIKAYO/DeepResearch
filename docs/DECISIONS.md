@@ -485,3 +485,111 @@ runtime, while restarting the in-memory Agent Server is not a durable history
 guarantee. PostgreSQL Research Session rows and Agent checkpoint retention must
 receive an explicit persistence/reconciliation design before a durable-history
 or production claim. This finding does not reopen the local/test Phase 8 gate.
+
+## D-020 — Verifiable research loop
+
+**Status:** Accepted and implemented
+
+Supersedes the single-pass graph recorded in D-002 and the Phase 1 limitation in
+the README. D-002 anticipated this: "If a future ReAct loop can revisit
+`researcher` within one run, reset ownership must move to a dedicated
+run-initialization boundary instead of silently clearing accumulated Evidence."
+That boundary is now the Planner.
+
+**Shape:** `planner → researcher ⇄ execute_tool → writer → verifier`.
+
+**Reset ownership.** The Planner resets only the per-run search slice
+(`evidence`, `tool_rounds`) and sets `research_query` plus `sub_questions`. It
+deliberately does not reset `report`, `citations`, or `verification`: those are
+replaced only by a successful Writer/Verifier pass, so a failed run preserves
+the last good triple, which is what the Sources UI promises.
+
+**Bounded loop.** `RESEARCHFLOW_MAX_TOOL_ROUNDS` (1-10, default 3) is enforced
+twice: the Researcher stops binding the tool schema once the budget is spent,
+and `route_after_tools` sends the run to the Writer. This guarantees the message
+history never ends with an unanswered `tool_call`.
+
+**Evidence visibility.** The Researcher receives the plan and a rendered
+`[c1]..[cN]` evidence block on every turn after the first. Without it the model
+cannot know what it already found, and the loop degenerates into blind calls.
+
+**Verification.** `verification` holds one verdict per citation id
+(`full` / `partial` / `none`) with a short reason. Verification is advisory: a
+verifier exception yields no verdicts and keeps the Report. A citation listed
+but never cited in the report body is recorded as `none` with an explicit
+reason. Citation ids and rendered evidence ids are the same positional mapping,
+produced by one renderer in `agent/evidence.py`.
+
+**Non-goals.** No Report persistence, no claim-level inline attribution UI, no
+supervisor or parallel researchers, and no multi-agent fan-out: the loop depth,
+not the agent count, is the product.
+
+## D-021 — Report persistence
+
+**Status:** Accepted and implemented 2026-11-11
+
+Before this decision the only copy of a report lived in the LangGraph
+checkpoint. The local development Agent Server keeps checkpoints in memory, so a
+restart left the PostgreSQL Research Session row pointing at state that no longer
+existed: the session was visible, its report was gone. That is the difference
+between a demo and a product, and it was the last structural gap in the MVP.
+
+**Shape.** A `reports` table holds one row per completed run: the Markdown body,
+the citation inventory, the verifier verdicts, the tool-round count and a
+creation instant. `docs/DATA_MODEL.md` records the columns.
+
+**Append-only.** A run inserts; nothing updates or deletes a row except the
+parent Project/Session deletion, which removes its reports explicitly because the
+foreign keys carry no `ON DELETE CASCADE`. A re-run therefore adds history
+instead of overwriting it, and a failed run cannot destroy an earlier report.
+
+**Who writes.** The Agent, in a `persist` node after the verifier. The Product
+Backend stays the owner of the data; the Agent is a client of the same HTTP API
+the Frontend uses. This keeps the existing boundary: the Backend never reads
+Graph State, and the Agent never touches PostgreSQL.
+
+**Session identity.** `research_session_id` travels in the immutable run context,
+next to `knowledge_scope`, not in Graph State and never in model output. The
+Frontend supplies it when it submits; a run without it (a direct invocation, a
+test) simply does not persist.
+
+**Failure policy.** Persistence never fails a run. The report already exists when
+the node runs, so a backend outage is logged and the answer is returned. The cost
+of a lost write is a missing history row, not a lost result.
+
+**Opaque payloads.** `citations` and `verification` are stored as JSONB and
+returned verbatim. They are an Agent contract; the Backend does not interpret
+them, so an Agent-side schema change does not force a Backend migration.
+
+**Non-goals.** No report editing, no version chain, no run-to-run diff, no
+cross-session search, and no separate Evidence/Citation rows.
+
+## D-022 — Context window around a retrieval hit
+
+**Status:** Accepted and implemented 2026-11-12
+
+Retrieval returns chunks, and answers straddle chunk boundaries. On the
+evaluation corpus a relevant passage sits within two chunks of a returned hit in
+95.6% of answerable cases, against 88.9% for the exact hit
+(`evaluations/reports/2026-11-12-context-window.md`).
+
+**Shape.** The Product Backend exposes a chunk-context route; the
+`knowledge_search` tool calls it for each hit and hands the Writer the window,
+keeping the matched chunk's provenance. `RESEARCHFLOW_CONTEXT_RADIUS` controls the
+radius (default 2, 0 disables), and a failed window falls back to the bare chunk.
+
+**The ordered decision that mattered.** The window leads with the matched chunk,
+not document order. The citation excerpt is 500 characters and the verifier
+passage is 1200, both prefixes; a document-order window put the matched passage in
+the middle and dropped citation support to 0.372, worse than not expanding.
+Leading with the match raised the same run to 0.811. Anything that changes what
+"the passage" means must be checked against every reader of that passage, not just
+the Writer.
+
+**Scope.** The window is fetched per hit through the same owner- and
+Project-scoped API the Frontend uses; the Agent gains no database access and the
+Backend gains no knowledge of Graph State.
+
+**Non-goals.** Parent-document retrieval over a document-level index, sentence
+window scoring, and hierarchical summaries are not implemented. This is the
+cheapest version that the measurement justified.
