@@ -1,3 +1,5 @@
+﻿import pytest
+
 from researchflow.knowledge.chunking import (
     MAX_CHUNK_CHARS,
     OVERLONG_BLOCK_OVERLAP_CHARS,
@@ -47,3 +49,54 @@ def test_chunking_is_deterministic_with_consecutive_indexes():
 
     assert chunk_markdown(markdown) == first
     assert [chunk.chunk_index for chunk in first] == list(range(len(first)))
+
+
+def test_chunk_markdown_respects_a_smaller_max(monkeypatch):
+    import researchflow.knowledge.chunking as chunking
+
+    monkeypatch.setattr(chunking, "MAX_CHUNK_CHARS", 300)
+    monkeypatch.setattr(chunking, "CHUNK_OVERLAP_CHARS", 0)
+
+    text = "\n\n".join(f"## Section {i}\n\n" + ("word " * 60) for i in range(4))
+    chunks = chunking.chunk_markdown(text)
+
+    assert len(chunks) > 1
+    assert all(len(chunk.content) <= 300 for chunk in chunks)
+
+
+def test_chunk_markdown_repeats_a_tail_when_overlap_is_set(monkeypatch):
+    import researchflow.knowledge.chunking as chunking
+
+    monkeypatch.setattr(chunking, "MAX_CHUNK_CHARS", 300)
+    monkeypatch.setattr(chunking, "CHUNK_OVERLAP_CHARS", 80)
+
+    body = "".join(f"line {i} of the section\n" for i in range(30))
+    text = "## A\n\n" + body + "\n## B\n\n" + body
+    chunks = chunking.chunk_markdown(text)
+
+    assert len(chunks) > 2
+    overlaps = 0
+    for previous, following in zip(chunks, chunks[1:]):
+        tail = previous.content[-40:]
+        if tail and tail in following.content:
+            overlaps += 1
+    assert overlaps >= 1
+
+
+def test_env_int_rejects_a_bad_value(monkeypatch):
+    import researchflow.knowledge.chunking as chunking
+
+    monkeypatch.setenv("TEST_CHUNK_KNOB", "not-a-number")
+    with pytest.raises(ValueError, match="TEST_CHUNK_KNOB"):
+        chunking._env_int("TEST_CHUNK_KNOB", 10, minimum=1, maximum=20)
+
+    monkeypatch.setenv("TEST_CHUNK_KNOB", "99")
+    with pytest.raises(ValueError, match="between"):
+        chunking._env_int("TEST_CHUNK_KNOB", 10, minimum=1, maximum=20)
+
+
+def test_env_int_falls_back_to_the_default(monkeypatch):
+    import researchflow.knowledge.chunking as chunking
+
+    monkeypatch.delenv("TEST_CHUNK_KNOB", raising=False)
+    assert chunking._env_int("TEST_CHUNK_KNOB", 7, minimum=1, maximum=20) == 7

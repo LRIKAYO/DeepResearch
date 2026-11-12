@@ -7,6 +7,11 @@ from langchain_openai import OpenAIEmbeddings
 
 EMBEDDING_MODEL = "BAAI/bge-m3"
 EMBEDDING_DIMENSION = 1024
+# The library default is 1000 texts per request. A real document can easily hold
+# hundreds of chunks, and a single request carrying hundreds of kilobytes is
+# rejected by hosted embedding providers well before that number. Keep the batch
+# small enough that one request stays comfortably inside a provider's limits.
+EMBEDDING_BATCH_SIZE = 32
 
 
 def build_embeddings() -> OpenAIEmbeddings:
@@ -18,6 +23,7 @@ def build_embeddings() -> OpenAIEmbeddings:
         base_url=_require_env("SILICONFLOW_BASE_URL"),
         model=model,
         check_embedding_ctx_length=False,
+        chunk_size=EMBEDDING_BATCH_SIZE,
     )
 
 
