@@ -10,7 +10,11 @@ from langchain_openai import ChatOpenAI
 from .citation_audit import audit_citations, citation_ids_for, detect_report_language
 from .evidence import render_evidence_block
 from .graph import DEFAULT_MAX_TOOL_ROUNDS, MAX_TOOL_ROUNDS_LIMIT, build_graph
-from .knowledge_search import MAX_CONTEXT_RADIUS, KnowledgeClient
+from .knowledge_search import (
+    DEFAULT_ABSTAIN_THRESHOLD,
+    MAX_CONTEXT_RADIUS,
+    KnowledgeClient,
+)
 
 DEFAULT_CONTEXT_RADIUS = 2
 from .persistence import ReportPersister
@@ -341,6 +345,23 @@ def read_context_radius() -> int:
     return value
 
 
+def read_weak_match_threshold() -> float:
+    """Cosine similarity below which a knowledge result is flagged as weak."""
+
+    raw = os.getenv(
+        "RESEARCHFLOW_ABSTAIN_THRESHOLD", str(DEFAULT_ABSTAIN_THRESHOLD)
+    ).strip()
+    if not raw:
+        return DEFAULT_ABSTAIN_THRESHOLD
+    try:
+        value = float(raw)
+    except ValueError:
+        raise ValueError("RESEARCHFLOW_ABSTAIN_THRESHOLD must be a number") from None
+    if not 0.0 <= value <= 1.0:
+        raise ValueError("RESEARCHFLOW_ABSTAIN_THRESHOLD must be between 0 and 1")
+    return value
+
+
 def create_runtime(config: RunnableConfig | None = None):
     """Build the graph registered by the LangGraph Server."""
     model = create_model()
@@ -354,5 +375,6 @@ def create_runtime(config: RunnableConfig | None = None):
         persist_impl=create_report_persister(),
         max_tool_rounds=read_max_tool_rounds(),
         context_radius=read_context_radius(),
+        weak_match_threshold=read_weak_match_threshold(),
         researcher_system_prompt=RESEARCHER_SYSTEM_PROMPT,
     )

@@ -185,3 +185,71 @@ def test_context_radius_rejects_bad_values(monkeypatch, raw):
     monkeypatch.setenv("RESEARCHFLOW_CONTEXT_RADIUS", raw)
     with pytest.raises(ValueError, match="RESEARCHFLOW_CONTEXT_RADIUS"):
         read_context_radius()
+
+# --- weak evidence -----------------------------------------------------------
+
+
+def test_weak_match_is_flagged_for_the_writer():
+    weak = KnowledgeHit(
+        document_id=uuid4(),
+        chunk_id=uuid4(),
+        filename="notes.md",
+        content="barely related",
+        score=0.42,
+    )
+    client = FakeClient([weak])
+
+    evidence = build_knowledge_search_tool(
+        scope=SCOPE, client=client, context_radius=0
+    ).invoke({"query": "q", "limit": 5})
+
+    assert evidence[0].relevance_note is not None
+    assert "weak match" in evidence[0].relevance_note
+    assert "0.42" in evidence[0].relevance_note
+
+
+def test_a_confident_match_carries_no_warning():
+    client = FakeClient([hit(0)])  # score 0.8
+
+    evidence = build_knowledge_search_tool(
+        scope=SCOPE, client=client, context_radius=0
+    ).invoke({"query": "q", "limit": 5})
+
+    assert evidence[0].relevance_note is None
+
+
+def test_expansion_and_weakness_share_one_note():
+    weak = KnowledgeHit(
+        document_id=uuid4(),
+        chunk_id=uuid4(),
+        filename="notes.md",
+        content="barely related",
+        score=0.30,
+    )
+    client = FakeClient([weak])
+
+    evidence = build_knowledge_search_tool(
+        scope=SCOPE, client=client, context_radius=2
+    ).invoke({"query": "q", "limit": 5})
+
+    note = evidence[0].relevance_note or ""
+    assert "expanded by 2 chunks" in note
+    assert "weak match" in note
+
+
+def test_an_empty_result_is_not_flagged_as_weak():
+    client = FakeClient([])
+
+    evidence = build_knowledge_search_tool(
+        scope=SCOPE, client=client, context_radius=0
+    ).invoke({"query": "q", "limit": 5})
+
+    assert evidence == []
+
+
+@pytest.mark.parametrize("threshold", [-0.1, 1.1, "high"])
+def test_weak_threshold_is_validated(threshold):
+    with pytest.raises(ValueError, match="weak_match_threshold"):
+        build_knowledge_search_tool(
+            scope=SCOPE, client=FakeClient([]), weak_match_threshold=threshold
+        )

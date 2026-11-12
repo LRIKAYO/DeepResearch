@@ -18,6 +18,12 @@ from .evidence import ProjectDocumentProvenance, UserUploadEvidence
 
 
 MAX_CONTEXT_RADIUS = 3
+
+# The same threshold the retrieval evaluation uses to decide that nothing it
+# returned is close enough to answer from. The Agent does not refuse here: it has
+# a web tool and a writer that can qualify a claim. It marks the evidence instead,
+# so the writer cannot present a weak match as support.
+DEFAULT_ABSTAIN_THRESHOLD = 0.60
 KNOWLEDGE_TIMEOUT_SECONDS = 10.0
 
 
@@ -128,6 +134,7 @@ def build_knowledge_search_tool(
     scope: KnowledgeScope,
     client: KnowledgeClient,
     context_radius: int = 0,
+    weak_match_threshold: float = DEFAULT_ABSTAIN_THRESHOLD,
 ):
     """Build the knowledge_search tool.
 
@@ -140,6 +147,12 @@ def build_knowledge_search_tool(
 
     if not 0 <= context_radius <= MAX_CONTEXT_RADIUS:
         raise ValueError(f"context_radius must be between 0 and {MAX_CONTEXT_RADIUS}")
+    if not isinstance(weak_match_threshold, (int, float)) or isinstance(
+        weak_match_threshold, bool
+    ):
+        raise ValueError("weak_match_threshold must be a number")
+    if not 0.0 <= weak_match_threshold <= 1.0:
+        raise ValueError("weak_match_threshold must be between 0 and 1")
 
     scope = KnowledgeScope.model_validate(scope)
 
@@ -157,6 +170,9 @@ def build_knowledge_search_tool(
             raise ValueError("limit must be an integer from 1 to 20")
 
         hits = client.search(scope=scope, query=query, limit=limit)
+
+        best_score = max((hit.score for hit in hits), default=0.0)
+        weak = bool(hits) and best_score < weak_match_threshold
 
         evidence: list[UserUploadEvidence] = []
         seen_content: set[str] = set()
@@ -181,6 +197,14 @@ def build_knowledge_search_tool(
                 # Two windows can overlap heavily; one copy is enough.
                 continue
             seen_content.add(content)
+
+            if weak:
+                warning = (
+                    f"weak match: the best cosine similarity in this result is "
+                    f"{best_score:.2f}, below the {weak_match_threshold:.2f} "
+                    "threshold; treat this as context, not as support"
+                )
+                note = f"{note}; {warning}" if note else warning
 
             evidence.append(
                 UserUploadEvidence(

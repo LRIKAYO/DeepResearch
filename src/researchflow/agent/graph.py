@@ -35,6 +35,7 @@ from langgraph.runtime import Runtime
 from .citations import map_evidence_to_citations
 from .evidence import render_evidence_block, validate_evidence_list
 from .knowledge_search import (
+    DEFAULT_ABSTAIN_THRESHOLD,
     MAX_CONTEXT_RADIUS,
     KnowledgeClient,
     build_knowledge_search_tool,
@@ -56,6 +57,7 @@ def build_tool_registry(
     web_tool: Any,
     knowledge_client: KnowledgeClient,
     context_radius: int = 0,
+    weak_match_threshold: float = DEFAULT_ABSTAIN_THRESHOLD,
 ) -> dict[str, Any]:
     """Build the fixed two-Tool registry for one scoped graph run."""
 
@@ -69,6 +71,7 @@ def build_tool_registry(
         scope=context.knowledge_scope,
         client=knowledge_client,
         context_radius=context_radius,
+        weak_match_threshold=weak_match_threshold,
     )
     return {
         web_tool.name: web_tool,
@@ -126,6 +129,7 @@ def researcher(
     *,
     max_tool_rounds: int = DEFAULT_MAX_TOOL_ROUNDS,
     context_radius: int = 0,
+    weak_match_threshold: float = DEFAULT_ABSTAIN_THRESHOLD,
     system_prompt: str | None = None,
 ) -> dict:
     """Researcher node: decide the next search action, or stop.
@@ -145,6 +149,7 @@ def researcher(
         web_tool=web_tool,
         knowledge_client=knowledge_client,
         context_radius=context_radius,
+        weak_match_threshold=weak_match_threshold,
     )
 
     tool_rounds = int(state.get("tool_rounds", 0) or 0)
@@ -230,6 +235,7 @@ def execute_tool(
     runtime: Runtime[AgentContext],
     *,
     context_radius: int = 0,
+    weak_match_threshold: float = DEFAULT_ABSTAIN_THRESHOLD,
 ) -> dict:
     """Execute every pending tool call, accumulating typed Evidence.
 
@@ -254,6 +260,7 @@ def execute_tool(
         web_tool=web_tool,
         knowledge_client=knowledge_client,
         context_radius=context_radius,
+        weak_match_threshold=weak_match_threshold,
     )
 
     # Validate every name before invoking anything: an unknown tool must not
@@ -396,6 +403,7 @@ def build_graph(
     *,
     max_tool_rounds: int = DEFAULT_MAX_TOOL_ROUNDS,
     context_radius: int = 0,
+    weak_match_threshold: float = DEFAULT_ABSTAIN_THRESHOLD,
     researcher_system_prompt: str | None = None,
 ):
     """Build the scoped, bounded research workflow."""
@@ -410,6 +418,8 @@ def build_graph(
         raise ValueError("context_radius must be an integer")
     if not 0 <= context_radius <= MAX_CONTEXT_RADIUS:
         raise ValueError(f"context_radius must be between 0 and {MAX_CONTEXT_RADIUS}")
+    if not 0.0 <= weak_match_threshold <= 1.0:
+        raise ValueError("weak_match_threshold must be between 0 and 1")
 
     planner = planner_impl if planner_impl is not None else PassthroughPlanner()
 
@@ -431,6 +441,7 @@ def build_graph(
             knowledge_client=knowledge_client,
             max_tool_rounds=max_tool_rounds,
             context_radius=context_radius,
+            weak_match_threshold=weak_match_threshold,
             system_prompt=researcher_system_prompt,
         ),
     )
@@ -442,6 +453,7 @@ def build_graph(
             web_tool=web_tool,
             knowledge_client=knowledge_client,
             context_radius=context_radius,
+            weak_match_threshold=weak_match_threshold,
         ),
     )
 
