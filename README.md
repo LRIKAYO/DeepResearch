@@ -232,6 +232,9 @@ Set-Location frontend; pnpm install --frozen-lockfile; pnpm dev
 Open `http://localhost:3000`, create a Project, upload a Markdown document, create a
 research session, and ask something that needs both the document and the web.
 
+[`VERIFY.md`](VERIFY.md) is the ten-minute checklist: what to click, what each step
+should produce, and what a failure would look like.
+
 `langgraph.json` declares `env: .env`, so the agent server loads that file directly —
 no manual `$env:` exports needed for the agent. The backend reads the same file when
 run through compose; run locally, it needs the variables exported in its shell.
