@@ -1,4 +1,4 @@
-import pytest
+﻿import pytest
 
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.checkpoint.memory import InMemorySaver
@@ -90,12 +90,24 @@ class FakeKnowledgeClient:
         return self.result
 
 
-def build_test_graph(researcher_model, web_tool, writer_impl, knowledge_client=None):
+def build_test_graph(
+    researcher_model,
+    web_tool,
+    writer_impl,
+    knowledge_client=None,
+    *,
+    max_tool_rounds: int = 1,
+    planner_impl=None,
+    verifier_impl=None,
+):
     return build_graph(
         researcher_model=researcher_model,
         web_tool=web_tool,
         knowledge_client=knowledge_client or FakeKnowledgeClient(),
         writer_impl=writer_impl,
+        planner_impl=planner_impl,
+        verifier_impl=verifier_impl,
+        max_tool_rounds=max_tool_rounds,
     )
 
 
@@ -196,7 +208,7 @@ def test_graph_executes_tool_and_passes_evidence_to_writer():
     assert tool.call_count == 1
     assert tool.received_args == [tool_args]
     assert researcher_model.bound_tool_options == {
-        "parallel_tool_calls": False,
+        "parallel_tool_calls": True,
     }
     assert [tool.name for tool in researcher_model.bound_tools] == [
         "web_search",
@@ -283,6 +295,7 @@ def test_graph_skips_tool_and_writer_receives_empty_evidence():
 
     assert writer_payload == {
         "research_query": research_query,
+        "sub_questions": [research_query],
         "evidence": [],
     }
 
@@ -332,9 +345,53 @@ def test_invalid_evidence_item_does_not_reach_writer():
     assert writer.received_payloads == []
 
 
-def test_researcher_clears_evidence_from_previous_run():
-    events = []
+class FakePlanner:
+    """Deterministic planner stand-in that never touches the event log."""
+
+    def __init__(self, sub_questions: list[str]):
+        self.sub_questions = sub_questions
+        self.received_payloads = []
+
+    def invoke(self, payload):
+        self.received_payloads.append(payload)
+        return {"sub_questions": list(self.sub_questions)}
+
+
+def test_planner_resets_state_from_previous_run():
+    from researchflow.agent.plan import plan_research
+
     research_query = "新的研究问题"
+    old_evidence = validate_evidence_list(
+        [temporary_evidence(content="stale evidence")]
+    )[0]
+    planner = FakePlanner(["子问题 A", "子问题 B"])
+
+    update = plan_research(
+        {
+            "messages": [HumanMessage(content=research_query)],
+            "research_query": "旧问题",
+            "sub_questions": ["旧子问题"],
+            "tool_rounds": 2,
+            "evidence": [old_evidence],
+            "citations": [{"citation_id": "c1"}],
+            "verification": [{"citation_id": "c1", "support": "full", "reason": "x"}],
+        },
+        planner,
+    )
+
+    assert planner.received_payloads == [{"research_query": research_query}]
+    assert update["research_query"] == research_query
+    assert update["sub_questions"] == ["子问题 A", "子问题 B"]
+    assert update["evidence"] == []
+    assert update["tool_rounds"] == 0
+    # A new run must not wipe the last successful Report/Citations pair: those
+    # are only replaced by a successful Writer/Verifier pass.
+    assert "citations" not in update
+    assert "verification" not in update
+
+
+def test_researcher_keeps_accumulated_evidence_across_rounds():
+    events = []
     old_evidence = validate_evidence_list(
         [temporary_evidence(content="stale evidence")]
     )[0]
@@ -346,8 +403,9 @@ def test_researcher_clears_evidence_from_previous_run():
 
     update = researcher(
         {
-            "messages": [HumanMessage(content=research_query)],
+            "messages": [HumanMessage(content="继续研究")],
             "evidence": [old_evidence],
+            "tool_rounds": 1,
         },
         researcher_model,
         tool,
@@ -355,7 +413,10 @@ def test_researcher_clears_evidence_from_previous_run():
         Runtime(context=TEST_CONTEXT),
     )
 
-    assert update["evidence"] == []
+    # Evidence is the Writer's input and must survive every researcher turn;
+    # only the Planner resets it (see test_planner_resets_state_from_previous_run).
+    assert "evidence" not in update
+    assert update["research_query"] == "继续研究"
 
 def test_researcher_normalizes_text_blocks_and_ignores_invalid_blocks():
     events = []
@@ -416,6 +477,7 @@ def test_researcher_normalizes_text_blocks_and_ignores_invalid_blocks():
     assert writer.received_payloads == [
         {
             "research_query": "第一段\n\n第二段",
+            "sub_questions": ["第一段\n\n第二段"],
             "evidence": [],
         }
     ]
@@ -551,6 +613,7 @@ def test_graph_executes_tool_with_empty_evidence_list():
 
     assert writer_payload == {
         "research_query": research_query,
+        "sub_questions": [research_query],
         "evidence": [],
     }
 
@@ -667,6 +730,7 @@ def test_graph_merges_evidence_from_multiple_calls_to_the_same_tool():
     assert writer.received_payloads == [
         {
             "research_query": "research query",
+            "sub_questions": ["research query"],
             "evidence": validate_evidence_list(evidence) * 2,
         }
     ]
@@ -854,7 +918,15 @@ def test_checkpoint_retains_matching_final_output_until_next_success(
         context=TEST_CONTEXT,
     )
 
-    assert set(first) == {"messages", "report", "citations"}
+    assert set(first) == {
+        "messages",
+        "report",
+        "citations",
+        "tool_rounds",
+        "research_query",
+        "sub_questions",
+        "verification",
+    }
     assert first["report"] == "First successful report"
     assert first["messages"][-1].content == first["report"]
     assert first["citations"] == [{
@@ -909,7 +981,15 @@ def test_checkpoint_retains_matching_final_output_until_next_success(
         context=TEST_CONTEXT,
     )
 
-    assert set(latest) == {"messages", "report", "citations"}
+    assert set(latest) == {
+        "messages",
+        "report",
+        "citations",
+        "tool_rounds",
+        "research_query",
+        "sub_questions",
+        "verification",
+    }
     assert latest["report"] == writer.report
     assert latest["messages"][-1].content == latest["report"]
     assert latest["citations"] == []
@@ -917,5 +997,7 @@ def test_checkpoint_retains_matching_final_output_until_next_success(
     assert checkpoint["report"] == latest["report"]
     assert checkpoint["citations"] == []
     assert writer.received_payloads[-1] == {
-        "research_query": "New no-Tool query", "evidence": []
+        "research_query": "New no-Tool query",
+        "sub_questions": ["New no-Tool query"],
+        "evidence": [],
     }

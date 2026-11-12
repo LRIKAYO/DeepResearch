@@ -1,14 +1,53 @@
+"""Research graph: plan -> bounded tool loop -> report -> citation verification.
+
+    START
+      |
+      v
+    planner            decompose the question, reset the per-run state slice
+      |
+      v
+    researcher <-----------------+
+      |                          |
+      | tool_calls               | tool_rounds < max_tool_rounds
+      v                          |
+    execute_tool ----------------+
+      |
+      | no tool_calls, or budget exhausted
+      v
+    writer             report + [cN] citation markers
+      |
+      v
+    verifier           does each citation actually support its claim?
+      |
+      v
+     END
+"""
+
+import json
+import logging
 from functools import partial
 from typing import Any, Literal
 
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langgraph.graph import END, START, StateGraph
 from langgraph.runtime import Runtime
 
 from .citations import map_evidence_to_citations
-from .evidence import validate_evidence_list
-from .knowledge_search import KnowledgeClient, build_knowledge_search_tool
+from .evidence import render_evidence_block, validate_evidence_list
+from .knowledge_search import (
+    MAX_CONTEXT_RADIUS,
+    KnowledgeClient,
+    build_knowledge_search_tool,
+)
+from .persistence import ReportPersister
+from .plan import PassthroughPlanner, normalize_research_query, plan_research
 from .state import AgentContext, AgentInputState, AgentOutputState, AgentState
+from .verification import verify_citations
+
+logger = logging.getLogger(__name__)
+
+DEFAULT_MAX_TOOL_ROUNDS = 3
+MAX_TOOL_ROUNDS_LIMIT = 10
 
 
 def build_tool_registry(
@@ -16,6 +55,7 @@ def build_tool_registry(
     context: AgentContext | None,
     web_tool: Any,
     knowledge_client: KnowledgeClient,
+    context_radius: int = 0,
 ) -> dict[str, Any]:
     """Build the fixed two-Tool registry for one scoped graph run."""
 
@@ -28,6 +68,7 @@ def build_tool_registry(
     knowledge_tool = build_knowledge_search_tool(
         scope=context.knowledge_scope,
         client=knowledge_client,
+        context_radius=context_radius,
     )
     return {
         web_tool.name: web_tool,
@@ -35,60 +76,46 @@ def build_tool_registry(
     }
 
 
-def normalize_research_query(
-    content: object,
-) -> str:
+
+def _research_context(
+    state: AgentState,
+    *,
+    max_tool_rounds: int,
+) -> str | None:
+    """Describe the plan and the evidence gathered so far.
+
+    Without this the model cannot tell what it has already found, and the loop
+    degenerates into calling tools blindly until the budget runs out.
     """
-    Normalize HumanMessage.content into text-only research_query.
 
-    Supported:
-    - str
-    - list of text content blocks
+    sub_questions = state.get("sub_questions") or []
+    evidence = state.get("evidence") or []
 
-    Unsupported:
-    - other types
-    - empty text   
-    """
-    
-    if isinstance(content, str):
-        query = content.strip()
+    if not sub_questions and not evidence:
+        return None
 
-        if not query:
-            raise ValueError(
-                "research query cannot be empty"
-            )
-        
-        return query
+    lines: list[str] = []
 
-    if isinstance(content, list):
-        text_parts = []
+    if sub_questions:
+        lines.append("Research sub-questions:")
+        lines.extend(
+            f"{index}. {question}"
+            for index, question in enumerate(sub_questions, start=1)
+        )
+        lines.append("")
 
-        for block in content:
-            if not isinstance(block, dict):
-                continue
-            
-            if block.get("type") != "text":
-                continue
-            
-            text = block.get("text")
+    if evidence:
+        lines.append("Evidence collected so far:")
+        lines.append(render_evidence_block(evidence))
+        lines.append("")
 
-            if not isinstance(text, str):
-                continue
-
-            text = text.strip()
-
-            if text:
-                text_parts.append(text) 
-            
-        if not text_parts:
-            raise ValueError(
-                "research query contains no valid text blocks"
-            )
-            
-        return "\n\n".join(text_parts)
-    raise ValueError(
-        "HumanMessage.content must be a string or a list of text blocks"
+    lines.append(
+        "Tool rounds used: "
+        f"{int(state.get('tool_rounds', 0) or 0)} of {max_tool_rounds}."
     )
+
+    return "\n".join(lines)
+
 
 def researcher(
     state: AgentState,
@@ -96,63 +123,65 @@ def researcher(
     web_tool: Any,
     knowledge_client: KnowledgeClient,
     runtime: Runtime[AgentContext],
+    *,
+    max_tool_rounds: int = DEFAULT_MAX_TOOL_ROUNDS,
+    context_radius: int = 0,
+    system_prompt: str | None = None,
 ) -> dict:
+    """Researcher node: decide the next search action, or stop.
+
+    1. Read the run's research query (set by the planner).
+    2. Bind the tool schema only while tool-round budget remains.
+    3. Invoke the model once with the plan and the evidence gathered so far.
+    4. Append the model response; evidence accumulates elsewhere.
     """
-    Researcher node.
 
-    Responsibilities:
-    1. Read the latest HumanMessage as research_query.
-    2. Bind the available tool schema to the researcher model.
-    3. Invoke the researcher model once.
-    4. Append the model response to messages.
-    """
-    
-    #取最近一次用户输入作为research_query
-    research_query = None
+    research_query = state.get("research_query") or normalize_research_query(
+        _latest_human_content(state)
+    )
 
-    for message in reversed(state["messages"]):
-        if isinstance(message, HumanMessage):
-            research_query = normalize_research_query(
-                message.content
-            )
-
-            break
-    if research_query is None:
-        raise ValueError(
-            "researcher requires at least one HumanMessage"
-        )
-    
-    # 此处不会真正执行 Tool。
     tool_registry = build_tool_registry(
         context=runtime.context,
         web_tool=web_tool,
         knowledge_client=knowledge_client,
-    )
-    model_with_tools = researcher_model.bind_tools(
-        list(tool_registry.values()),
-        parallel_tool_calls=False,
+        context_radius=context_radius,
     )
 
-    response = model_with_tools.invoke(
-        state["messages"]
-    )
-    # messages 应由 AgentState 中的 reducer 负责追加，
-    # 因此这里只返回本节点产生的新消息。
+    tool_rounds = int(state.get("tool_rounds", 0) or 0)
+
+    if tool_rounds < max_tool_rounds:
+        model_with_tools = researcher_model.bind_tools(
+            list(tool_registry.values()),
+            parallel_tool_calls=True,
+        )
+    else:
+        # Budget exhausted: no tool schema, so the model must answer from
+        # existing evidence. This also guarantees no orphan tool_call can be
+        # left unanswered when the loop ends.
+        logger.info("tool-round budget exhausted; answering from current evidence")
+        model_with_tools = researcher_model
+
+    messages: list[Any] = []
+
+    if system_prompt:
+        messages.append(SystemMessage(content=system_prompt))
+
+    context = _research_context(state, max_tool_rounds=max_tool_rounds)
+    if context:
+        messages.append(SystemMessage(content=context))
+
+    messages.extend(state["messages"])
+
+    response = model_with_tools.invoke(messages)
+
     return {
         "research_query": research_query,
-        "evidence": [],
         "messages": [response],
     }
 
-def route_after_researcher(
-    state: AgentState,
-) -> Literal["execute_tool", "writer"]:
-    """
-    Decide where to go after the researcher.
 
-    - tool_calls exists -> execute Tool calls
-    - no tool_calls     -> go directly to writer
-    """
+def route_after_researcher(state: AgentState) -> Literal["execute_tool", "writer"]:
+    """With tool calls, execute them; without, the model has stopped searching."""
 
     last_message = state["messages"][-1]
 
@@ -162,52 +191,84 @@ def route_after_researcher(
     return "writer"
 
 
+def normalize_tool_args(args: object) -> object:
+    """Unwrap the tool-argument shapes providers actually emit.
+
+    Some OpenAI-compatible providers return the arguments as a JSON string, or
+    wrap them as ``{"arguments": "{...}"}``. Passing that straight to a LangChain
+    tool fails schema validation and kills the whole run, so the two known
+    wrappers are unwrapped here. Anything else is left untouched: silently
+    repairing arbitrary shapes would hide a real model failure.
+    """
+
+    if isinstance(args, str):
+        try:
+            parsed = json.loads(args)
+        except ValueError:
+            return args
+        return parsed if isinstance(parsed, dict) else args
+
+    if (
+        isinstance(args, dict)
+        and set(args) == {"arguments"}
+        and isinstance(args["arguments"], str)
+    ):
+        try:
+            parsed = json.loads(args["arguments"])
+        except ValueError:
+            return args
+        if isinstance(parsed, dict):
+            return parsed
+
+    return args
+
+
 def execute_tool(
     state: AgentState,
     web_tool: Any,
     knowledge_client: KnowledgeClient,
     runtime: Runtime[AgentContext],
+    *,
+    context_radius: int = 0,
 ) -> dict:
-    """
-    Execute one or more calls through the fixed Web/Knowledge Tool registry.
+    """Execute every pending tool call, accumulating typed Evidence.
 
-    Tool result is treated as structured Evidence.
-    ToolMessage is only execution trace metadata.
+    Evidence accumulates across rounds; a later round must never erase what an
+    earlier round found.
     """
 
     last_message = state["messages"][-1]
 
-    # 1. 最后一条必须是Researcher 产生的AIMessage
     if not isinstance(last_message, AIMessage):
-        raise ValueError(
-            "execute_tool requires the last message to be an AIMessage"
-        )
+        raise ValueError("execute_tool requires the last message to be an AIMessage")
 
     tool_calls = last_message.tool_calls
 
-    # 2. 模型至少要生成一次调用。
     if len(tool_calls) == 0:
         raise ValueError(
-             "execute_tool requires at least one tool call, but none were found"
+            "execute_tool requires at least one tool call, but none were found"
         )
 
     tool_registry = build_tool_registry(
         context=runtime.context,
         web_tool=web_tool,
         knowledge_client=knowledge_client,
+        context_radius=context_radius,
     )
 
-    # 3. 先校验所有名称，避免未知 Tool 导致部分外部搜索已发生。
+    # Validate every name before invoking anything: an unknown tool must not
+    # leave the run with half of its searches already sent to a provider.
     for tool_call in tool_calls:
         if tool_call["name"] not in tool_registry:
             raise ValueError(f"Unknown tool: {tool_call['name']}")
 
-    evidence_results = []
-    tool_messages = []
+    new_evidence: list[dict] = []
+    tool_messages: list[ToolMessage] = []
+
     for tool_call in tool_calls:
         tool = tool_registry[tool_call["name"]]
-        tool_result = tool.invoke(tool_call["args"])
-        evidence_results.extend(validate_evidence_list(tool_result))
+        tool_result = tool.invoke(normalize_tool_args(tool_call["args"]))
+        new_evidence.extend(validate_evidence_list(tool_result))
         tool_messages.append(
             ToolMessage(
                 content="Research evidence collected successfully.",
@@ -216,38 +277,42 @@ def execute_tool(
             )
         )
 
-    # 4. Evidence 是业务数据；ToolMessage 只是执行轨迹。
     return {
-        "evidence": evidence_results,
+        "evidence": [*(state.get("evidence") or []), *new_evidence],
+        "tool_rounds": int(state.get("tool_rounds", 0) or 0) + 1,
         "messages": tool_messages,
     }
-   
+
+
+def route_after_tools(
+    state: AgentState,
+    *,
+    max_tool_rounds: int = DEFAULT_MAX_TOOL_ROUNDS,
+) -> Literal["researcher", "writer"]:
+    """Continue the loop while tool-round budget remains."""
+
+    if int(state.get("tool_rounds", 0) or 0) < max_tool_rounds:
+        return "researcher"
+
+    return "writer"
 
 
 def writer(
     state: AgentState,
     writer_impl: Any,
 ) -> dict:
-    """
-    Generate the final answer from research state.
+    """Generate the report and the citation inventory from validated Evidence.
 
-    Writer input boundary:
-    - research_query
-    - evidence
-
-    ToolMessage content is execution trace only and must not be used
-    as research material.
+    Writer input boundary: research_query, sub_questions, evidence.
+    ToolMessage content is execution trace only and is never research material.
     """
 
     research_query = state.get("research_query")
-    evidence = state.get("evidence", [])
 
     if research_query is None:
-        raise ValueError(
-            "writer requires 'research_query' in state"
-        )
+        raise ValueError("writer requires 'research_query' in state")
 
-    # The no-Tool path is valid; Evidence is an empty list.
+    evidence = state.get("evidence")
     if evidence is None:
         evidence = []
 
@@ -256,14 +321,13 @@ def writer(
     report = writer_impl.invoke(
         {
             "research_query": research_query,
+            "sub_questions": list(state.get("sub_questions") or []),
             "evidence": evidence,
         }
     )
 
     if not isinstance(report, str):
-        raise ValueError(
-            "writer_impl must return a string report"
-        )
+        raise ValueError("writer_impl must return a string report")
 
     return {
         "report": report,
@@ -272,33 +336,82 @@ def writer(
     }
 
 
+def persist(
+    state: AgentState,
+    persister: ReportPersister | None,
+    runtime: Runtime[AgentContext],
+) -> dict:
+    """Write the finished run to the Product Backend, best effort.
+
+    The report already exists, so a persistence failure is logged rather than
+    raised: losing a history row is cheaper than losing the answer.
+    """
+
+    context = runtime.context
+    session_id = getattr(context, "research_session_id", None)
+    report = state.get("report")
+
+    if persister is None or session_id is None or not isinstance(report, str):
+        return {}
+
+    try:
+        report_id = persister.save(
+            user_id=context.knowledge_scope.user_id,
+            project_id=context.knowledge_scope.project_id,
+            research_session_id=session_id,
+            report=report,
+            citations=list(state.get("citations") or []),
+            verification=list(state.get("verification") or []),
+            tool_rounds=int(state.get("tool_rounds", 0) or 0),
+        )
+    except Exception:
+        logger.warning("report persistence failed; the run result is unchanged", exc_info=True)
+        return {}
+
+    if report_id is None:
+        logger.warning("backend rejected the report write; the run result is unchanged")
+        return {}
+
+    logger.info("persisted report %s for session %s", report_id, session_id)
+    return {}
+
+
+def verifier(state: AgentState, verifier_impl: Any) -> dict:
+    """Check whether each citation actually supports the sentence citing it."""
+
+    if verifier_impl is None:
+        return {"verification": []}
+
+    return verify_citations(state, verifier_impl)
+
+
 def build_graph(
     researcher_model: Any,
     web_tool: Any,
     knowledge_client: KnowledgeClient,
     writer_impl: Any,
+    planner_impl: Any = None,
+    verifier_impl: Any = None,
+    persist_impl: ReportPersister | None = None,
+    *,
+    max_tool_rounds: int = DEFAULT_MAX_TOOL_ROUNDS,
+    context_radius: int = 0,
+    researcher_system_prompt: str | None = None,
 ):
-    """
-    Build the scoped multi-tool research workflow.
+    """Build the scoped, bounded research workflow."""
 
-    Flow:
+    if not isinstance(max_tool_rounds, int) or isinstance(max_tool_rounds, bool):
+        raise ValueError("max_tool_rounds must be an integer")
+    if not 1 <= max_tool_rounds <= MAX_TOOL_ROUNDS_LIMIT:
+        raise ValueError(
+            f"max_tool_rounds must be between 1 and {MAX_TOOL_ROUNDS_LIMIT}"
+        )
+    if not isinstance(context_radius, int) or isinstance(context_radius, bool):
+        raise ValueError("context_radius must be an integer")
+    if not 0 <= context_radius <= MAX_CONTEXT_RADIUS:
+        raise ValueError(f"context_radius must be between 0 and {MAX_CONTEXT_RADIUS}")
 
-        START
-          |
-          v
-      researcher
-        /    \
-       /      \
- tool_calls   no tool_calls
-     |             |
-     v             |
- execute_tool      |
-     |             |
-     +------> writer
-                 |
-                 v
-                END
-    """
+    planner = planner_impl if planner_impl is not None else PassthroughPlanner()
 
     builder = StateGraph(
         AgentState,
@@ -307,9 +420,7 @@ def build_graph(
         output_schema=AgentOutputState,
     )
 
-    # ---------------------------------------------------------
-    # Nodes
-    # ---------------------------------------------------------
+    builder.add_node("planner", partial(plan_research, planner_impl=planner))
 
     builder.add_node(
         "researcher",
@@ -318,6 +429,9 @@ def build_graph(
             researcher_model=researcher_model,
             web_tool=web_tool,
             knowledge_client=knowledge_client,
+            max_tool_rounds=max_tool_rounds,
+            context_radius=context_radius,
+            system_prompt=researcher_system_prompt,
         ),
     )
 
@@ -327,25 +441,18 @@ def build_graph(
             execute_tool,
             web_tool=web_tool,
             knowledge_client=knowledge_client,
+            context_radius=context_radius,
         ),
     )
 
-    builder.add_node(
-        "writer",
-        partial(
-            writer,
-            writer_impl=writer_impl,
-        ),
-    )
+    builder.add_node("writer", partial(writer, writer_impl=writer_impl))
 
-    # ---------------------------------------------------------
-    # Edges
-    # ---------------------------------------------------------
+    builder.add_node("verifier", partial(verifier, verifier_impl=verifier_impl))
 
-    builder.add_edge(
-        START,
-        "researcher",
-    )
+    builder.add_node("persist", partial(persist, persister=persist_impl))
+
+    builder.add_edge(START, "planner")
+    builder.add_edge("planner", "researcher")
 
     builder.add_conditional_edges(
         "researcher",
@@ -356,14 +463,27 @@ def build_graph(
         },
     )
 
-    builder.add_edge(
+    builder.add_conditional_edges(
         "execute_tool",
-        "writer",
+        partial(route_after_tools, max_tool_rounds=max_tool_rounds),
+        {
+            "researcher": "researcher",
+            "writer": "writer",
+        },
     )
 
-    builder.add_edge(
-        "writer",
-        END,
-    )
+    builder.add_edge("writer", "verifier")
+    builder.add_edge("verifier", "persist")
+    builder.add_edge("persist", END)
 
     return builder.compile()
+
+
+def _latest_human_content(state: AgentState) -> object:
+    """Fallback for direct node calls that bypassed the planner."""
+
+    for message in reversed(state["messages"]):
+        if isinstance(message, HumanMessage):
+            return message.content
+
+    raise ValueError("researcher requires at least one HumanMessage")
