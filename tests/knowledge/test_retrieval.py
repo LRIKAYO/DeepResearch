@@ -1,11 +1,14 @@
-"""Unit tests for hybrid (cosine + BM25 + RRF) Project knowledge retrieval.
+"""Unit tests for hybrid (cosine + BM25 + RRF) Project knowledge retrieval
+and optional cross-encoder reranking.
 
 These tests are database-free: the ranking math and the row-to-hit assembly are
 exercised with a fake session whose rows are already in cosine order, exactly as
 the SQL ``ORDER BY`` would return them.
 """
 
+import logging
 from dataclasses import dataclass
+from typing import Sequence
 from uuid import UUID, uuid4
 
 import pytest
@@ -48,6 +51,20 @@ class _FakeSession:
         return _Result(self.rows)
 
 
+class _RecordingReranker:
+    """Deterministic in-memory reranker double."""
+
+    def __init__(self, order: Sequence[int] | Exception):
+        self.order = order
+        self.calls: list[tuple[str, tuple[str, ...], int]] = []
+
+    def rerank(self, query: str, documents: Sequence[str], *, top_n: int) -> list[int]:
+        self.calls.append((query, tuple(documents), top_n))
+        if isinstance(self.order, Exception):
+            raise self.order
+        return list(self.order)
+
+
 def _row(content: str, distance: float, *, chunk_id: UUID | None = None) -> _Row:
     return _Row(
         document_id=uuid4(),
@@ -75,6 +92,23 @@ def test_tokenize_keeps_whole_identifier_and_splits_camel_and_snake_case():
     assert "equal" in tokens
 
 
+def test_tokenize_emits_cjk_bigrams_singletons_and_mixed_identifiers():
+    tokens = tokenize("使用baseNameMatch配置，见表 1！")
+
+    # Contiguous CJK runs emit overlapping character bigrams without crossing punctuation.
+    assert "使用" in tokens
+    assert "配置" in tokens
+    assert "置见" not in tokens
+    assert "见表" in tokens
+    # Isolated 1-character CJK runs emit the single character.
+    assert tokenize("表 1 和 图 2") == ["表", "1", "和", "图", "2"]
+    # Spaceless mixed CJK + camelCase splits cleanly at script boundaries.
+    assert "basenamematch" in tokens
+    assert "base" in tokens
+    assert "name" in tokens
+    assert "match" in tokens
+
+
 def test_bm25_ranks_a_rare_exact_identifier_above_boilerplate():
     documents = [
         "The default option applies to every call.",
@@ -83,6 +117,20 @@ def test_bm25_ranks_a_rare_exact_identifier_above_boilerplate():
     ]
 
     scores = bm25_scores("baseNameMatch", documents)
+
+    assert scores[0] == 0.0
+    assert scores[2] == 0.0
+    assert scores[1] > 0.0
+
+
+def test_bm25_ranks_chinese_and_bilingual_documents():
+    documents = [
+        "这是通用说明文档，介绍系统背景与基础概念。",
+        "通过配置 p-queue 的固定窗口限流策略控制并发突发。",
+        "系统日志默认输出到标准错误流。",
+    ]
+
+    scores = bm25_scores("p-queue 窗口限流策略", documents)
 
     assert scores[0] == 0.0
     assert scores[2] == 0.0
@@ -204,6 +252,55 @@ def test_search_skips_bm25_for_cjk_queries_and_keeps_cosine_order():
     ]
 
 
+def test_search_skips_bm25_when_english_corpus_has_only_stray_cjk_badge():
+    rows = [
+        _row("nuqs overview and README [简体中文]", 0.10),
+        _row("withDefault sets default query state", 0.20),
+        _row("setting state to null clears the key", 0.30),
+    ]
+
+    hits = search_knowledge(
+        _FakeSession(rows),
+        owner_user_id=uuid4(),
+        project_id=uuid4(),
+        query_text="给 nuqs 的查询参数用 withDefault() 指定默认值后，设成 null 会怎样？",
+        query_vector=[1.0, *([0.0] * 1023)],
+        limit=5,
+    )
+
+    # None of the Chinese query bigrams match '[简体中文]', so cross-lingual
+    # protection keeps pure bge-m3 cosine order instead of boosting Latin noise.
+    assert [hit.content for hit in hits] == [
+        "nuqs overview and README [简体中文]",
+        "withDefault sets default query state",
+        "setting state to null clears the key",
+    ]
+
+
+def test_search_enables_bm25_for_cjk_queries_on_chinese_and_bilingual_corpora():
+    rows = [
+        _row("项目背景介绍与架构概览", 0.10),
+        _row("修改 cssesc 全局默认选项的方法说明", 0.20),
+        _row("cssesc 全局默认选项与全局默认选项示例", 0.25),
+    ]
+
+    hits = search_knowledge(
+        _FakeSession(rows),
+        owner_user_id=uuid4(),
+        project_id=uuid4(),
+        query_text="怎么改 cssesc 全局默认选项？",
+        query_vector=[1.0, *([0.0] * 1023)],
+        limit=5,
+    )
+
+    assert [hit.content for hit in hits] == [
+        "cssesc 全局默认选项与全局默认选项示例",
+        "修改 cssesc 全局默认选项的方法说明",
+        "项目背景介绍与架构概览",
+    ]
+    assert [hit.score for hit in hits] == pytest.approx([0.75, 0.80, 0.90])
+
+
 def test_search_empty_project_returns_empty_list():
     assert (
         search_knowledge(
@@ -220,6 +317,7 @@ def test_search_empty_project_returns_empty_list():
 
 def test_rrf_constant_is_the_documented_sixty():
     assert RRF_K == 60
+
 
 def test_search_can_disable_the_lexical_signal():
     rows = [
@@ -245,3 +343,80 @@ def test_search_can_disable_the_lexical_signal():
         "Set baseNameMatch to true.",
         "baseNameMatch baseNameMatch details",
     ]
+
+
+def test_search_reranks_rrf_candidate_pool_and_preserves_cosine_scores():
+    rows = [
+        _row("distractor one", 0.10),
+        _row("distractor two", 0.15),
+        _row("distractor three", 0.20),
+        _row("exact answer deep in candidate pool", 0.35),
+        _row("outside candidate pool", 0.40),
+    ]
+    reranker = _RecordingReranker([3, 1])
+
+    hits = search_knowledge(
+        _FakeSession(rows),
+        owner_user_id=uuid4(),
+        project_id=uuid4(),
+        query_text="no lexical overlap",
+        query_vector=[1.0, *([0.0] * 1023)],
+        limit=2,
+        reranker=reranker,
+        rerank_candidates=4,
+    )
+
+    assert len(reranker.calls) == 1
+    query, docs, top_n = reranker.calls[0]
+    assert query == "no lexical overlap"
+    assert docs == (
+        "distractor one",
+        "distractor two",
+        "distractor three",
+        "exact answer deep in candidate pool",
+    )
+    assert top_n == 2
+    # Candidate index 3 (outside top-2 RRF!) wins rank 1, while score stays cosine!
+    assert [hit.content for hit in hits] == [
+        "exact answer deep in candidate pool",
+        "distractor two",
+    ]
+    assert [hit.score for hit in hits] == pytest.approx([0.65, 0.85])
+
+
+@pytest.mark.parametrize(
+    "bad_outcome",
+    [
+        RuntimeError("upstream /rerank timeout"),
+        [],
+        [99],
+        [-1],
+        [0, 0],
+        [True],
+    ],
+)
+def test_search_falls_back_to_rrf_order_when_reranker_fails(bad_outcome, caplog):
+    rows = [
+        _row("generic filler", 0.10),
+        _row("baseNameMatch exact match", 0.25),
+        _row("another filler", 0.30),
+    ]
+    reranker = _RecordingReranker(bad_outcome)
+
+    with caplog.at_level(logging.WARNING, logger="researchflow.knowledge.retrieval"):
+        hits = search_knowledge(
+            _FakeSession(rows),
+            owner_user_id=uuid4(),
+            project_id=uuid4(),
+            query_text="baseNameMatch",
+            query_vector=[1.0, *([0.0] * 1023)],
+            limit=2,
+            reranker=reranker,
+        )
+
+    assert [hit.content for hit in hits] == [
+        "baseNameMatch exact match",
+        "generic filler",
+    ]
+    assert [hit.score for hit in hits] == pytest.approx([0.75, 0.90])
+    assert "falling back to RRF ranking" in caplog.text

@@ -93,6 +93,54 @@ def test_extract_claims_ignores_text_without_markers():
     assert extract_claims("没有引用的报告。") == {}
 
 
+def test_extract_claims_skips_fenced_code_blocks():
+    report = (
+        "结论见如下代码示例：\n"
+        "```python\n"
+        "item = results[c1]  # not a citation [c2].\n"
+        "```\n"
+        "实际校准每周一进行 [c1]。"
+    )
+
+    claims = extract_claims(report)
+
+    assert claims == {"c1": ["实际校准每周一进行 [c1]。"]}
+    assert "c2" not in claims
+
+
+def test_verify_citations_treats_code_fence_only_marker_as_uncited():
+    verifier = FakeVerifier(
+        {"results": [{"citation_id": "c1", "support": "full", "reason": "一致"}]}
+    )
+    report = (
+        "校准每周一进行 [c1]。\n"
+        "```js\n"
+        "const sample = arr[c2];\n"
+        "```\n"
+    )
+
+    update = verify_citations(
+        {
+            "citations": [citation("c1"), citation("c2")],
+            "evidence": [evidence("a"), evidence("b")],
+            "report": report,
+        },
+        verifier,
+    )
+
+    assert [item["citation_id"] for item in verifier.received_payloads[0]["items"]] == [
+        "c1"
+    ]
+    assert update["verification"] == [
+        {"citation_id": "c1", "support": "full", "reason": "一致"},
+        {
+            "citation_id": "c2",
+            "support": "none",
+            "reason": "citation is listed but no report sentence cites it",
+        },
+    ]
+
+
 # --- build_verification_items ----------------------------------------------
 
 

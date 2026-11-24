@@ -23,8 +23,10 @@
      END
 """
 
+import contextvars
 import json
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from typing import Any, Literal
 
@@ -49,6 +51,9 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_MAX_TOOL_ROUNDS = 3
 MAX_TOOL_ROUNDS_LIMIT = 10
+DEFAULT_MAX_TOOL_CALLS = 6
+MAX_TOOL_CALLS_LIMIT = 30
+MAX_PARALLEL_TOOL_WORKERS = 4
 
 
 def build_tool_registry(
@@ -84,6 +89,7 @@ def _research_context(
     state: AgentState,
     *,
     max_tool_rounds: int,
+    max_tool_calls: int = DEFAULT_MAX_TOOL_CALLS,
 ) -> str | None:
     """Describe the plan and the evidence gathered so far.
 
@@ -116,6 +122,10 @@ def _research_context(
         "Tool rounds used: "
         f"{int(state.get('tool_rounds', 0) or 0)} of {max_tool_rounds}."
     )
+    lines.append(
+        "Tool calls used: "
+        f"{int(state.get('tool_calls_used', 0) or 0)} of {max_tool_calls}."
+    )
 
     return "\n".join(lines)
 
@@ -128,6 +138,7 @@ def researcher(
     runtime: Runtime[AgentContext],
     *,
     max_tool_rounds: int = DEFAULT_MAX_TOOL_ROUNDS,
+    max_tool_calls: int = DEFAULT_MAX_TOOL_CALLS,
     context_radius: int = 0,
     weak_match_threshold: float = DEFAULT_ABSTAIN_THRESHOLD,
     system_prompt: str | None = None,
@@ -135,7 +146,7 @@ def researcher(
     """Researcher node: decide the next search action, or stop.
 
     1. Read the run's research query (set by the planner).
-    2. Bind the tool schema only while tool-round budget remains.
+    2. Bind the tool schema only while tool-round and tool-call budgets remain.
     3. Invoke the model once with the plan and the evidence gathered so far.
     4. Append the model response; evidence accumulates elsewhere.
     """
@@ -153,8 +164,9 @@ def researcher(
     )
 
     tool_rounds = int(state.get("tool_rounds", 0) or 0)
+    tool_calls_used = int(state.get("tool_calls_used", 0) or 0)
 
-    if tool_rounds < max_tool_rounds:
+    if tool_rounds < max_tool_rounds and tool_calls_used < max_tool_calls:
         model_with_tools = researcher_model.bind_tools(
             list(tool_registry.values()),
             parallel_tool_calls=True,
@@ -163,7 +175,7 @@ def researcher(
         # Budget exhausted: no tool schema, so the model must answer from
         # existing evidence. This also guarantees no orphan tool_call can be
         # left unanswered when the loop ends.
-        logger.info("tool-round budget exhausted; answering from current evidence")
+        logger.info("tool budget exhausted; answering from current evidence")
         model_with_tools = researcher_model
 
     messages: list[Any] = []
@@ -171,7 +183,11 @@ def researcher(
     if system_prompt:
         messages.append(SystemMessage(content=system_prompt))
 
-    context = _research_context(state, max_tool_rounds=max_tool_rounds)
+    context = _research_context(
+        state,
+        max_tool_rounds=max_tool_rounds,
+        max_tool_calls=max_tool_calls,
+    )
     if context:
         messages.append(SystemMessage(content=context))
 
@@ -228,19 +244,111 @@ def normalize_tool_args(args: object) -> object:
     return args
 
 
+def canonical_tool_query_key(tool_name: str, normalized_args: object) -> str | None:
+    """Return a deterministic deduplication key for valid dict tool arguments."""
+
+    if not isinstance(normalized_args, dict):
+        return None
+
+    canonical_args = dict(normalized_args)
+    query = canonical_args.get("query")
+    if isinstance(query, str) and query.strip():
+        canonical_args["query"] = query.strip()
+
+    try:
+        serialized_args = json.dumps(
+            canonical_args, sort_keys=True, ensure_ascii=False
+        )
+    except TypeError:
+        return None
+
+    return json.dumps([tool_name, serialized_args], ensure_ascii=False)
+
+
+def _evidence_provenance_key(item: dict[str, Any]) -> tuple[str, str, str] | None:
+    """Return provenance identity for cross-round evidence deduplication."""
+
+    source_type = item.get("source_type")
+    provenance = item.get("provenance")
+    if not isinstance(provenance, dict):
+        return None
+
+    if source_type == "user_upload":
+        document_id = provenance.get("document_id")
+        chunk_id = provenance.get("chunk_id")
+        if document_id and chunk_id:
+            return ("user_upload", str(document_id), str(chunk_id))
+        return None
+
+    if source_type == "temporary_research":
+        url = provenance.get("url")
+        content = item.get("content")
+        if isinstance(url, str) and isinstance(content, str):
+            return ("temporary_research", url, content)
+        return None
+
+    return None
+
+
+def _invoke_single_tool_call(
+    tool: Any,
+    tool_call: dict[str, Any],
+    normalized_args: object,
+    *,
+    recover_tool_errors: bool,
+) -> tuple[list[dict[str, Any]], ToolMessage, bool]:
+    """Invoke one tool call and return (validated_evidence, tool_message, succeeded)."""
+
+    try:
+        tool_result = tool.invoke(normalized_args)
+    except Exception as exc:
+        if not recover_tool_errors:
+            raise
+        logger.warning(
+            "Tool %s failed during research run; degrading to error ToolMessage: %s",
+            tool_call["name"],
+            exc,
+            exc_info=True,
+        )
+        return (
+            [],
+            ToolMessage(
+                content=f"Tool error ({type(exc).__name__}): {exc}",
+                tool_call_id=tool_call["id"],
+                name=tool_call["name"],
+                status="error",
+            ),
+            False,
+        )
+
+    validated = validate_evidence_list(tool_result)
+    return (
+        validated,
+        ToolMessage(
+            content="Research evidence collected successfully.",
+            tool_call_id=tool_call["id"],
+            name=tool_call["name"],
+        ),
+        True,
+    )
+
+
 def execute_tool(
     state: AgentState,
     web_tool: Any,
     knowledge_client: KnowledgeClient,
     runtime: Runtime[AgentContext],
     *,
+    max_tool_calls: int = DEFAULT_MAX_TOOL_CALLS,
     context_radius: int = 0,
     weak_match_threshold: float = DEFAULT_ABSTAIN_THRESHOLD,
+    deduplicate_queries: bool = True,
+    recover_tool_errors: bool = False,
 ) -> dict:
-    """Execute every pending tool call, accumulating typed Evidence.
+    """Execute pending tool calls, accumulating typed Evidence in deterministic order.
 
     Evidence accumulates across rounds; a later round must never erase what an
-    earlier round found.
+    earlier round found, while cross-round duplicate provenance is collapsed.
     """
 
     last_message = state["messages"][-1]
@@ -269,24 +377,114 @@ def execute_tool(
         if tool_call["name"] not in tool_registry:
             raise ValueError(f"Unknown tool: {tool_call['name']}")
 
-    new_evidence: list[dict] = []
-    tool_messages: list[ToolMessage] = []
+    tool_calls_used = int(state.get("tool_calls_used", 0) or 0)
+    seen_queries = list(state.get("seen_tool_queries") or [])
+    seen_query_set = set(seen_queries)
+    batch_reserved_queries: set[str] = set()
 
-    for tool_call in tool_calls:
-        tool = tool_registry[tool_call["name"]]
-        tool_result = tool.invoke(normalize_tool_args(tool_call["args"]))
-        new_evidence.extend(validate_evidence_list(tool_result))
-        tool_messages.append(
-            ToolMessage(
-                content="Research evidence collected successfully.",
+    ordered_evidence: list[list[dict[str, Any]]] = [[] for _ in tool_calls]
+    ordered_messages: list[ToolMessage | None] = [None] * len(tool_calls)
+    executable: list[tuple[int, dict[str, Any], object, str | None]] = []
+
+    for index, tool_call in enumerate(tool_calls):
+        normalized_args = normalize_tool_args(tool_call["args"])
+        query_key = (
+            canonical_tool_query_key(tool_call["name"], normalized_args)
+            if deduplicate_queries
+            else None
+        )
+
+        if tool_calls_used >= max_tool_calls:
+            ordered_messages[index] = ToolMessage(
+                content="Skipped: tool-call budget exhausted.",
                 tool_call_id=tool_call["id"],
                 name=tool_call["name"],
             )
+            continue
+
+        if (
+            deduplicate_queries
+            and query_key is not None
+            and (query_key in seen_query_set or query_key in batch_reserved_queries)
+        ):
+            ordered_messages[index] = ToolMessage(
+                content="Duplicate tool query skipped; already executed in this run.",
+                tool_call_id=tool_call["id"],
+                name=tool_call["name"],
+            )
+            continue
+
+        tool_calls_used += 1
+        if query_key is not None:
+            batch_reserved_queries.add(query_key)
+        executable.append((index, tool_call, normalized_args, query_key))
+
+    if len(executable) == 1:
+        index, tool_call, normalized_args, query_key = executable[0]
+        evidence_items, message, succeeded = _invoke_single_tool_call(
+            tool_registry[tool_call["name"]],
+            tool_call,
+            normalized_args,
+            recover_tool_errors=recover_tool_errors,
         )
+        ordered_evidence[index] = evidence_items
+        ordered_messages[index] = message
+        if succeeded and query_key is not None and query_key not in seen_query_set:
+            seen_queries.append(query_key)
+            seen_query_set.add(query_key)
+    elif len(executable) > 1:
+        max_workers = min(MAX_PARALLEL_TOOL_WORKERS, len(executable))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = []
+            for index, tool_call, normalized_args, query_key in executable:
+                ctx = contextvars.copy_context()
+                future = executor.submit(
+                    ctx.run,
+                    partial(
+                        _invoke_single_tool_call,
+                        tool_registry[tool_call["name"]],
+                        tool_call,
+                        normalized_args,
+                        recover_tool_errors=recover_tool_errors,
+                    ),
+                )
+                futures.append((index, query_key, future))
+
+            for index, query_key, future in futures:
+                evidence_items, message, succeeded = future.result()
+                ordered_evidence[index] = evidence_items
+                ordered_messages[index] = message
+                if succeeded and query_key is not None and query_key not in seen_query_set:
+                    seen_queries.append(query_key)
+                    seen_query_set.add(query_key)
+
+    existing_evidence = list(state.get("evidence") or [])
+    seen_provenance: set[tuple[str, str, str]] = set()
+    for item in existing_evidence:
+        if isinstance(item, dict):
+            prov_key = _evidence_provenance_key(item)
+            if prov_key is not None:
+                seen_provenance.add(prov_key)
+
+    new_evidence: list[dict[str, Any]] = []
+    dedup_against_prior = bool(existing_evidence)
+    for batch_items in ordered_evidence:
+        for item in batch_items:
+            if dedup_against_prior:
+                prov_key = _evidence_provenance_key(item)
+                if prov_key is not None:
+                    if prov_key in seen_provenance:
+                        continue
+                    seen_provenance.add(prov_key)
+            new_evidence.append(item)
+
+    tool_messages = [msg for msg in ordered_messages if msg is not None]
 
     return {
-        "evidence": [*(state.get("evidence") or []), *new_evidence],
+        "evidence": [*existing_evidence, *new_evidence],
         "tool_rounds": int(state.get("tool_rounds", 0) or 0) + 1,
+        "tool_calls_used": tool_calls_used,
+        "seen_tool_queries": seen_queries,
         "messages": tool_messages,
     }
 
@@ -295,10 +493,13 @@ def route_after_tools(
     state: AgentState,
     *,
     max_tool_rounds: int = DEFAULT_MAX_TOOL_ROUNDS,
+    max_tool_calls: int = DEFAULT_MAX_TOOL_CALLS,
 ) -> Literal["researcher", "writer"]:
-    """Continue the loop while tool-round budget remains."""
+    """Continue the loop while tool-round and tool-call budgets remain."""
 
-    if int(state.get("tool_rounds", 0) or 0) < max_tool_rounds:
+    tool_rounds = int(state.get("tool_rounds", 0) or 0)
+    tool_calls_used = int(state.get("tool_calls_used", 0) or 0)
+    if tool_rounds < max_tool_rounds and tool_calls_used < max_tool_calls:
         return "researcher"
 
     return "writer"
@@ -402,8 +603,11 @@ def build_graph(
     persist_impl: ReportPersister | None = None,
     *,
     max_tool_rounds: int = DEFAULT_MAX_TOOL_ROUNDS,
+    max_tool_calls: int = DEFAULT_MAX_TOOL_CALLS,
     context_radius: int = 0,
     weak_match_threshold: float = DEFAULT_ABSTAIN_THRESHOLD,
+    deduplicate_queries: bool = True,
+    recover_tool_errors: bool = False,
     researcher_system_prompt: str | None = None,
 ):
     """Build the scoped, bounded research workflow."""
@@ -414,12 +618,22 @@ def build_graph(
         raise ValueError(
             f"max_tool_rounds must be between 1 and {MAX_TOOL_ROUNDS_LIMIT}"
         )
+    if not isinstance(max_tool_calls, int) or isinstance(max_tool_calls, bool):
+        raise ValueError("max_tool_calls must be an integer")
+    if not 1 <= max_tool_calls <= MAX_TOOL_CALLS_LIMIT:
+        raise ValueError(
+            f"max_tool_calls must be between 1 and {MAX_TOOL_CALLS_LIMIT}"
+        )
     if not isinstance(context_radius, int) or isinstance(context_radius, bool):
         raise ValueError("context_radius must be an integer")
     if not 0 <= context_radius <= MAX_CONTEXT_RADIUS:
         raise ValueError(f"context_radius must be between 0 and {MAX_CONTEXT_RADIUS}")
     if not 0.0 <= weak_match_threshold <= 1.0:
         raise ValueError("weak_match_threshold must be between 0 and 1")
+    if not isinstance(deduplicate_queries, bool):
+        raise ValueError("deduplicate_queries must be a boolean")
+    if not isinstance(recover_tool_errors, bool):
+        raise ValueError("recover_tool_errors must be a boolean")
 
     planner = planner_impl if planner_impl is not None else PassthroughPlanner()
 
@@ -440,6 +654,7 @@ def build_graph(
             web_tool=web_tool,
             knowledge_client=knowledge_client,
             max_tool_rounds=max_tool_rounds,
+            max_tool_calls=max_tool_calls,
             context_radius=context_radius,
             weak_match_threshold=weak_match_threshold,
             system_prompt=researcher_system_prompt,
@@ -452,8 +667,11 @@ def build_graph(
             execute_tool,
             web_tool=web_tool,
             knowledge_client=knowledge_client,
+            max_tool_calls=max_tool_calls,
             context_radius=context_radius,
             weak_match_threshold=weak_match_threshold,
+            deduplicate_queries=deduplicate_queries,
+            recover_tool_errors=recover_tool_errors,
         ),
     )
 
@@ -477,7 +695,11 @@ def build_graph(
 
     builder.add_conditional_edges(
         "execute_tool",
-        partial(route_after_tools, max_tool_rounds=max_tool_rounds),
+        partial(
+            route_after_tools,
+            max_tool_rounds=max_tool_rounds,
+            max_tool_calls=max_tool_calls,
+        ),
         {
             "researcher": "researcher",
             "writer": "writer",

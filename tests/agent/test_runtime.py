@@ -64,6 +64,8 @@ def test_create_runtime_wires_one_model_to_graph(monkeypatch):
     assert captured["verifier_impl"] is verifier
     assert captured["persist_impl"] is persister
     assert captured["max_tool_rounds"] == 3
+    assert captured["max_tool_calls"] == 6
+    assert captured["recover_tool_errors"] is True
     assert "bounded" in captured["researcher_system_prompt"].lower()
 
 
@@ -108,6 +110,33 @@ def test_read_max_tool_rounds_rejects_non_integer(monkeypatch):
 
     with pytest.raises(ValueError, match="RESEARCHFLOW_MAX_TOOL_ROUNDS"):
         runtime.read_max_tool_rounds()
+
+
+def test_read_max_tool_calls_defaults_to_six(monkeypatch):
+    monkeypatch.delenv("RESEARCHFLOW_MAX_TOOL_CALLS", raising=False)
+
+    assert runtime.read_max_tool_calls() == 6
+
+
+def test_read_max_tool_calls_reads_the_environment(monkeypatch):
+    monkeypatch.setenv("RESEARCHFLOW_MAX_TOOL_CALLS", "12")
+
+    assert runtime.read_max_tool_calls() == 12
+
+
+@pytest.mark.parametrize("raw", ["0", "31", "-1"])
+def test_read_max_tool_calls_rejects_out_of_range(monkeypatch, raw):
+    monkeypatch.setenv("RESEARCHFLOW_MAX_TOOL_CALLS", raw)
+
+    with pytest.raises(ValueError, match="RESEARCHFLOW_MAX_TOOL_CALLS"):
+        runtime.read_max_tool_calls()
+
+
+def test_read_max_tool_calls_rejects_non_integer(monkeypatch):
+    monkeypatch.setenv("RESEARCHFLOW_MAX_TOOL_CALLS", "six")
+
+    with pytest.raises(ValueError, match="RESEARCHFLOW_MAX_TOOL_CALLS"):
+        runtime.read_max_tool_calls()
 
 
 def test_create_knowledge_client_requires_backend_url(monkeypatch):

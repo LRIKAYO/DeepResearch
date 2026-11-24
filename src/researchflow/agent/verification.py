@@ -55,20 +55,45 @@ class VerificationBatch(BaseModel):
 VerificationPayload: TypeAlias = dict[str, Any]
 
 
+def _prose_blocks(report: str) -> list[str]:
+    """Return report segments outside fenced code blocks."""
+
+    blocks: list[str] = []
+    current: list[str] = []
+    in_fence = False
+
+    for raw_line in (report or "").splitlines():
+        if raw_line.strip().startswith("```"):
+            if current:
+                blocks.append("\n".join(current))
+                current = []
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        current.append(raw_line)
+
+    if current:
+        blocks.append("\n".join(current))
+
+    return blocks
+
+
 def extract_claims(report: str) -> dict[str, list[str]]:
     """Map each citation id to the report sentences that cite it."""
 
     claims: dict[str, list[str]] = {}
 
-    for raw_sentence in _SENTENCE_BREAK.split(report):
-        sentence = " ".join(raw_sentence.split())
-        if not sentence:
-            continue
-        for match in _CITATION_MARKER.finditer(sentence):
-            citation_id = f"c{match.group(1)}"
-            bucket = claims.setdefault(citation_id, [])
-            if sentence not in bucket:
-                bucket.append(sentence)
+    for block in _prose_blocks(report):
+        for raw_sentence in _SENTENCE_BREAK.split(block):
+            sentence = " ".join(raw_sentence.split())
+            if not sentence:
+                continue
+            for match in _CITATION_MARKER.finditer(sentence):
+                citation_id = f"c{match.group(1)}"
+                bucket = claims.setdefault(citation_id, [])
+                if sentence not in bucket:
+                    bucket.append(sentence)
 
     return claims
 

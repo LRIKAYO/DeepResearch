@@ -12,7 +12,10 @@ from researchflow.knowledge.retrieval import KnowledgeHit, search_knowledge
 
 from .current_user import CurrentUserId
 from .database import get_session
-from .knowledge_dependencies import EmbeddingFactoryDependency
+from .knowledge_dependencies import (
+    EmbeddingFactoryDependency,
+    RerankerFactoryDependency,
+)
 from .models import Document, DocumentChunk
 from .research_sessions import require_project
 
@@ -74,6 +77,7 @@ def search_project_knowledge(
     payload: KnowledgeSearchRequest,
     owner_user_id: CurrentUserId,
     embedding_factory: EmbeddingFactoryDependency,
+    reranker_factory: RerankerFactoryDependency,
     session: Session = Depends(get_session),
 ) -> list[KnowledgeHit]:
     try:
@@ -88,6 +92,7 @@ def search_project_knowledge(
             query_vector=query_vector,
             limit=payload.limit,
             use_lexical=retrieval_mode() == "hybrid",
+            reranker=reranker_factory(),
         )
     except HTTPException:
         raise

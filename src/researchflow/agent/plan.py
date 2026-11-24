@@ -131,6 +131,8 @@ def plan_research(state: AgentState, planner_impl: Any) -> dict:
         "research_query": research_query,
         "sub_questions": sub_questions,
         "tool_rounds": 0,
+        "tool_calls_used": 0,
+        "seen_tool_queries": [],
         "evidence": [],
     }
 

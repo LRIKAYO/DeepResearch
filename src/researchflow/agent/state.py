@@ -33,6 +33,8 @@ class AgentState(AgentInputState, total=False):
     research_query: str
     sub_questions: list[str]
     tool_rounds: int
+    tool_calls_used: int
+    seen_tool_queries: list[str]
     evidence: list[EvidencePayload]
     report: str
     citations: list[CitationPayload]

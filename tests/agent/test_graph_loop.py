@@ -160,7 +160,7 @@ def test_graph_runs_multiple_tool_rounds_and_accumulates_evidence():
 
 
 def test_graph_stops_at_the_round_budget_and_still_writes():
-    responses = [tool_call(f"call-{index}") for index in range(1, 5)]
+    responses = [tool_call(f"call-{index}", f"q-{index}") for index in range(1, 5)]
     model = ScriptedModel(responses)
     tool = QueueTool([[web_evidence(f"e{index}")] for index in range(1, 4)])
     writer = RecordingWriter()
@@ -417,3 +417,166 @@ def test_graph_survives_a_tool_call_wrapped_in_an_arguments_object():
     assert tool.received_args == [{"query": "wrapped"}]
     assert tool.invoke_count == 1
     assert result["report"] == writer.report
+
+
+# --- total tool-call budget & deduplication ---------------------------------
+
+
+@pytest.mark.parametrize("value", [0, -1, 31, 2.5, True])
+def test_build_graph_rejects_invalid_tool_call_budgets(value):
+    with pytest.raises(ValueError, match="max_tool_calls"):
+        build(
+            ScriptedModel([AIMessage(content="READY")]),
+            QueueTool([[]]),
+            RecordingWriter(),
+            max_tool_calls=value,
+        )
+
+
+def test_researcher_without_tool_call_budget_gets_no_tool_schema():
+    model = ScriptedModel([AIMessage(content="READY")])
+
+    researcher(
+        {
+            "messages": [HumanMessage(content="研究问题")],
+            "research_query": "研究问题",
+            "sub_questions": ["子问题一"],
+            "tool_rounds": 1,
+            "tool_calls_used": 2,
+        },
+        model,
+        QueueTool([[]]),
+        EmptyKnowledgeClient(),
+        Runtime(context=TEST_CONTEXT),
+        max_tool_rounds=3,
+        max_tool_calls=2,
+    )
+
+    assert model.bind_calls == 0
+    assert model.invocations == 1
+    context_message = model.received_messages[0][0]
+    assert "Tool calls used: 2 of 2." in context_message.content
+
+
+def test_excess_tool_calls_in_one_turn_are_capped_without_orphan_ids():
+    from langchain_core.messages import ToolMessage
+
+    burst = AIMessage(
+        content="",
+        tool_calls=[
+            {"name": "web_search", "args": {"query": "q1"}, "id": "call-1", "type": "tool_call"},
+            {"name": "web_search", "args": {"query": "q2"}, "id": "call-2", "type": "tool_call"},
+            {"name": "web_search", "args": {"query": "q3"}, "id": "call-3", "type": "tool_call"},
+        ],
+    )
+    model = ScriptedModel([burst, AIMessage(content="unused")])
+    tool = QueueTool([[web_evidence("e1")], [web_evidence("e2")], [web_evidence("e3")]])
+    writer = RecordingWriter("capped report")
+
+    result = invoke(build(model, tool, writer, max_tool_rounds=3, max_tool_calls=2))
+
+    # Only 2 calls executed; route_after_tools sends straight to writer without a 2nd model call.
+    assert tool.invoke_count == 2
+    assert model.invocations == 1
+    assert [item["content"] for item in writer.payloads[0]["evidence"]] == ["e1", "e2"]
+
+    tool_messages = [m for m in result["messages"] if isinstance(m, ToolMessage)]
+    assert [m.tool_call_id for m in tool_messages] == ["call-1", "call-2", "call-3"]
+    assert tool_messages[2].content == "Skipped: tool-call budget exhausted."
+
+
+def test_duplicate_queries_across_rounds_are_skipped_without_reinvoking_tool():
+    from langchain_core.messages import ToolMessage
+
+    model = ScriptedModel(
+        [
+            tool_call("call-1", "  same query  "),
+            tool_call("call-2", "same query"),
+            AIMessage(content="READY"),
+        ]
+    )
+    tool = QueueTool([[web_evidence("only-once")], [web_evidence("should-not-run")]])
+    writer = RecordingWriter()
+
+    result = invoke(build(model, tool, writer, max_tool_rounds=3))
+
+    assert tool.invoke_count == 1
+    assert result["tool_rounds"] == 2
+    assert [item["content"] for item in writer.payloads[0]["evidence"]] == ["only-once"]
+    tool_messages = [m for m in result["messages"] if isinstance(m, ToolMessage)]
+    assert tool_messages[1].content == "Duplicate tool query skipped; already executed in this run."
+
+
+def test_cross_round_duplicate_provenance_is_deduplicated():
+    from uuid import UUID
+    from researchflow.agent.knowledge_search import KnowledgeHit
+
+    doc_id = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
+    chunk_1 = UUID("cccccccc-cccc-cccc-cccc-cccccccccccc")
+    chunk_2 = UUID("dddddddd-dddd-dddd-dddd-dddddddddddd")
+
+    class MultiRoundKnowledgeClient:
+        def __init__(self):
+            self.calls = 0
+
+        def search(self, *, scope, query, limit):
+            self.calls += 1
+            if self.calls == 1:
+                return [
+                    KnowledgeHit(
+                        document_id=doc_id,
+                        chunk_id=chunk_1,
+                        filename="doc.md",
+                        content="chunk one",
+                        score=0.9,
+                    )
+                ]
+            return [
+                KnowledgeHit(
+                    document_id=doc_id,
+                    chunk_id=chunk_1,
+                    filename="doc.md",
+                    content="chunk one",
+                    score=0.88,
+                ),
+                KnowledgeHit(
+                    document_id=doc_id,
+                    chunk_id=chunk_2,
+                    filename="doc.md",
+                    content="chunk two",
+                    score=0.85,
+                ),
+            ]
+
+    round_1 = AIMessage(
+        content="",
+        tool_calls=[
+            {"name": "web_search", "args": {"query": "web-1"}, "id": "w1", "type": "tool_call"},
+            {"name": "knowledge_search", "args": {"query": "k-1"}, "id": "k1", "type": "tool_call"},
+        ],
+    )
+    round_2 = AIMessage(
+        content="",
+        tool_calls=[
+            {"name": "web_search", "args": {"query": "web-2"}, "id": "w2", "type": "tool_call"},
+            {"name": "knowledge_search", "args": {"query": "k-2"}, "id": "k2", "type": "tool_call"},
+        ],
+    )
+    model = ScriptedModel([round_1, round_2, AIMessage(content="READY")])
+    shared_web = web_evidence("shared-web")
+    unique_web = web_evidence("unique-web")
+    tool = QueueTool([[shared_web], [shared_web, unique_web]])
+    writer = RecordingWriter()
+
+    graph = build_graph(
+        researcher_model=model,
+        web_tool=tool,
+        knowledge_client=MultiRoundKnowledgeClient(),
+        writer_impl=writer,
+        max_tool_rounds=3,
+    )
+    result = invoke(graph)
+
+    contents = [item["content"] for item in writer.payloads[0]["evidence"]]
+    assert contents == ["shared-web", "chunk one", "unique-web", "chunk two"]
+    assert [item["citation_id"] for item in result["citations"]] == ["c1", "c2", "c3", "c4"]

@@ -9,7 +9,13 @@ from langchain_openai import ChatOpenAI
 
 from .citation_audit import audit_citations, citation_ids_for, detect_report_language
 from .evidence import render_evidence_block
-from .graph import DEFAULT_MAX_TOOL_ROUNDS, MAX_TOOL_ROUNDS_LIMIT, build_graph
+from .graph import (
+    DEFAULT_MAX_TOOL_CALLS,
+    DEFAULT_MAX_TOOL_ROUNDS,
+    MAX_TOOL_CALLS_LIMIT,
+    MAX_TOOL_ROUNDS_LIMIT,
+    build_graph,
+)
 from .knowledge_search import (
     DEFAULT_ABSTAIN_THRESHOLD,
     MAX_CONTEXT_RADIUS,
@@ -330,6 +336,23 @@ def read_max_tool_rounds() -> int:
     return value
 
 
+def read_max_tool_calls() -> int:
+    raw = os.getenv("RESEARCHFLOW_MAX_TOOL_CALLS", str(DEFAULT_MAX_TOOL_CALLS)).strip()
+    if not raw:
+        return DEFAULT_MAX_TOOL_CALLS
+    try:
+        value = int(raw)
+    except ValueError:
+        raise ValueError(
+            "RESEARCHFLOW_MAX_TOOL_CALLS must be an integer"
+        ) from None
+    if not 1 <= value <= MAX_TOOL_CALLS_LIMIT:
+        raise ValueError(
+            f"RESEARCHFLOW_MAX_TOOL_CALLS must be between 1 and {MAX_TOOL_CALLS_LIMIT}"
+        )
+    return value
+
+
 def read_context_radius() -> int:
     raw = os.getenv("RESEARCHFLOW_CONTEXT_RADIUS", str(DEFAULT_CONTEXT_RADIUS)).strip()
     if not raw:
@@ -374,7 +397,9 @@ def create_runtime(config: RunnableConfig | None = None):
         verifier_impl=create_verifier(model),
         persist_impl=create_report_persister(),
         max_tool_rounds=read_max_tool_rounds(),
+        max_tool_calls=read_max_tool_calls(),
         context_radius=read_context_radius(),
         weak_match_threshold=read_weak_match_threshold(),
+        recover_tool_errors=True,
         researcher_system_prompt=RESEARCHER_SYSTEM_PROMPT,
     )

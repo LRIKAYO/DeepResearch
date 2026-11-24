@@ -26,6 +26,9 @@ writer ───────► report + ordered citations [c1]..[cN]
 verifier ─────► per citation: full / partial / none support
   │
   ▼
+persist ──────► append-only report + citations + verdicts in PostgreSQL
+  │
+  ▼
  END
 ```
 
@@ -33,12 +36,15 @@ verifier ─────► per citation: full / partial / none support
 
 1. **Plan** — the question is decomposed into 2–4 self-contained sub-questions.
 2. **Research loop** — the researcher sees the plan *and the evidence collected so
-   far*, then either issues a focused tool call or stops. The loop is bounded by
-   `RESEARCHFLOW_MAX_TOOL_ROUNDS` (default 3), so cost cannot run away.
+   far*, then either issues focused tool calls (executed concurrently when multiple
+   calls are emitted in one round, with cross-round query and provenance deduplication)
+   or stops. The loop is bounded by both `RESEARCHFLOW_MAX_TOOL_ROUNDS` (default 3)
+   and `RESEARCHFLOW_MAX_TOOL_CALLS` (default 6), so cost cannot run away.
 3. **Write** — the writer receives evidence rendered as a numbered `[c1]..[cN]` block
    and must cite the ids supporting each claim, or mark the claim unverified.
-4. **Verify** — every citation is checked against the passage it points at; a source
-   that is listed but never cited is reported as such rather than passed silently.
+4. **Verify & Persist** — every citation is checked against the passage it points at
+   (skipping fenced code blocks), and the completed run is persisted best-effort to
+   PostgreSQL without failing the answer on backend outages.
 
 Two tools only, both scoped and typed: `knowledge_search` (the Project's private
 Markdown knowledge, via the Product Backend HTTP API) and `web_search` (Tavily).
@@ -49,16 +55,17 @@ not validate never reaches the writer.
 
 | Claim | Evidence |
 | --- | --- |
-| Graph, planner, loop budget, writer, verifier, persistence | 172 deterministic tests in `tests/agent/` (stubbed models, no network); includes a `create_runtime()` end-to-end run that proves the prompt chains and run context agree |
+| Graph, planner, dual loop budgets, parallel tools, dedup, writer, verifier, persistence | 218 deterministic tests in `tests/agent/` (stubbed models, no network); includes a `create_runtime()` end-to-end run and runtime tool-error degradation checks |
 | Citation coverage of a real report | 4 live runs: every listed source cited in the report body (coverage 1.00, `citations → cited` 10/10, 20/20, 24/24, 25/25), 0 "listed but not cited" verdicts. Units: `tests/agent/test_citation_audit.py` |
 | Citation click-through | `[cN]` in the report is rewritten to `#citation-cN` (code fences untouched) and each source row carries that id; asserted by `pnpm check:modules` |
 | Report persistence | a live run writes to the `reports` table through the same HTTP API the Frontend uses; verified end-to-end (run → stored row → `GET .../reports` → identical body → project deleted). 16 backend tests, 12 agent tests |
 | Citation verifier judgement | **10 / 10** on known ground truth: 5 deliberately mismatched pairs all labelled `none`, 5 supported pairs all `full` (`scripts/verifier_probe.py`) |
 | Agent-level quality, 4 live questions | coverage **1.00**, support rate **0.811** (30 full / 1 partial / 6 none of 37 citations) with context windows on, versus **0.585** in the same run with them off; mean 1.25 tool rounds, p50 **67 s**. n=4 questions and the same configuration varies by ~0.09 between days, so read this as directional (`2026-11-12-context-window.md`) |
-| Knowledge ingestion, chunking, embedding, hybrid retrieval | 32 tests in `tests/knowledge/`, 121 offline quality tests (dataset labels, metric math, replay, rank-sensitivity analysis, corpus guards), and 71 backend tests that need PostgreSQL |
+| Knowledge ingestion, chunking, embedding, hybrid retrieval, cross-encoder reranking | 61 tests in `tests/knowledge/`, 121 offline quality tests (dataset labels, metric math, replay, rank-sensitivity analysis, corpus guards), and PostgreSQL-backed backend tests |
 | Frontend type + lint | `pnpm exec tsc --noEmit` clean, `pnpm lint` 0 errors, `pnpm build` compiles |
 | Retrieval quality on the small corpus, live run 2026-11-10 | Recall@1 0.900 · Recall@3 0.967 · Recall@5 1.000 · MRR 0.978 — but k=5 covered 25% of a 20-chunk corpus. See `evaluations/reports/2026-11-10.md` |
-| **Retrieval quality on the real corpus, hybrid retrieval, 2026-11-11** | **Recall@1 0.556 · Recall@3 0.789 · Recall@5 0.856 · MRR 0.720 · nDCG@5 0.740 · latency p50 328 ms / p95 515 ms** over 5,091 chunks, where k=5 covers ~1%. Exact cosine plus BM25 fused with RRF; both configurations re-scored under the same abstain policy (`2026-11-11-v4-hybrid-decision.md`) |
+| Retrieval quality on the real corpus, hybrid RRF, 2026-11-11 | Recall@1 0.556 · Recall@3 0.789 · Recall@5 0.856 · MRR 0.720 · nDCG@5 0.740 · latency p50 328 ms / p95 515 ms over 5,091 chunks, where k=5 covers ~1% (`2026-11-11-v4-hybrid-decision.md`) |
+| **Retrieval quality on the real corpus, hybrid RRF + `BAAI/bge-reranker-v2-m3`, 2026-11-24** | **Recall@1 0.622 (+6.6 pp) · Recall@3 0.844 (+5.5 pp) · Recall@5 0.867 · MRR 0.760 · nDCG@5 0.779**, distractor-above-every-relevant cut `5 → 3 → 2`, zero cross-lingual or cosine-abstain regression (`2026-11-24-v4-rerank-decision.md`) |
 
 ### The first number that is actually informative
 
@@ -288,7 +295,7 @@ migrations/                   Alembic revisions
   after the verifier. What is still missing is the UI surface for reading older
   reports: the API is there, the panel is a follow-up. A run started before a
   restart, and never finished, still has no report row.
-- Retrieval is exact cosine search with no ANN index, no BM25 and no reranking.
+- Vector search uses exact cosine scan in PostgreSQL (with no HNSW/IVFFlat ANN index yet, since each Project holds hundreds to low thousands of chunks); BM25 runs in-process per Project, and cross-encoder reranking (`RESEARCHFLOW_RERANK_MODEL`) is opt-in with graceful RRF fallback.
 - Sources are a run-scoped inventory. Each `[cN]` in the report links to its
   source row, and the Verifier scores the pair, but attribution is per source,
   not per clause: a sentence citing two sources is not split into which source
@@ -312,8 +319,11 @@ migrations/                   Alembic revisions
 | `RESEARCHFLOW_CHUNK_CHARS` | 2000 | Chunk size at ingestion; the committed corpora are built at 2000 and record it. |
 | `RESEARCHFLOW_CHUNK_OVERLAP` | 0 | Chunk overlap at ingestion. |
 | `RESEARCHFLOW_MAX_TOOL_ROUNDS` | 3 | Research rounds before the Writer runs (1–10). |
+| `RESEARCHFLOW_MAX_TOOL_CALLS` | 6 | Total tool calls across all rounds before the Writer runs (1–30). |
 | `RESEARCHFLOW_CONTEXT_RADIUS` | 2 | Chunks added on each side of a retrieved hit (0–3); 0 disables expansion. |
-| `RESEARCHFLOW_RETRIEVAL_MODE` | hybrid | `hybrid` (cosine + BM25 via RRF) or `cosine` for comparison. |
+| `RESEARCHFLOW_RETRIEVAL_MODE` | hybrid | `hybrid` (cosine + CJK/Latin BM25 via RRF) or `cosine` for comparison. |
+| `RESEARCHFLOW_RERANK_MODEL` | *(unset)* | Optional cross-encoder reranker (e.g. `BAAI/bge-reranker-v2-m3`); unset disables reranking. |
+| `RESEARCHFLOW_RERANK_CANDIDATES` | 20 | RRF top-N pool passed to the reranker (clamped to `[limit, 100]`). |
 | `NO_PROXY` | — | Must include the domestic provider host when a system proxy is configured but cannot reach it. |
 
 ## Validation

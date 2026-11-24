@@ -372,6 +372,8 @@ def test_planner_resets_state_from_previous_run():
             "research_query": "旧问题",
             "sub_questions": ["旧子问题"],
             "tool_rounds": 2,
+            "tool_calls_used": 4,
+            "seen_tool_queries": ['["web_search", "{\\"query\\": \\"旧问题\\"}"]'],
             "evidence": [old_evidence],
             "citations": [{"citation_id": "c1"}],
             "verification": [{"citation_id": "c1", "support": "full", "reason": "x"}],
@@ -384,6 +386,8 @@ def test_planner_resets_state_from_previous_run():
     assert update["sub_questions"] == ["子问题 A", "子问题 B"]
     assert update["evidence"] == []
     assert update["tool_rounds"] == 0
+    assert update["tool_calls_used"] == 0
+    assert update["seen_tool_queries"] == []
     # A new run must not wipe the last successful Report/Citations pair: those
     # are only replaced by a successful Writer/Verifier pass.
     assert "citations" not in update
@@ -723,7 +727,7 @@ def test_graph_merges_evidence_from_multiple_calls_to_the_same_tool():
         {"messages": [HumanMessage(content="research query")]}
     )
 
-    assert tool.received_args == [
+    assert sorted(tool.received_args, key=lambda item: item["query"]) == [
         {"query": "first query"},
         {"query": "second query"},
     ]
@@ -783,19 +787,19 @@ def test_graph_executes_web_and_knowledge_calls_in_model_order():
 
     result = invoke_graph(graph, {"messages": [HumanMessage(content="research")]})
 
-    assert events == [
-        "researcher",
+    assert events[0] == "researcher"
+    assert events[-1] == "writer"
+    assert sorted(events[1:-1]) == [
+        "execute_tool",
         "execute_tool",
         "knowledge_search",
-        "execute_tool",
-        "writer",
     ]
     assert knowledge_client.calls == [
         (TEST_CONTEXT.knowledge_scope, "project", 2),
     ]
-    assert web_tool.received_args == [
-        {"query": "web first"},
+    assert sorted(web_tool.received_args, key=lambda item: item["query"]) == [
         {"query": "web again"},
+        {"query": "web first"},
     ]
     assert [
         item["source_type"] for item in writer.received_payloads[0]["evidence"]
@@ -850,7 +854,8 @@ def test_tool_failure_prevents_writer_and_partial_evidence_state():
     with pytest.raises(KnowledgeSearchError, match="unavailable"):
         invoke_graph(graph, {"messages": [HumanMessage(content="research")]})
 
-    assert events == ["researcher", "execute_tool", "knowledge_search"]
+    assert events[0] == "researcher"
+    assert sorted(events[1:]) == ["execute_tool", "knowledge_search"]
     assert writer.received_payloads == []
 
 
@@ -1001,3 +1006,230 @@ def test_checkpoint_retains_matching_final_output_until_next_success(
         "sub_questions": ["New no-Tool query"],
         "evidence": [],
     }
+
+
+def test_execute_tool_runs_multiple_calls_in_parallel_and_preserves_order():
+    import contextvars
+    import threading
+    from langchain_core.messages import ToolMessage
+
+    trace_var: contextvars.ContextVar[str] = contextvars.ContextVar(
+        "trace_var", default="missing"
+    )
+    barrier = threading.Barrier(2, timeout=2.0)
+    second_finished = threading.Event()
+    completion_order: list[str] = []
+    observed_context: dict[str, str] = {}
+    lock = threading.Lock()
+
+    class ConcurrentWebTool:
+        name = "web_search"
+
+        def invoke(self, args):
+            query = args["query"]
+            # Both calls must enter invoke() simultaneously or barrier times out.
+            barrier.wait()
+            with lock:
+                observed_context[query] = trace_var.get()
+            if query == "slow-first":
+                assert second_finished.wait(timeout=2.0)
+                with lock:
+                    completion_order.append(query)
+                return [temporary_evidence("https://first.example", "first-body")]
+            with lock:
+                completion_order.append(query)
+            second_finished.set()
+            return [temporary_evidence("https://second.example", "second-body")]
+
+    events: list[str] = []
+    researcher_model = FakeResearcherModel(
+        AIMessage(
+            content="",
+            tool_calls=[
+                {
+                    "name": "web_search",
+                    "args": {"query": "slow-first"},
+                    "id": "call-first",
+                    "type": "tool_call",
+                },
+                {
+                    "name": "web_search",
+                    "args": {"query": "fast-second"},
+                    "id": "call-second",
+                    "type": "tool_call",
+                },
+            ],
+        ),
+        events,
+    )
+    writer = FakeWriter("report", events)
+    graph = build_test_graph(researcher_model, ConcurrentWebTool(), writer)
+
+    token = trace_var.set("propagated-trace")
+    try:
+        result = invoke_graph(graph, {"messages": [HumanMessage(content="parallel")]})
+    finally:
+        trace_var.reset(token)
+
+    assert completion_order == ["fast-second", "slow-first"]
+    assert observed_context == {
+        "slow-first": "propagated-trace",
+        "fast-second": "propagated-trace",
+    }
+    assert [
+        item["content"] for item in writer.received_payloads[0]["evidence"]
+    ] == ["first-body", "second-body"]
+    tool_messages = [m for m in result["messages"] if isinstance(m, ToolMessage)]
+    assert [m.tool_call_id for m in tool_messages] == ["call-first", "call-second"]
+
+
+def test_single_tool_call_runs_on_caller_thread_without_pool():
+    import threading
+    from researchflow.agent.graph import execute_tool
+
+    caller_thread = threading.get_ident()
+    observed_threads: list[int] = []
+
+    class ThreadRecordingTool:
+        name = "web_search"
+
+        def invoke(self, args):
+            observed_threads.append(threading.get_ident())
+            return [temporary_evidence()]
+
+    execute_tool(
+        {
+            "messages": [
+                HumanMessage(content="q"),
+                AIMessage(
+                    content="",
+                    tool_calls=[
+                        {
+                            "name": "web_search",
+                            "args": {"query": "only-one"},
+                            "id": "call-1",
+                            "type": "tool_call",
+                        }
+                    ],
+                ),
+            ]
+        },
+        ThreadRecordingTool(),
+        FakeKnowledgeClient(),
+        Runtime(context=TEST_CONTEXT),
+    )
+
+    assert observed_threads == [caller_thread]
+
+
+def test_recover_tool_errors_degrades_runtime_failure_without_losing_sibling_evidence():
+    from langchain_core.messages import ToolMessage
+
+    events: list[str] = []
+    web_tool = FakeTool([temporary_evidence(content="survived")], events)
+    knowledge_client = FakeKnowledgeClient(
+        events=events,
+        error=KnowledgeSearchError("Knowledge search unavailable"),
+    )
+    researcher_model = FakeResearcherModel(
+        AIMessage(
+            content="",
+            tool_calls=[
+                {
+                    "name": "web_search",
+                    "args": {"query": "web succeeds"},
+                    "id": "call-web",
+                    "type": "tool_call",
+                },
+                {
+                    "name": "knowledge_search",
+                    "args": {"query": "backend down"},
+                    "id": "call-knowledge",
+                    "type": "tool_call",
+                },
+            ],
+        ),
+        events,
+    )
+    writer = FakeWriter("degraded report [c1]", events)
+    graph = build_graph(
+        researcher_model=researcher_model,
+        web_tool=web_tool,
+        knowledge_client=knowledge_client,
+        writer_impl=writer,
+        max_tool_rounds=1,
+        recover_tool_errors=True,
+    )
+
+    result = invoke_graph(graph, {"messages": [HumanMessage(content="research")]})
+
+    assert result["report"] == "degraded report [c1]"
+    assert [item["content"] for item in writer.received_payloads[0]["evidence"]] == [
+        "survived"
+    ]
+    tool_messages = [m for m in result["messages"] if isinstance(m, ToolMessage)]
+    assert [m.tool_call_id for m in tool_messages] == ["call-web", "call-knowledge"]
+    assert tool_messages[0].content == "Research evidence collected successfully."
+    assert tool_messages[1].status == "error"
+    assert "Tool error (KnowledgeSearchError): Knowledge search unavailable" in tool_messages[1].content
+
+
+def test_recover_tool_errors_catches_invalid_tool_args_but_still_rejects_unknown_tools():
+    from langchain_core.messages import ToolMessage
+
+    events: list[str] = []
+    web_tool = FakeTool([temporary_evidence()], events)
+    bad_args_model = FakeResearcherModel(
+        AIMessage(
+            content="",
+            tool_calls=[
+                {
+                    "name": "knowledge_search",
+                    "args": {"query": "valid", "limit": 99},
+                    "id": "call-bad-args",
+                    "type": "tool_call",
+                }
+            ],
+        ),
+        events,
+    )
+    writer = FakeWriter("report after bad args", events)
+    graph = build_graph(
+        researcher_model=bad_args_model,
+        web_tool=web_tool,
+        knowledge_client=FakeKnowledgeClient(),
+        writer_impl=writer,
+        max_tool_rounds=1,
+        recover_tool_errors=True,
+    )
+
+    result = invoke_graph(graph, {"messages": [HumanMessage(content="research")]})
+    tool_messages = [m for m in result["messages"] if isinstance(m, ToolMessage)]
+    assert len(tool_messages) == 1
+    assert tool_messages[0].status == "error"
+    assert "Tool error" in tool_messages[0].content
+
+    unknown_model = FakeResearcherModel(
+        AIMessage(
+            content="",
+            tool_calls=[
+                {
+                    "name": "nonexistent_tool",
+                    "args": {"query": "x"},
+                    "id": "call-unknown",
+                    "type": "tool_call",
+                }
+            ],
+        ),
+        events,
+    )
+    unknown_graph = build_graph(
+        researcher_model=unknown_model,
+        web_tool=web_tool,
+        knowledge_client=FakeKnowledgeClient(),
+        writer_impl=writer,
+        max_tool_rounds=1,
+        recover_tool_errors=True,
+    )
+    with pytest.raises(ValueError, match="Unknown tool"):
+        invoke_graph(unknown_graph, {"messages": [HumanMessage(content="research")]})
